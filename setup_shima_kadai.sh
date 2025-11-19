@@ -48,7 +48,7 @@ mkdir -p "${WWW_DIR}"
 # 1) 初期コンテンツ（mysite.html）
 #========================
 if [[ ! -f "${TARGET_FILE}" ]]; then
-  cat > "${TARGET_FILE}" <<'HTML'
+  cat > "${TARGET_FILE}" <<'__HTML__'
 <!DOCTYPE html>
 <html lang="ja"><meta charset="utf-8">
 <title>My Site</title>
@@ -56,7 +56,7 @@ if [[ ! -f "${TARGET_FILE}" ]]; then
 <h1>ようこそ！</h1>
 <p>これは元のコンテンツ (mysite.html) です。</p>
 </body></html>
-HTML
+__HTML__
   echo "Created ${TARGET_FILE}"
 fi
 
