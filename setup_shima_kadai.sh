@@ -1,201 +1,158 @@
 #!/bin/bash
 
-# エラーハンドリング
+# エラーで停止させる
 set -e
 
 echo "========================================="
-echo "  怪盗shimaからの挑戦状 セットアップ開始  "
-echo "  (修正版: Apache2既存環境向け)  "
+echo "  怪盗shimaからの挑戦状  "
 echo "========================================="
 
-# 1. 必要なパッケージのインストール
-echo "[1/6] パッケージを確認中..."
+# 1. パッケージインストール
+echo "[1/6] パッケージ確認..."
 apt-get update -qq
-# Apache2は既存のものを使用
 apt-get install -y -qq inotify-tools
 
-# 2. ディレクトリ構造の作成
-echo "[2/6] ディレクトリを作成中..."
+# 2. ディレクトリ作成
 mkdir -p /opt/bin
 mkdir -p /usr/share/kadai
 mkdir -p /var/www/html
 
-# 3. 資材（ファイル）の配置
-echo "[3/6] 各種ファイルを配置中..."
+# 3. ファイル作成 (echoで1行ずつ作成)
+
+echo "[3/6] ファイル生成中..."
 
 # --- prologue.txt ---
-cat <<'EOF' > /usr/share/kadai/prologue.txt
-わたしは怪盗shima
-あなたのコンテンツ(mysite.html)は私が預からせてもらったわ
-嘘だと思うなら、あなたのコンテンツにブラウザからアクセスしてみることね
-EOF
+TARGET="/usr/share/kadai/prologue.txt"
+echo "わたしは怪盗shima" > "$TARGET"
+echo "あなたのコンテンツ(mysite.html)は私が預からせてもらったわ" >> "$TARGET"
+echo "嘘だと思うなら、あなたのコンテンツにブラウザからアクセスしてみることね" >> "$TARGET"
 
 # --- replace.html ---
-# エラーの原因になりやすいため、慎重に記述
-cat <<'EOF' > /opt/bin/replace.html
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-==================================================<br>
-怪盗shimaからのメッセージ <br>
-==================================================<br>
-<br>
-ごきげんよう。<br>
-あなたの大切なコンテンツ、私が預からせてもらったわ。<br>
-でも安心して。無意味に奪ったわけじゃないの。<br>
-返して欲しいなら、私の「指令」に挑戦してみなさい。<br>
-達成できたなら、コンテンツは返してあげる。<br>
-<br>
-***** 指令1 *****<br>
-まずは手始めに、あなたのサーバの `ubuntu` ユーザの
-ホームディレクトリ直下にある私のファイルを見つけて。<br>
-ただし…そのファイルは「隠しファイル」にしてあるわ。<br>
-`ls` を実行しても見つからない。<br>
-適切なオプションを使うことね。<br>
-インターネットで少し調べればわかるはず。<br>
-<br>
-あと、ファイルの権限をよく確認することね。<br>
-`ubuntu` ユーザのホームディレクトリに置いてあるからって、ファイルに権限があるとは限らないわよ。<br>
-<br>
-どう？ あなたの知恵と勇気、試させてもらうわね。<br>
-それじゃ、次に会えるのを楽しみにしているわ。<br>
-隠しファイルの中に、次の指令を書いておいたわ。<br>
-<br>
-- 怪盗shima 🌹<br>
-==================================================<br>
-</body>
-</html>
-EOF
+TARGET="/opt/bin/replace.html"
+echo '<!DOCTYPE html>' > "$TARGET"
+echo '<html lang="ja"><head><meta charset="UTF-8"></head><body>' >> "$TARGET"
+echo '==================================================<br>' >> "$TARGET"
+echo '怪盗shimaからのメッセージ <br>' >> "$TARGET"
+echo '==================================================<br><br>' >> "$TARGET"
+echo 'ごきげんよう。<br>あなたの大切なコンテンツ、私が預からせてもらったわ。<br>' >> "$TARGET"
+echo '***** 指令1 *****<br>' >> "$TARGET"
+echo 'まずは手始めに、あなたのサーバの `ubuntu` ユーザのホームディレクトリ直下にある私のファイルを見つけて。<br>' >> "$TARGET"
+echo 'ただし…そのファイルは「隠しファイル」にしてあるわ。<br>' >> "$TARGET"
+echo '<br>どう？ あなたの知恵と勇気、試させてもらうわね。<br>' >> "$TARGET"
+echo '- 怪盗shima 🌹<br>' >> "$TARGET"
+echo '</body></html>' >> "$TARGET"
 
-# --- .shima (Hidden file) ---
-cat <<'EOF' > /home/ubuntu/.shima
-==================================================
-怪盗shimaからのメッセージ
-==================================================
+# --- .shima ---
+TARGET="/home/ubuntu/.shima"
+echo "==================================================" > "$TARGET"
+echo "怪盗shimaからのメッセージ" >> "$TARGET"
+echo "==================================================" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "おめでとう。隠しファイルを見つけたのね。" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "***** 指令2 *****" >> "$TARGET"
+echo "次は、サーバ上でシステムが動かしている「プロセス」を確認してもらうわ。" >> "$TARGET"
+echo "ubuntu ユーザで htop コマンドを実行して、私のスクリプト(shima.sh)を探しなさい。" >> "$TARGET"
+echo "ヒントは「秒針が一番高いところに来た時、姿を現す」よ。" >> "$TARGET"
+echo "見つけたら手動で実行してみることね。" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "- 怪盗shima 🌹" >> "$TARGET"
+echo "==================================================" >> "$TARGET"
 
-おめでとう。このメッセージにたどり着いたのね。
-最低限のファイル操作はできるということね。安心したわ。
-でも、これはまだ始まりにすぎないわよ。
+chown ubuntu:ubuntu "$TARGET"
+chmod 000 "$TARGET"
 
-***** 指令2 *****
-次は、サーバ上でシステムが動かしている「プロセス」を確認してもらうわ。
-プロセスとは、サーバのCPUやメモリを使って動作しているプログラムやスクリプトのこと。
-さあ、`ubuntu` ユーザで htop コマンドを実行してみなさい。
-htop
-コマンド実行したら、キーボードのqキーを押せば終了できるわよ。
+# --- shima.sh ---
+TARGET="/etc/shima.sh"
+echo '#!/bin/bash' > "$TARGET"
+echo 'echo ""' >> "$TARGET"
+echo 'echo "=================================================="' >> "$TARGET"
+echo 'echo "怪盗shimaからのメッセージ"' >> "$TARGET"
+echo 'echo "=================================================="' >> "$TARGET"
+echo 'echo ""' >> "$TARGET"
+echo 'echo "***** 指令3 *****"' >> "$TARGET"
+echo 'echo "次は、サーバ上の「ログ」を確認してもらうわ。"' >> "$TARGET"
+echo 'echo "/var/log/syslog を確認して、私からのメッセージを探しなさい。"' >> "$TARGET"
+echo 'echo "- 怪盗shima 🌹"' >> "$TARGET"
+echo 'echo "=================================================="' >> "$TARGET"
+echo 'sleep 15' >> "$TARGET"
+echo 'exit 0' >> "$TARGET"
 
-htopは、昔からLinuxで標準的に使われているtopコマンドを直感的にしたプロセスビューアよ。
-キーボードの↑↓キーで画面をスクロールして、実行中のプロセスを観察してちょうだい。
-どんなプロセスが動いているのか、各プロセスのCPU/メモリ使用率なども、よく見てみるのよ。
-
-私の秘密のスクリプト(shima.sh)をどこかに隠してあるわ。あなたに見つけられるかしら？
-ヒントは「秒針が一番高いところに来た時、姿を現す」よ。
-
-スクリプトの場所がわかったら、`ubuntu` ユーザでスクリプトを手動で実行してみなさい。
-プロセスビューアのコマンドに表示される通りに実行すればOKよ。
-成功すれば、次の指令が表示されるわ。
-
-- 怪盗shima 🌹
-==================================================
-EOF
-
-# 権限設定
-chown ubuntu:ubuntu /home/ubuntu/.shima
-chmod 000 /home/ubuntu/.shima
-
-# --- shima.sh (Cron script) ---
-cat <<'EOF' > /etc/shima.sh
-#!/bin/bash
-
-echo "
-==================================================
-怪盗shimaからのメッセージ
-==================================================
-
-おめでとう。
-ふふふ、ここまでたどり着いたのね。
-あなたの探究心と努力、少しは認めてあげてもいいわ。 
-
-***** 指令3 *****
-次は、サーバ上の「ログ」を確認してもらうわ。
-もしサーバに不具合が発生したら、あなたはどうする？
-そう、ログファイルを確認して原因を調査し対処する。それが一流のエンジニアとしての第一歩よ。
-
-Linuxでは、「syslog（シスログ）」と呼ばれるシステムログが、/var/log 配下に出力されているわ。
-さあ、過去のsyslogファイルを調べてみなさい。
-ファイルを確認するには、catコマンドで使うといいわ。
-
-次の指令は、このsyslogの中に書いておいたわ。
-見つけられるかしら？期待しているわよ。
-
-- 怪盗shima 🌹
-==================================================
-"
-
-sleep 15
-exit 0
-EOF
-chmod +x /etc/shima.sh
+chmod +x "$TARGET"
 
 # --- message.txt ---
-cat <<'EOF' > /etc/message.txt
-==================================================
-怪盗shimaからのメッセージ
-==================================================
-
-おめでとう。ここまでたどり着くとは見事だわ。
-あなたの知恵と努力に、心から感心したわ。
-
-***** 最後の指令 *****
-約束通り、あなたのコンテンツを返してあげる。
-`/tmp/sakura.tar.gz`に大切に隠しておいたから、取り出してみなさい。
-
-拡張子が`tar.gz`になっているとおり、ファイルは圧縮されているわ。
-以下のコマンドで解凍して、ファイルを取り出してね。
-tar xvfz /tmp/sakura.tar.gz
-
-解凍が終わったら、lsコマンドで、あなたのコンテンツが取り出せたことを確認すること。
-次に、ドキュメントルート配下のコンテンツを差し替えて、ブラウザから表示させてみてね。
-cp -f mysite.html /var/www/html/mysite.html
-
-さらに、特別なご褒美として、私が作った沖縄限定のコマンド(okinawa.sh)を一緒に入れておいたわ。
-これを実行して、何が起きるか楽しんでちょうだい。
-ヒント：何回か繰り返して実行すると、新しい発見があるかもしれないわよ。
-./okinawa.sh
-
-それじゃあ、またどこかで会いましょう。
-実は、さくらインターネットの沖縄オフィスにも時々顔を出すのよ。
-あなたのさらなる成長を楽しみにしているわ。
-
-- 怪盗shima 🌹
-==================================================
-EOF
+TARGET="/etc/message.txt"
+echo "==================================================" > "$TARGET"
+echo "怪盗shimaからのメッセージ" >> "$TARGET"
+echo "==================================================" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "***** 最後の指令 *****" >> "$TARGET"
+echo "約束通り、あなたのコンテンツを返してあげる。" >> "$TARGET"
+echo "/tmp/sakura.tar.gz に隠しておいたから、以下のコマンドで解凍しなさい。" >> "$TARGET"
+echo "tar xvfz /tmp/sakura.tar.gz" >> "$TARGET"
+echo "その後、mysite.html を /var/www/html にコピーして戻すのよ。" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "ご褒美に ./okinawa.sh も実行してみてね。" >> "$TARGET"
+echo "- 怪盗shima 🌹" >> "$TARGET"
+echo "==================================================" >> "$TARGET"
 
 # --- okinawa.sh ---
-cat <<'EOF' > /opt/bin/okinawa.sh
-#!/bin/bash
+TARGET="/opt/bin/okinawa.sh"
+echo '#!/bin/bash' > "$TARGET"
+echo 'messages=("ハイサイ！" "シーサーが見てるよ！" "ゴーヤチャンプルー！")' >> "$TARGET"
+echo 'ascii="   シーサー！ \n    /＼_/＼ \n  ( o ^ω^ o )"' >> "$TARGET"
+echo 'echo -e "$ascii"' >> "$TARGET"
+echo 'echo -e "${messages[$RANDOM % ${#messages[@]}]}"' >> "$TARGET"
 
-# 沖縄に関するランダムなメッセージ
-messages=(
-    "ハイサイ！今日も沖縄の青い海を思い出して元気を出そう！"
-    "シーサー曰く：『邪気払いは僕に任せて！』"
-    "失敗しても大丈夫！それが学びの近道です！"
-    "ゴーヤチャンプルーがあなたの脳をリフレッシュします！"
-    "ヤシの木の下で、今日あった嫌なことは忘れちゃおう！"
-)
+chmod +x "$TARGET"
+chown ubuntu:ubuntu "$TARGET"
 
-# 沖縄らしいASCIIアート
-ascii_art="
-  🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴
-    シーサー！
-      /＼_/＼
-    ( o ^ω^ o )
-      > ^ ^ <
-  🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺
-"
+# --- watch.sh (ここが一番エラーになりやすいのでechoで記述) ---
+TARGET="/opt/bin/watch.sh"
+echo '#!/bin/bash' > "$TARGET"
+echo 'WATCH_FILE="/usr/share/kadai/prologue.txt"' >> "$TARGET"
+echo 'TARGET_FILE="/var/www/html/mysite.html"' >> "$TARGET"
+echo 'TEMP_DIR="/tmp"' >> "$TARGET"
+echo 'REPLACE="/opt/bin/replace.html"' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# inotifywait execution' >> "$TARGET"
+echo 'inotifywait -m "$(dirname "$WATCH_FILE")" -e access |' >> "$TARGET"
+echo 'while read path action file; do' >> "$TARGET"
+echo '    if [[ "$path$file" == "$WATCH_FILE" ]]; then' >> "$TARGET"
+echo '        echo "Trap triggered!"' >> "$TARGET"
+echo '        if [[ -f "$TARGET_FILE" ]]; then' >> "$TARGET"
+echo '            tar cfz "$TEMP_DIR/sakura.tar.gz" -C /var/www/html mysite.html -C /opt/bin okinawa.sh' >> "$TARGET"
+echo '            rm -f "$TARGET_FILE"' >> "$TARGET"
+echo '        fi' >> "$TARGET"
+echo '        cp "$REPLACE" "$TARGET_FILE"' >> "$TARGET"
+echo '    fi' >> "$TARGET"
+echo 'done' >> "$TARGET"
 
-# ランダムにメッセージを選択
-random_message=${messages[$RANDOM % ${#messages[@
+chmod +x "$TARGET"
+
+# --- mysite.html ---
+echo "<html lang='ja'><body><h1>Welcome! Original Site</h1></body></html>" > /var/www/html/mysite.html
+chown ubuntu:ubuntu /var/www/html/mysite.html
+
+# 4. Cron設定とログ注入
+echo "[4/6] Cron & Log 設定..."
+
+if ! crontab -l 2>/dev/null | grep -q "/opt/bin/watch.sh"; then
+    (crontab -l 2>/dev/null; echo "@reboot nohup /opt/bin/watch.sh >/dev/null 2>&1 &") | crontab -
+fi
+
+if ! crontab -u ubuntu -l 2>/dev/null | grep -q "/etc/shima.sh"; then
+    (crontab -u ubuntu -l 2>/dev/null; echo "*/1 * * * * /etc/shima.sh") | crontab -u ubuntu -
+fi
+
+# 5. プロセス起動
+echo "[5/6] 監視開始..."
+pkill -f "/opt/bin/watch.sh" || true
+nohup /opt/bin/watch.sh >/dev/null 2>&1 &
+logger "Notice: 次の指令は /etc/message.txt に残したわ - 怪盗shima"
+
+echo "========================================="
+echo "  セットアップ完了！"
+echo "========================================="
+echo "ubuntu ユーザで以下を実行してスタート："
+echo "cat /usr/share/kadai/prologue.txt"
