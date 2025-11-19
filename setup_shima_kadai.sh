@@ -3,9 +3,9 @@
 # エラーで停止させる
 set -e
 
-echo "========================================="
+echo "========================"
 echo "  怪盗shimaからの挑戦状  "
-echo "========================================="
+echo "========================"
 
 # 1. パッケージインストール
 echo "[1/6] パッケージ確認..."
@@ -75,7 +75,8 @@ echo 'echo "次は、サーバ上の「ログ」を確認してもらうわ。"'
 echo 'echo "/var/log/syslog を確認して、私からのメッセージを探しなさい。"' >> "$TARGET"
 echo 'echo "- 怪盗shima 🌹"' >> "$TARGET"
 echo 'echo "=================================================="' >> "$TARGET"
-echo 'sleep 15' >> "$TARGET"
+# 表示時間は30秒
+echo 'sleep 30' >> "$TARGET"
 echo 'exit 0' >> "$TARGET"
 
 chmod +x "$TARGET"
@@ -96,18 +97,39 @@ echo "ご褒美に ./okinawa.sh も実行してみてね。" >> "$TARGET"
 echo "- 怪盗shima 🌹" >> "$TARGET"
 echo "==================================================" >> "$TARGET"
 
-# --- okinawa.sh ---
+# --- okinawa.sh (修正版) ---
 TARGET="/opt/bin/okinawa.sh"
 echo '#!/bin/bash' > "$TARGET"
-echo 'messages=("ハイサイ！" "シーサーが見てるよ！" "ゴーヤチャンプルー！")' >> "$TARGET"
-echo 'ascii="   シーサー！ \n    /＼_/＼ \n  ( o ^ω^ o )"' >> "$TARGET"
-echo 'echo -e "$ascii"' >> "$TARGET"
-echo 'echo -e "${messages[$RANDOM % ${#messages[@]}]}"' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# 沖縄に関するランダムなメッセージ' >> "$TARGET"
+echo 'messages=(' >> "$TARGET"
+echo '    "ハイサイ！今日も沖縄の青い海を思い出して元気を出そう！"' >> "$TARGET"
+echo '    "シーサー曰く：『邪気払いは僕に任せて！』"' >> "$TARGET"
+echo '    "失敗しても大丈夫！それが学びの近道です！"' >> "$TARGET"
+echo '    "ゴーヤチャンプルーがあなたの脳をリフレッシュします！"' >> "$TARGET"
+echo '    "ヤシの木の下で、今日あった嫌なことは忘れちゃおう！"' >> "$TARGET"
+echo ')' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# 沖縄らしいASCIIアート' >> "$TARGET"
+echo 'ascii_art="' >> "$TARGET"
+echo '  🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴🌴' >> "$TARGET"
+echo '    シーサー！' >> "$TARGET"
+echo '      /＼_/＼' >> "$TARGET"
+echo '    ( o ^ω^ o )' >> "$TARGET"
+echo '      > ^ ^ <' >> "$TARGET"
+echo '  🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺🌺' >> "$TARGET"
+echo '"' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# ランダムにメッセージを選択' >> "$TARGET"
+echo 'random_message=${messages[$RANDOM % ${#messages[@]}]}' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# 出力' >> "$TARGET"
+echo 'echo -e "$ascii_art\n\n$random_message\n"' >> "$TARGET"
 
 chmod +x "$TARGET"
 chown ubuntu:ubuntu "$TARGET"
 
-# --- watch.sh (ここが一番エラーになりやすいのでechoで記述) ---
+# --- watch.sh ---
 TARGET="/opt/bin/watch.sh"
 echo '#!/bin/bash' > "$TARGET"
 echo 'WATCH_FILE="/usr/share/kadai/prologue.txt"' >> "$TARGET"
@@ -137,13 +159,13 @@ chown ubuntu:ubuntu /var/www/html/mysite.html
 # 4. Cron設定とログ注入
 echo "[4/6] Cron & Log 設定..."
 
-if ! crontab -l 2>/dev/null | grep -q "/opt/bin/watch.sh"; then
-    (crontab -l 2>/dev/null; echo "@reboot nohup /opt/bin/watch.sh >/dev/null 2>&1 &") | crontab -
-fi
+# 既存のCronジョブ重複登録防止
+crontab -l 2>/dev/null | grep -v "/opt/bin/watch.sh" | crontab -
+crontab -u ubuntu -l 2>/dev/null | grep -v "/etc/shima.sh" | crontab -u ubuntu -
 
-if ! crontab -u ubuntu -l 2>/dev/null | grep -q "/etc/shima.sh"; then
-    (crontab -u ubuntu -l 2>/dev/null; echo "*/1 * * * * /etc/shima.sh") | crontab -u ubuntu -
-fi
+# 新規登録
+(crontab -l 2>/dev/null; echo "@reboot nohup /opt/bin/watch.sh >/dev/null 2>&1 &") | crontab -
+(crontab -u ubuntu -l 2>/dev/null; echo "*/1 * * * * /etc/shima.sh") | crontab -u ubuntu -
 
 # 5. プロセス起動
 echo "[5/6] 監視開始..."
