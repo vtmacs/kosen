@@ -4,21 +4,20 @@
 set -e
 
 echo "========================================="
-echo "  怪盗shimaからの挑戦状 (psコマンド版)  "
+echo "  怪盗shimaからの挑戦状 (修正完了版)  "
 echo "========================================="
 
 # 1. パッケージインストール
 echo "[1/6] パッケージ確認..."
 apt-get update -qq
 apt-get install -y -qq inotify-tools
-# htopは不要なので削除、psは標準搭載なのでインストール不要
 
 # 2. ディレクトリ作成
 mkdir -p /opt/bin
 mkdir -p /usr/share/kadai
 mkdir -p /var/www/html
 
-# 3. ファイル作成
+# 3. ファイル作成 (echoで1行ずつ作成)
 
 echo "[3/6] ファイル生成中..."
 
@@ -43,7 +42,7 @@ echo '<br>どう？ あなたの知恵と勇気、試させてもらうわね。
 echo '- 怪盗shima 🌹<br>' >> "$TARGET"
 echo '</body></html>' >> "$TARGET"
 
-# --- .shima (ヒントをpsコマンド用に変更) ---
+# --- .shima ---
 TARGET="/home/ubuntu/.shima"
 echo "==================================================" > "$TARGET"
 echo "怪盗shimaからのメッセージ" >> "$TARGET"
@@ -71,15 +70,11 @@ echo "==================================================" >> "$TARGET"
 chown ubuntu:ubuntu "$TARGET"
 chmod 000 "$TARGET"
 
-# --- shima.sh (常駐プロセス化) ---
+# --- shima.sh (修正箇所: 判定ロジックを先頭へ移動) ---
 TARGET="/etc/shima.sh"
 echo '#!/bin/bash' > "$TARGET"
-echo 'while true; do' >> "$TARGET"
-echo '  # プロセスとして見つけてもらうために無限ループで待機' >> "$TARGET"
-echo '  sleep 60' >> "$TARGET"
-echo 'done' >> "$TARGET"
 echo '' >> "$TARGET"
-echo '# 以下は手動実行された時のみ表示される関数' >> "$TARGET"
+echo '# 手動実行(端末接続)された場合のみメッセージを表示して終了' >> "$TARGET"
 echo 'if [ -t 1 ]; then' >> "$TARGET"
 echo '  echo ""' >> "$TARGET"
 echo '  echo "=================================================="' >> "$TARGET"
@@ -94,6 +89,11 @@ echo '  echo "- 怪盗shima 🌹"' >> "$TARGET"
 echo '  echo "=================================================="' >> "$TARGET"
 echo '  exit 0' >> "$TARGET"
 echo 'fi' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# 自動実行(バックグラウンド)の場合は無限ループで常駐' >> "$TARGET"
+echo 'while true; do' >> "$TARGET"
+echo '  sleep 60' >> "$TARGET"
+echo 'done' >> "$TARGET"
 
 chmod +x "$TARGET"
 
@@ -177,7 +177,6 @@ echo "[4/6] Cron & Log 設定..."
 
 # 既存のCronジョブ重複登録防止
 crontab -l 2>/dev/null | grep -v "/opt/bin/watch.sh" | crontab -
-# shima.shはcronで回さず、@rebootで常駐させる設定に変更
 crontab -u ubuntu -l 2>/dev/null | grep -v "/etc/shima.sh" | crontab -u ubuntu -
 
 # watch.shの登録 (root)
@@ -193,7 +192,7 @@ echo "[5/6] 監視プロセス & ターゲットプロセス起動..."
 pkill -f "/opt/bin/watch.sh" || true
 nohup /opt/bin/watch.sh >/dev/null 2>&1 &
 
-# shima.sh 起動 (演習対象)
+# shima.sh 起動
 pkill -f "/etc/shima.sh" || true
 # ubuntuユーザ権限でバックグラウンド実行
 sudo -u ubuntu nohup /etc/shima.sh >/dev/null 2>&1 &
