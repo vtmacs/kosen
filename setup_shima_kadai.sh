@@ -3,21 +3,22 @@
 # エラーで停止させる
 set -e
 
-echo "========================"
-echo "  怪盗shimaからの挑戦状  "
-echo "========================"
+echo "========================================="
+echo "  怪盗shimaからの挑戦状 (psコマンド版)  "
+echo "========================================="
 
 # 1. パッケージインストール
 echo "[1/6] パッケージ確認..."
 apt-get update -qq
 apt-get install -y -qq inotify-tools
+# htopは不要なので削除、psは標準搭載なのでインストール不要
 
 # 2. ディレクトリ作成
 mkdir -p /opt/bin
 mkdir -p /usr/share/kadai
 mkdir -p /var/www/html
 
-# 3. ファイル作成 (echoで1行ずつ作成)
+# 3. ファイル作成
 
 echo "[3/6] ファイル生成中..."
 
@@ -42,7 +43,7 @@ echo '<br>どう？ あなたの知恵と勇気、試させてもらうわね。
 echo '- 怪盗shima 🌹<br>' >> "$TARGET"
 echo '</body></html>' >> "$TARGET"
 
-# --- .shima ---
+# --- .shima (ヒントをpsコマンド用に変更) ---
 TARGET="/home/ubuntu/.shima"
 echo "==================================================" > "$TARGET"
 echo "怪盗shimaからのメッセージ" >> "$TARGET"
@@ -51,10 +52,18 @@ echo "" >> "$TARGET"
 echo "おめでとう。隠しファイルを見つけたのね。" >> "$TARGET"
 echo "" >> "$TARGET"
 echo "***** 指令2 *****" >> "$TARGET"
-echo "次は、サーバ上でシステムが動かしている「プロセス」を確認してもらうわ。" >> "$TARGET"
-echo "ubuntu ユーザで htop コマンドを実行して、私のスクリプト(shima.sh)を探しなさい。" >> "$TARGET"
-echo "ヒントは「秒針が一番高いところに来た時、姿を現す」よ。" >> "$TARGET"
-echo "見つけたら手動で実行してみることね。" >> "$TARGET"
+echo "次は、サーバ上でこっそり動き続けている「不審なプロセス」を見つけてもらうわ。" >> "$TARGET"
+echo "プロセスとは、実行中のプログラムのことよ。" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "以下のコマンドを実行して、現在動いているすべてのプロセスを表示しなさい。" >> "$TARGET"
+echo "ps -ef" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "ものすごい量の文字が出てきたでしょう？" >> "$TARGET"
+echo "この中から、私の名前がついたスクリプト(shima.sh)を探し出すのよ。" >> "$TARGET"
+echo "見つけるのが大変なら、grepコマンドと組み合わせて絞り込んでみなさい。" >> "$TARGET"
+echo "例： ps -ef | grep shima" >> "$TARGET"
+echo "" >> "$TARGET"
+echo "見つけたら、そのスクリプトのパス（場所）を確認して、手動で実行してみることね。" >> "$TARGET"
 echo "" >> "$TARGET"
 echo "- 怪盗shima 🌹" >> "$TARGET"
 echo "==================================================" >> "$TARGET"
@@ -62,22 +71,29 @@ echo "==================================================" >> "$TARGET"
 chown ubuntu:ubuntu "$TARGET"
 chmod 000 "$TARGET"
 
-# --- shima.sh ---
+# --- shima.sh (常駐プロセス化) ---
 TARGET="/etc/shima.sh"
 echo '#!/bin/bash' > "$TARGET"
-echo 'echo ""' >> "$TARGET"
-echo 'echo "=================================================="' >> "$TARGET"
-echo 'echo "怪盗shimaからのメッセージ"' >> "$TARGET"
-echo 'echo "=================================================="' >> "$TARGET"
-echo 'echo ""' >> "$TARGET"
-echo 'echo "***** 指令3 *****"' >> "$TARGET"
-echo 'echo "次は、サーバ上の「ログ」を確認してもらうわ。"' >> "$TARGET"
-echo 'echo "/var/log/syslog を確認して、私からのメッセージを探しなさい。"' >> "$TARGET"
-echo 'echo "- 怪盗shima 🌹"' >> "$TARGET"
-echo 'echo "=================================================="' >> "$TARGET"
-# 表示時間は30秒
-echo 'sleep 30' >> "$TARGET"
-echo 'exit 0' >> "$TARGET"
+echo 'while true; do' >> "$TARGET"
+echo '  # プロセスとして見つけてもらうために無限ループで待機' >> "$TARGET"
+echo '  sleep 60' >> "$TARGET"
+echo 'done' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '# 以下は手動実行された時のみ表示される関数' >> "$TARGET"
+echo 'if [ -t 1 ]; then' >> "$TARGET"
+echo '  echo ""' >> "$TARGET"
+echo '  echo "=================================================="' >> "$TARGET"
+echo '  echo "怪盗shimaからのメッセージ"' >> "$TARGET"
+echo '  echo "=================================================="' >> "$TARGET"
+echo '  echo ""' >> "$TARGET"
+echo '  echo "***** 指令3 *****"' >> "$TARGET"
+echo '  echo "よくぞ私を見つけたわね。"' >> "$TARGET"
+echo '  echo "次は、サーバ上の「ログ」を確認してもらうわ。"' >> "$TARGET"
+echo '  echo "/var/log/syslog を確認して、私からのメッセージを探しなさい。"' >> "$TARGET"
+echo '  echo "- 怪盗shima 🌹"' >> "$TARGET"
+echo '  echo "=================================================="' >> "$TARGET"
+echo '  exit 0' >> "$TARGET"
+echo 'fi' >> "$TARGET"
 
 chmod +x "$TARGET"
 
@@ -97,7 +113,7 @@ echo "ご褒美に ./okinawa.sh も実行してみてね。" >> "$TARGET"
 echo "- 怪盗shima 🌹" >> "$TARGET"
 echo "==================================================" >> "$TARGET"
 
-# --- okinawa.sh (修正版) ---
+# --- okinawa.sh (完全版) ---
 TARGET="/opt/bin/okinawa.sh"
 echo '#!/bin/bash' > "$TARGET"
 echo '' >> "$TARGET"
@@ -161,16 +177,28 @@ echo "[4/6] Cron & Log 設定..."
 
 # 既存のCronジョブ重複登録防止
 crontab -l 2>/dev/null | grep -v "/opt/bin/watch.sh" | crontab -
+# shima.shはcronで回さず、@rebootで常駐させる設定に変更
 crontab -u ubuntu -l 2>/dev/null | grep -v "/etc/shima.sh" | crontab -u ubuntu -
 
-# 新規登録
+# watch.shの登録 (root)
 (crontab -l 2>/dev/null; echo "@reboot nohup /opt/bin/watch.sh >/dev/null 2>&1 &") | crontab -
-(crontab -u ubuntu -l 2>/dev/null; echo "*/1 * * * * /etc/shima.sh") | crontab -u ubuntu -
+
+# shima.shの登録 (ubuntuユーザ, @rebootで常駐)
+(crontab -u ubuntu -l 2>/dev/null; echo "@reboot nohup /etc/shima.sh >/dev/null 2>&1 &") | crontab -u ubuntu -
 
 # 5. プロセス起動
-echo "[5/6] 監視開始..."
+echo "[5/6] 監視プロセス & ターゲットプロセス起動..."
+
+# watch.sh 起動
 pkill -f "/opt/bin/watch.sh" || true
 nohup /opt/bin/watch.sh >/dev/null 2>&1 &
+
+# shima.sh 起動 (演習対象)
+pkill -f "/etc/shima.sh" || true
+# ubuntuユーザ権限でバックグラウンド実行
+sudo -u ubuntu nohup /etc/shima.sh >/dev/null 2>&1 &
+
+# ログ注入
 logger "Notice: 次の指令は /etc/message.txt に残したわ - 怪盗shima"
 
 echo "========================================="
