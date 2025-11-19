@@ -3,23 +3,22 @@
 # エラーで停止させる
 set -e
 
-echo "========================================="
-echo "  怪盗shimaからの挑戦状 (修正完了版)  "
-echo "========================================="
+echo "========================="
+echo "  怪盗shimaからの挑戦状   "
+echo "========================="
 
 # 1. パッケージインストール
-echo "[1/6] パッケージ確認..."
+echo "[1/3] パッケージ確認..."
 apt-get update -qq
 apt-get install -y -qq inotify-tools
 
-# 2. ディレクトリ作成
+# 2. ファイル作成 (echoで1行ずつ作成)
+echo "[2/3] ファイル生成中..."
+
+#  ディレクトリ作成
 mkdir -p /opt/bin
 mkdir -p /usr/share/kadai
 mkdir -p /var/www/html
-
-# 3. ファイル作成 (echoで1行ずつ作成)
-
-echo "[3/6] ファイル生成中..."
 
 # --- prologue.txt ---
 TARGET="/usr/share/kadai/prologue.txt"
@@ -70,7 +69,7 @@ echo "==================================================" >> "$TARGET"
 chown ubuntu:ubuntu "$TARGET"
 chmod 000 "$TARGET"
 
-# --- shima.sh (修正箇所: 判定ロジックを先頭へ移動) ---
+# --- shima.sh ---
 TARGET="/etc/shima.sh"
 echo '#!/bin/bash' > "$TARGET"
 echo '' >> "$TARGET"
@@ -113,7 +112,7 @@ echo "ご褒美に ./okinawa.sh も実行してみてね。" >> "$TARGET"
 echo "- 怪盗shima 🌹" >> "$TARGET"
 echo "==================================================" >> "$TARGET"
 
-# --- okinawa.sh (完全版) ---
+# --- okinawa.sh ---
 TARGET="/opt/bin/okinawa.sh"
 echo '#!/bin/bash' > "$TARGET"
 echo '' >> "$TARGET"
@@ -172,21 +171,8 @@ chmod +x "$TARGET"
 echo "<html lang='ja'><body><h1>Welcome! Original Site</h1></body></html>" > /var/www/html/mysite.html
 chown ubuntu:ubuntu /var/www/html/mysite.html
 
-# 4. Cron設定とログ注入
-echo "[4/6] Cron & Log 設定..."
-
-# 既存のCronジョブ重複登録防止
-crontab -l 2>/dev/null | grep -v "/opt/bin/watch.sh" | crontab -
-crontab -u ubuntu -l 2>/dev/null | grep -v "/etc/shima.sh" | crontab -u ubuntu -
-
-# watch.shの登録 (root)
-(crontab -l 2>/dev/null; echo "@reboot nohup /opt/bin/watch.sh >/dev/null 2>&1 &") | crontab -
-
-# shima.shの登録 (ubuntuユーザ, @rebootで常駐)
-(crontab -u ubuntu -l 2>/dev/null; echo "@reboot nohup /etc/shima.sh >/dev/null 2>&1 &") | crontab -u ubuntu -
-
-# 5. プロセス起動
-echo "[5/6] 監視プロセス & ターゲットプロセス起動..."
+# 3. プロセス起動
+echo "[3/3] 監視プロセス & ターゲットプロセス起動..."
 
 # watch.sh 起動
 pkill -f "/opt/bin/watch.sh" || true
