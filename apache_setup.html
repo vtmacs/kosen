@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>クラウド基礎② Linuxコマンド手順書</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .command-section {
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 5px;
+        }
+        p.description {
+            font-size: 0.9em;
+            color: #555;
+            margin: 0 0 10px 0;
+        }
+        pre {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 1.1em;
+        }
+        button, input {
+            margin-top: 5px;
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>クラウド基礎② Linuxコマンド手順書</h1>
+    <p>各コマンドの下にある入力欄を使って動的にコマンドを変更できます。「コピー」ボタンでコマンドをクリップボードにコピ ーします。</p>
+    
+    <!-- IPアドレスを任意に変更 -->
+    <div class="command-section">
+        <h2>1. ターミナルから SSH でサーバにログインします。</h2>
+        <h3>1.1 ssh での接続</h3>
+        <p class="description">自分のIPアドレスに対してログインします。</p>
+        <label for="IP">IPアドレス：</label>
+        <input type="text" id="IP" placeholder="例: 127.0.0.1" oninput="updateIP(); updateIP2();">
+        <pre id="cmd1">ssh ubuntu@127.0.0.1</pre>
+        <button onclick="copyToClipboard('cmd1')">このコマンドをコピー</button>
+        <h3>1.2 パスワードの入力</h3>
+        <p class="description">続いて、パスワードを入力します。</p>
+        <pre id="cmd1p">handson-sakura</pre>
+        <button onclick="copyToClipboard('cmd1p')">このパスワードをコピー</button>
+    </div>
+    
+
+    <!-- パーミッションの確認 -->
+    <div class="command-section">
+        <h2>2. パーミッションの変更</h2>
+        <h3>2.1 パーミッションの確認</h3>
+        <p class="description">現在のパーミッションの確認をします。</p>
+        <pre id="cmd2">ls -l</pre>
+        <button onclick="copyToClipboard('cmd2')">このコマンドをコピー</button>
+        <h3>2.2 パーミッションの変更</h3>
+        <p class="description">パーミッションを変更します。</p>
+        <pre id="cmd2a">chmod -r newname.txt</pre>
+        <button onclick="copyToClipboard('cmd2a')">このコマンドをコピー</button>
+        <h3>2.3 変更されたことを確認</h3>
+        <p class="description">変更されたことを確認します。</p>
+        <pre id="cmd2b">ls -l</pre>
+        <button onclick="copyToClipboard('cmd2b')">このコマンドをコピー</button>
+        <h3>2.4 読み込めるか確認</h3>
+        <p class="description">読み込めるか確認します。</p>
+        <pre id="cmd2c">cat newname.txt</pre>
+        <button onclick="copyToClipboard('cmd2c')">このコマンドをコピー</button>
+        <h3>2.5 もとに戻す</h3>
+        <p class="description">パーミッションを元に戻します。</p>
+        <pre id="cmd2d">chmod +r newname.txt</pre>
+        <button onclick="copyToClipboard('cmd2d')">このコマンドをコピー</button>
+    </div>
+
+    <!-- Apacheのインストール -->
+    <div class="command-section">
+        <h2>3. Webサーバ（Apache2）のインストール</h2>
+        <h3>3.1 パッケージ一覧の更新</h3>
+        <p class="description">パッケージ一覧の更新をします。</p>
+        <pre id="cmd3">sudo apt update</pre>
+        <button onclick="copyToClipboard('cmd3')">このコマンドをコピー</button>
+        <h3>3.2 パスワードの入力</h3>
+        <p class="description">続いて、パスワードを入力します。</p>
+        <pre id="cmd3a">handson-sakura</pre>
+        <button onclick="copyToClipboard('cmd3a')">このパスワードをコピー</button>
+        <h3>3.3 Webサーバのインストール</h3>
+        <p class="description">Webサーバ（Apache2）をインストールします。</p>
+        <pre id="cmd3b">sudo apt install -y apache2</pre>
+        <button onclick="copyToClipboard('cmd3b')">このコマンドをコピー</button>
+        <h3>3.4 ubuntuユーザを www-dataグループに追加</h3>
+        <p class="description">ubuntuユーザを www-dataグループに追加します。</p>
+        <pre id="cmd3c">sudo usermod -aG www-data ubuntu</pre>
+        <button onclick="copyToClipboard('cmd3c')">このコマンドをコピー</button>
+        <h3>3.5 ドキュメントルートの所有権を変更する</h3>
+        <p class="description">ドキュメントルートの所有権をubuntuユーザ及び www-dataグループに設定します。</p>
+        <pre id="cmd3d">sudo chown -R ubuntu:www-data /var/www/html</pre>
+        <button onclick="copyToClipboard('cmd3d')">このコマンドをコピー</button>
+        <h3>3.6 所有権の確認</h3>
+        <p class="description">所有権が変更されていることを確認します。</p>
+        <pre id="cmd3e">ls -l /var/www/html</pre>
+        <button onclick="copyToClipboard('cmd3e')">このコマンドをコピー</button>
+    </div>
+
+    <!-- オリジナルコンテンツの作成 -->
+    <div class="command-section">
+        <h2>4. オリジナルコンテンツの作成</h2>
+        <p class="description">ドキュメントルートにオリジナルコンテンツを作成します。<br>
+        好きなメッセージを入力してください。<br>
+        改行したいときは、&lt;br&gt;を入力しておきます（そうでないと Webページで反映されません）。</p>
+        <label for="message">メッセージ：</label><br>
+        <textarea type="text" id="message" placeholder="Hello World!<br>&#10;Enjoy Black Friday!" oninput="updateMessage()"></textarea>
+        <pre id="cmd4">cat > /var/www/html/mysite.html
+Hello World!&lt;br&gt;
+Enjoy Black Friday!
+</pre>
+        <button onclick="copyToClipboard('cmd4')">このコマンドをコピー</button>
+        <p class="description">ターミナルにコピーした後、Ctrl+Dでファイルが作成されます。</p>
+    </div>
+
+    <!-- ブラウザからアクセス -->
+    <div class="command-section">
+        <h2>5. 作成したコンテンツにアクセスします。</h2>
+        <pre id="cmd5">http://127.0.0.1/mysite.html</pre>
+        <button onclick="copyToClipboard('cmd5')">このURLをコピー</button>
+        <h4>このコピーしたURLはブラウザのアドレス欄に入れましょう。</h4>
+    </div>
+
+    <!-- 怪盗shimaからの挑戦状 -->
+    <div class="command-section">
+        <h2>EX 怪盗shimaからの挑戦状</h2>
+        <h3>EX.1 課題ファイルのダウンロード</h3>
+        <pre id="cmdEX1">curl -O https://raw.githubusercontent.com/vtmacs/kosen/main/setup_kadai.sh</pre>
+        <button onclick="copyToClipboard('cmdEX1')">このコマンドをコピー</button>
+        <h3>EX.2 課題ファイルの実行</h3>
+        <pre id="cmdEX2">bash ./setup_kadai.sh</pre>
+        <button onclick="copyToClipboard('cmdEX2')">このコマンドをコピー</button>
+        <h3>EX.3 プロローグの確認</h3>
+        <pre id="cmdEX3">cat /usr/share/kadai/prologue.txt</pre>
+        <button onclick="copyToClipboard('cmdEX3')">このコマンドをコピー</button>
+    </div>
+
+
+   <script>
+        // IPアドレスに合わせてコマンドを動的に更新する
+        function updateIP() {
+            const IP = document.getElementById("IP").value || "127.0.0.1";
+            const command = `ssh ubuntu@${IP}`;
+            document.getElementById("cmd1").innerText = command;
+        }
+
+        // IPアドレスに合わせてコマンドを動的に更新する
+        function updateIP2() {
+            const IP = document.getElementById("IP").value || "127.0.0.1";
+            const command = `http://${IP}/mysite.html`;
+            document.getElementById("cmd5").innerText = command;
+        }
+
+        // メッセージに合わせてコマンドを動的に更新する
+        function updateMessage() {
+            const message = document.getElementById("message").value || "Hello World!<br>&#10;Enjoy Black Friday!";
+            const command = `cat > /var/www/html/mysite.html
+${message}
+`;
+            document.getElementById("cmd4").innerText = command;
+        }
+
+        // クリップボードにコピーする関数
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+
+            // Clipboard APIが利用可能な場合
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("コマンドをコピーしました!");
+                }).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        // Clipboard APIが使えない場合のフォールバック
+        function fallbackCopy(text) {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand("copy");
+                alert("コマンドをコピーしました!");
+            } catch (err) {
+                alert("コピーに失敗しました: " + err);
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>
