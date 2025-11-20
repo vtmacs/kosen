@@ -50,6 +50,45 @@
             padding: 5px;
             width: 200px;
         }
+        /* ポップアップメッセージを隠す */
+        .hidden {
+          display: none;
+        }
+
+        /* ポップアップメッセージを画面右下に配置 */
+        #hidden-text {
+          height: 72px;
+          padding: 8px 16px;
+          border-radius: 8px;
+          background: #ddd;
+          font-weight: bold;
+          text-align: center;
+          line-height: 72px;
+          position: fixed;
+          right: 5%;
+          bottom: 10%;
+        }
+
+        /* ポップアップアニメーションを1秒かけて実行 */
+        .popup-message {
+          animation: popup 1s forwards;
+        }
+
+        @keyframes popup {
+          0% {
+            transform: translateY(15%);
+            opacity: 0;
+          }
+          10%, 90% {
+            transform: none;
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(15%);
+            opacity: 0;
+            pointer-events: none;
+          }
+        }
     </style>
 </head>
 <body>
@@ -164,6 +203,7 @@ Enjoy Black Friday!
         <button onclick="copyToClipboard('cmdEX3')">このコマンドをコピー</button>
     </div>
 
+   <p id="hidden-text" class="hidden">コピーされました！</p>
 
    <script>
         // IPアドレスに合わせてコマンドを動的に更新する
@@ -192,15 +232,22 @@ ${message}
         // クリップボードにコピーする関数
         function copyToClipboard(elementId) {
             const text = document.getElementById(elementId).innerText;
+            const hiddenText = document.getElementById('hidden-text');
 
             // Clipboard APIが利用可能な場合
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert("コマンドをコピーしました!");
+                    hiddenText.classList.remove('hidden');
+                    hiddenText.classList.add('popup-message');
                 }).catch(() => fallbackCopy(text));
             } else {
                 fallbackCopy(text);
             }
+            // コピーされたアニメーション後に文章を隠す
+            hiddenText.addEventListener('animationend', () => {
+                 hiddenText.classList.remove('popup-message');
+                 hiddenText.classList.add('hidden');
+            });
         }
 
         // Clipboard APIが使えない場合のフォールバック
