@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1/15 沖縄高専 Linuxコマンド手順書</title>
+    <style>
+        :root {
+            --primary-color: #007BFF;
+            --primary-hover: #0056b3;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-muted: #666;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #f0f0f0;
+            --terminal-accent: #4caf50;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* レイアウト用コンテナ */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .intro-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* 各セクションのカードデザイン */
+        .command-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.2s ease;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        h3::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        p.description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0 0 12px 0;
+        }
+
+        /* 入力フォームのデザイン */
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        /* ターミナル風コードブロック */
+        .terminal-window {
+            background: var(--terminal-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .terminal-header {
+            background: #333;
+            padding: 5px 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        pre {
+            margin: 0;
+            padding: 15px;
+            color: var(--terminal-text);
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ボタンのデザイン */
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* ポップアップ通知 */
+        #hidden-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px);
+        }
+
+        #hidden-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>1/15 沖縄高専 Linuxコマンド手順書</h1>
+    <p class="intro-text">各コマンドの下にある入力欄を使って動的にコマンドを変更できます。<br>「コピー」ボタンでコマンドをクリップボードにコピーし、ターミナルへ貼り付けてください。</p>
+    
+    <!-- 1. htmlファイルの作成 -->
+    <div class="command-section">
+        <h2>1. htmlファイルの作成</h2>
+        <p class="description">氏名を表示するhtmlファイルを作成します。下の入力欄を変更するとコマンドが更新されます。</p>
+        
+        <label for="username">氏名:</label>
+        <input type="text" id="username" placeholder="例: 桜葉愛" oninput="updateCommand1()">
+        
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd1">echo "&lt;html&gt;&lt;body&gt;&lt;meta charset=UTF-8&gt;&lt;h1&gt;桜葉愛&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;" | sudo tee /var/www/html/name.html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1')">📋 コマンドをコピー</button>
+    </div>
+    
+
+    <!-- 2. 設定ファイル情報の変更 -->
+    <div class="command-section">
+        <h2>2. 設定ファイル情報の変更</h2>
+        <p class="description">Apache設定ファイルのAllowOverrideをAuthConfigに変更します。</p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd2">sudo sed -i '/&lt;Directory \/var\/www\/&gt;/,/&lt;\/Directory&gt;/ s/AllowOverride None/AllowOverride AuthConfig/' /etc/apache2/apache2.conf</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2')">📋 コマンドをコピー</button>
+    </div>
+
+    <!-- 3. Apacheの再起動 -->
+    <div class="command-section">
+        <h2>3. Apacheの再起動</h2>
+        <p class="description">Apacheサーバーを再起動して変更を反映させます。</p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd3">sudo systemctl restart apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3')">📋 コマンドをコピー</button>
+    </div>
+
+    <!-- 4. 認証ユーザー名を決定 -->
+    <div class="command-section">
+        <h2>4. 認証ユーザー名を決定</h2>
+        <p class="description">認証ユーザー名(admin)を指定してパスワードを設定します。</p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd4">sudo htpasswd -c /etc/apache2/.htpasswd admin</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd4')">📋 コマンドをコピー</button>
+    </div>
+
+    <!-- 5. .htaccessファイルの設置 -->
+    <div class="command-section">
+        <h2>5. .htaccessファイルの設置</h2>
+        <p class="description">認証を有効にするための .htaccess ファイルを作成します。</p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+<pre id="cmd5">sudo tee /var/www/html/.htaccess << 'EOF'
+AuthType Basic
+AuthName "Authentication"
+AuthUserFile /etc/apache2/.htpasswd
+Require valid-user
+EOF
+</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd5')">📋 コマンドをコピー</button>
+        <p class="description" style="margin-top: 10px; font-size: 0.85em;">⚠️ ターミナルに貼り付けた後、入力待ちになる場合は <strong>Enter</strong> キーを押してください。</p>
+    </div>
+
+</div>
+
+<div id="hidden-text">✅ コピーしました！</div>
+
+<script>
+    // ユーザー名に合わせてコマンドを動的に更新する
+    function updateCommand1() {
+        const username = document.getElementById("username").value || "桜葉愛";
+        // 安全に文字列を埋め込む
+        const command = `echo "<html><body><meta charset=UTF-8><h1>${username}</h1></body></html>" | sudo tee /var/www/html/name.html`;
+        document.getElementById("cmd1").innerText = command;
+    }
+
+    // クリップボードにコピーする関数
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).innerText;
+
+        // Clipboard APIが利用可能な場合
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showPopup();
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    // ポップアップを表示する関数
+    function showPopup() {
+        const popup = document.getElementById('hidden-text');
+        popup.classList.add('show');
+        
+        // 既存のタイマーがあればクリア（連打対策）
+        if(window.popupTimer) clearTimeout(window.popupTimer);
+
+        window.popupTimer = setTimeout(() => {
+            popup.classList.remove('show');
+        }, 2000);
+    }
+
+    // Clipboard APIが使えない場合のフォールバック
+    function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            showPopup();
+        } catch (err) {
+            alert("コピーに失敗しました: " + err);
+        }
+        document.body.removeChild(textarea);
+    }
+</script>
+</body>
+</html>
