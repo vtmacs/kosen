@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クラウドセキュリティ（ファイアウォールの設定）</title>
+    <style>
+        :root {
+            --primary-color: #007BFF;
+            --primary-hover: #0056b3;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-muted: #666;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #f0f0f0;
+            --terminal-accent: #4caf50;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* レイアウト用コンテナ */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .intro-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* 各セクションのカードデザイン */
+        .command-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.2s ease;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        h3::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        h4 {
+            color: #e67e22;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        p.description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0 0 12px 0;
+        }
+
+        /* 入力フォームのデザイン */
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        /* ターミナル風コードブロック */
+        .terminal-window {
+            background: var(--terminal-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .terminal-header {
+            background: #333;
+            padding: 5px 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        pre {
+            margin: 0;
+            padding: 15px;
+            color: var(--terminal-text);
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ボタンのデザイン */
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* ポップアップ通知 */
+        #hidden-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px);
+        }
+
+        #hidden-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 特別なセクション（レベルアップ演習） */
+        .level-up-section {
+            background: linear-gradient(to right bottom, #2c3e50, #4ca1af);
+            color: white;
+        }
+        .level-up-section h2, .level-up-section h3, .level-up-section p, .level-up-section label {
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+        }
+        .level-up-section h3::before {
+            background-color: #fff;
+        }
+        .level-up-section button {
+            background-color: #fff;
+            color: #2c3e50;
+        }
+        .level-up-section button:hover {
+            background-color: #f0f0f0;
+        }
+        .level-up-section pre {
+            background: rgba(0,0,0,0.3);
+        }
+        .level-up-section .terminal-header {
+            background: rgba(0,0,0,0.5);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #eee;
+            color: #555;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>クラウドセキュリティ（ファイアウォールの設定）</h1>
+    <p class="intro-text">テキストファイルの指示に従い、各コマンドを実行していきましょう。<br>「コピー」ボタンでコマンドをクリップボードにコピーできます。</p>
+    
+    <!-- IPアドレス設定 -->
+    <div class="command-section">
+        <h2>0. 事前準備：SSHログイン <span class="badge">P.38~</span></h2>
+        
+        <h3>SSH接続コマンドの作成</h3>
+        <p class="description">あなたの環境のIPアドレスを入力してください。</p>
+        
+        <label for="IP">IPアドレス：</label>
+        <input type="text" id="IP" placeholder="例: 127.0.0.1" oninput="updateIP()">
+        
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd_ssh">ssh ubuntu@127.0.0.1</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_ssh')">📋 コマンドをコピー</button>
+
+        <h3>パスワード</h3>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd_pass">handson-sakura</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_pass')">📋 コピー</button>
+    </div>
+    
+
+    <!-- サーバ設定 -->
+    <div class="command-section">
+        <h2>1. サーバ設定・Apacheインストール <span class="badge">P.48~</span></h2>
+
+        <h3>パッケージ情報の更新</h3>
+        <div class="terminal-window">
+            <pre id="cmd1_1">sudo apt update</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1_1')">📋 コピー</button>
+
+        <h3>Apacheと便利ツールのインストール</h3>
+        <div class="terminal-window">
+            <pre id="cmd1_2">sudo apt install apache2 apache2-utils -y</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1_2')">📋 コピー</button>
+
+        <h3>トップページの作成</h3>
+        <p class="description">「好きな食べ物はラーメンです」というページを作成します。必要であれば文章を変更できます。</p>
+        <label for="food-msg">表示メッセージ：</label>
+        <input type="text" id="food-msg" value="好きな食べものはラーメンです" oninput="updateFoodMessage()">
+        
+        <div class="terminal-window">
+            <pre id="cmd1_3">echo '&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;/head&gt;&lt;body&gt;好きな食べものはラーメンです&lt;/body&gt;&lt;/html&gt;' | sudo tee /var/www/html/index.html &gt; /dev/null</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1_3')">📋 コピー</button>
+    </div>
+
+    <!-- FW設定 -->
+    <div class="command-section">
+        <h2>2. ファイアウォール(FW)の設定 <span class="badge">P.48~</span></h2>
+        <p class="description">必要な通信ポートのみ許可します。</p>
+
+        <h3>HTTPとSSHの許可、基本ポリシーの設定</h3>
+        <p class="description">以下のコマンドを順番に実行してください。</p>
+        
+        <div class="terminal-window">
+            <pre id="cmd2_1">sudo ufw allow 22/tcp</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_1')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd2_2">sudo ufw allow 80/tcp</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_2')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd2_3">sudo ufw default deny incoming</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_3')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd2_4">sudo ufw default allow outgoing</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_4')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd2_5">sudo ufw enable</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_5')">📋 コピー</button>
+        <p class="description" style="font-size:0.8em; margin-top:5px;">※ <code>Command may disrupt existing ssh connections...</code> と聞かれたら <code>y</code> を入力してEnterを押してください。</p>
+
+        <h3>設定確認</h3>
+        <div class="terminal-window">
+            <pre id="cmd2_6">sudo ufw status</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_6')">📋 コピー</button>
+
+        <h3>Apache再起動</h3>
+        <div class="terminal-window">
+            <pre id="cmd2_7">sudo systemctl restart apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2_7')">📋 コピー</button>
+    </div>
+
+    <!-- セキュリティ設定 -->
+    <div class="command-section">
+        <h2>3. セキュリティ設定（HTTPS化） <span class="badge">P.60~</span></h2>
+        
+        <h3>FW設定の修正（HTTPS許可）</h3>
+        <p class="description">HTTP(80)を削除し、HTTPS(443)を許可します。</p>
+        <div class="terminal-window">
+            <pre id="cmd3_1">sudo ufw allow 443/tcp</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_1')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd3_2">sudo ufw delete allow 80/tcp</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_2')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd3_3">sudo ufw status verbose</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_3')">📋 コピー</button>
+
+        <h3>SSL機能の有効化</h3>
+        <div class="terminal-window">
+            <pre id="cmd3_4">sudo a2enmod ssl</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_4')">📋 コピー</button>
+
+        <h3>自己証明書の作成</h3>
+        <p class="description">長いコマンドですが1行です。すべてコピーしてください。</p>
+        <div class="terminal-window">
+            <pre id="cmd3_5">sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/apache-selfsigned.key \
+  -out /etc/ssl/certs/apache-selfsigned.crt \
+  -subj "/C=JP/ST=Tokyo/L=Chiyoda/O=Example Corp/CN=example.com"</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_5')">📋 コピー</button>
+
+        <h3>HTTPSサイトの有効化</h3>
+        <div class="terminal-window">
+            <pre id="cmd3_6">sudo a2ensite default-ssl</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_6')">📋 コピー</button>
+
+        <h3>証明書パスの設定変更</h3>
+        <p class="description">設定ファイルを書き換えます。</p>
+        <div class="terminal-window">
+            <pre id="cmd3_7">sudo sed -i 's|SSLCertificateFile.*|SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt|' /etc/apache2/sites-available/default-ssl.conf</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_7')">📋 コピー</button>
+
+        <div class="terminal-window">
+            <pre id="cmd3_8">sudo sed -i 's|SSLCertificateKeyFile.*|SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key|' /etc/apache2/sites-available/default-ssl.conf</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_8')">📋 コピー</button>
+
+        <h3>Apache再起動</h3>
+        <div class="terminal-window">
+            <pre id="cmd3_9">sudo systemctl restart apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3_9')">📋 コピー</button>
+    </div>
+
+    <!-- レベルアップ演習 -->
+    <div class="command-section level-up-section">
+        <h2>4. レベルアップ演習：Basic認証 <span class="badge">P.74~</span></h2>
+        
+        <h3>ユーザー作成</h3>
+        <p class="description">ユーザー「basicuser」を作成します。</p>
+        <div class="terminal-window">
+            <pre id="cmd4_1">sudo htpasswd -c /etc/apache2/.htpasswd basicuser</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd4_1')">📋 コピー</button>
+
+        <h3>パスワード入力</h3>
+        <p class="description">パスワードを求められたら以下を入力（画面には表示されません）。<br>確認のため2回入力が必要です。</p>
+        <div class="terminal-window">
+            <pre id="cmd4_pass">!Sakura2025</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd4_pass')">📋 パスワードをコピー</button>
+
+        <h3>設定ファイルへの追記</h3>
+        <p class="description">以下のブロックをすべてまとめてコピーし、貼り付けてください。</p>
+        <div class="terminal-window">
+            <pre id="cmd4_2">sudo bash -c 'cat <<EOF >> /etc/apache2/sites-available/000-default.conf
+
+&lt;Directory "/var/www/html"&gt;
+    AuthType Basic
+    AuthName "Restricted Content"
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+&lt;/Directory&gt;
+EOF'</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd4_2')">📋 まとめてコピー</button>
+
+        <h3>Apache再起動</h3>
+        <div class="terminal-window">
+            <pre id="cmd4_3">sudo systemctl restart apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd4_3')">📋 コピー</button>
+    </div>
+
+</div>
+
+<div id="hidden-text">✅ コピーしました！</div>
+
+<script>
+    // IPアドレスに合わせてコマンドを動的に更新する
+    function updateIP() {
+        const inputVal = document.getElementById("IP").value;
+        const displayIP = inputVal ? inputVal : "127.0.0.1"; 
+        
+        const command = `ssh ubuntu@${displayIP}`;
+        document.getElementById("cmd_ssh").innerText = command;
+    }
+
+    // 好きな食べ物メッセージの更新
+    function updateFoodMessage() {
+        let msg = document.getElementById("food-msg").value;
+        if (!msg) msg = "好きな食べものはラーメンです";
+        
+        // HTMLタグのエスケープ処理（簡易）
+        const escapedMsg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        const command = `echo '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${escapedMsg}</body></html>' | sudo tee /var/www/html/index.html > /dev/null`;
+        document.getElementById("cmd1_3").innerHTML = command; // innerHTMLでエスケープ反映
+    }
+
+    // クリップボードにコピーする関数
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showPopup();
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function showPopup() {
+        const popup = document.getElementById('hidden-text');
+        popup.classList.add('show');
+        
+        if(window.popupTimer) clearTimeout(window.popupTimer);
+
+        window.popupTimer = setTimeout(() => {
+            popup.classList.remove('show');
+        }, 2000);
+    }
+
+    // フォールバックコピー
+    function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            showPopup();
+        } catch (err) {
+            alert("コピーに失敗しました");
+        }
+        document.body.removeChild(textarea);
+    }
+</script>
+</body>
+</html>
