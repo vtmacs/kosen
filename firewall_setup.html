@@ -479,11 +479,11 @@ EOF'</pre>
         let msg = document.getElementById("food-msg").value;
         if (!msg) msg = "好きな食べものはラーメンです";
         
-        // HTMLタグのエスケープ処理（簡易）
-        const escapedMsg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        const command = `echo '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${escapedMsg}</body></html>' | sudo tee /var/www/html/index.html > /dev/null`;
-        document.getElementById("cmd1_3").innerHTML = command; // innerHTMLでエスケープ反映
+        // innerTextを使用するため、手動エスケープは不要になりました
+        const command = `echo '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${msg}</body></html>' | sudo tee /var/www/html/index.html > /dev/null`;
+        
+        // innerHTMLからinnerTextに変更することで、HTMLタグがそのまま表示されるようになります
+        document.getElementById("cmd1_3").innerText = command;
     }
 
     // クリップボードにコピーする関数
