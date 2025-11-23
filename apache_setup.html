@@ -371,18 +371,18 @@
         <label for="message">メッセージ：</label>
         <textarea id="message" placeholder="Hello World!<br>&#10;Enjoy Black Friday!" oninput="updateMessage()"></textarea>
         
-        <p class="description">以下のコマンドでファイルが作成されます。</p>
+        <p class="description">以下のコマンドでファイルが作成されます（コピーして貼り付けるだけでOKです）。</p>
         <div class="terminal-window">
             <div class="terminal-header">
                 <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
             </div>
-<pre id="cmd4">cat > /var/www/html/mysite.html
+<pre id="cmd4">cat &lt;&lt; 'EOF' &gt; /var/www/html/mysite.html
 Hello World!&lt;br&gt;
 Enjoy Black Friday!
+EOF
 </pre>
         </div>
         <button onclick="copyToClipboard('cmd4')">📋 コマンドをコピー</button>
-        <p class="description" style="margin-top: 10px; font-size: 0.85em;">⚠️ ターミナルに貼り付けた後、最後に <strong>Ctrl+D</strong> を押して入力を完了させてください。</p>
     </div>
 
     <!-- ブラウザからアクセス -->
@@ -454,9 +454,9 @@ Enjoy Black Friday!
         // HTMLエスケープ処理（簡易的）
         // ユーザーが <br> と書いたものをそのまま表示用に使うため、ここではあえて最小限に
         
-        const command = `cat > /var/www/html/mysite.html
+        const command = `cat << 'EOF' > /var/www/html/mysite.html
 ${message}
-`;
+EOF`;
         document.getElementById("cmd4").innerText = command;
     }
 
