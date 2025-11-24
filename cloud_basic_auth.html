@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic認証設定</title>
+    <title>クラウド基礎② Linuxコマンド手順書</title>
     <style>
         :root {
             --primary-color: #007BFF;
@@ -84,6 +84,15 @@
             margin-right: 8px;
         }
 
+        h4 {
+            color: #e67e22;
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
         p.description {
             font-size: 0.95rem;
             color: var(--text-muted);
@@ -98,21 +107,27 @@
             font-size: 0.9rem;
         }
 
-        input[type="text"] {
+        input[type="text"], textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 1rem;
-            box-sizing: border-box;
+            box-sizing: border-box; /* パディングを含めた幅にする */
             margin-bottom: 10px;
             transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus {
+        input[type="text"]:focus, textarea:focus {
             border-color: var(--primary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+            font-family: monospace;
         }
 
         /* ターミナル風コードブロック */
@@ -147,8 +162,14 @@
             overflow-x: auto;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 1rem;
-            white-space: pre-wrap;
+            white-space: pre-wrap; /* 長い行を折り返す */
             word-break: break-all;
+        }
+
+        /* ユーザー入力部分を強調するためのクラス（任意） */
+        .highlight-var {
+            color: #4caf50;
+            font-weight: bold;
         }
 
         /* ボタンのデザイン */
@@ -200,93 +221,203 @@
             transform: translateY(0);
         }
 
+        /* 特別なセクション（挑戦状） */
+        .challenge-section {
+            background: linear-gradient(to right bottom, #2c3e50, #4ca1af);
+            color: white;
+        }
+        .challenge-section h2, .challenge-section h3, .challenge-section p {
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+        }
+        .challenge-section h3::before {
+            background-color: #fff;
+        }
+        .challenge-section button {
+            background-color: #fff;
+            color: #2c3e50;
+        }
+        .challenge-section button:hover {
+            background-color: #f0f0f0;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Basic認証設定</h1>
+    <h1>クラウド基礎② Linuxコマンド手順書</h1>
     <p class="intro-text">各コマンドの下にある入力欄を使って動的にコマンドを変更できます。<br>「コピー」ボタンでコマンドをクリップボードにコピーし、ターミナルへ貼り付けてください。</p>
     
-    <!-- 1. htmlファイルの作成 -->
+    <!-- IPアドレス設定 -->
     <div class="command-section">
-        <h2>1. htmlファイルの作成</h2>
-        <p class="description">氏名を表示するhtmlファイルを作成します。下の入力欄を変更するとコマンドが更新されます。</p>
+        <h2>1. ターミナルから SSH でサーバにログイン</h2>
         
-        <label for="username">氏名:</label>
-        <input type="text" id="username" placeholder="例: 桜葉愛" oninput="updateCommand1()">
+        <h3>1.1 ssh での接続</h3>
+        <p class="description">自分の環境のIPアドレスを入力してください。下のコマンドが自動的に書き換わります。</p>
+        
+        <label for="IP">IPアドレス：</label>
+        <input type="text" id="IP" placeholder="例: 127.0.0.1" oninput="updateIP(); updateIP2();">
         
         <div class="terminal-window">
             <div class="terminal-header">
                 <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
             </div>
-            <pre id="cmd1">echo "&lt;html&gt;&lt;body&gt;&lt;meta charset=UTF-8&gt;&lt;h1&gt;桜葉愛&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;" | sudo tee /var/www/html/name.html</pre>
+            <pre id="cmd1">ssh ubuntu@127.0.0.1</pre>
         </div>
         <button onclick="copyToClipboard('cmd1')">📋 コマンドをコピー</button>
+
+        <h3>1.2 パスワードの入力</h3>
+        <p class="description">接続時にパスワードを求められたら入力します。</p>
+        <div class="terminal-window">
+            <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+            <pre id="cmd1p">handson-sakura</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1p')">📋 パスワードをコピー</button>
     </div>
     
 
-    <!-- 2. 設定ファイル情報の変更 -->
+    <!-- パーミッションの確認 -->
     <div class="command-section">
-        <h2>2. 設定ファイル情報の変更</h2>
-        <p class="description">Apache設定ファイルのAllowOverrideをAuthConfigに変更します。</p>
+        <h2>2. パーミッションの変更</h2>
+        
+        <h3>2.1 パーミッションの確認</h3>
+        <p class="description">現在のファイル権限を確認します。</p>
         <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-            </div>
-            <pre id="cmd2">sudo sed -i '/&lt;Directory \/var\/www\/&gt;/,/&lt;\/Directory&gt;/ s/AllowOverride None/AllowOverride AuthConfig/' /etc/apache2/apache2.conf</pre>
+            <pre id="cmd2">ls -l</pre>
         </div>
-        <button onclick="copyToClipboard('cmd2')">📋 コマンドをコピー</button>
+        <button onclick="copyToClipboard('cmd2')">📋 コピー</button>
+
+        <h3>2.2 読み取り権限を削除</h3>
+        <p class="description"><code>newname.txt</code> の読み取り権限を削除してみます。</p>
+        <div class="terminal-window">
+            <pre id="cmd2a">chmod -r newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2a')">📋 コピー</button>
+
+        <h3>2.3 変更されたことを確認</h3>
+        <div class="terminal-window">
+            <pre id="cmd2b">ls -l</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2b')">📋 コピー</button>
+
+        <h3>2.4 読み込めるかテスト</h3>
+        <p class="description">権限がないためエラーが出ることを確認します。</p>
+        <div class="terminal-window">
+            <pre id="cmd2c">cat newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2c')">📋 コピー</button>
+
+        <h3>2.5 もとに戻す</h3>
+        <p class="description">読み取り権限を元に戻します。</p>
+        <div class="terminal-window">
+            <pre id="cmd2d">chmod +r newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2d')">📋 コピー</button>
     </div>
 
-    <!-- 3. Apacheの再起動 -->
+    <!-- Apacheのインストール -->
     <div class="command-section">
-        <h2>3. Apacheの再起動</h2>
-        <p class="description">Apacheサーバーを再起動して変更を反映させます。</p>
+        <h2>3. Webサーバ（Apache2）のインストール</h2>
+        
+        <h3>3.1 パッケージ一覧の更新</h3>
         <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-            </div>
-            <pre id="cmd3">sudo systemctl restart apache2</pre>
+            <pre id="cmd3">sudo apt update</pre>
         </div>
-        <button onclick="copyToClipboard('cmd3')">📋 コマンドをコピー</button>
+        <button onclick="copyToClipboard('cmd3')">📋 コピー</button>
+
+        <h3>3.2 パスワードの入力</h3>
+        <div class="terminal-window">
+            <pre id="cmd3a">handson-sakura</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3a')">📋 パスワードをコピー</button>
+
+        <h3>3.3 Webサーバのインストール</h3>
+        <p class="description">Apache2をインストールします。</p>
+        <div class="terminal-window">
+            <pre id="cmd3b">sudo apt install -y apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3b')">📋 コピー</button>
+
+        <h3>3.4 グループ設定</h3>
+        <p class="description">ubuntuユーザを <code>www-data</code> グループに追加します。</p>
+        <div class="terminal-window">
+            <pre id="cmd3c">sudo usermod -aG www-data ubuntu</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3c')">📋 コピー</button>
+
+        <h3>3.5 所有権の変更</h3>
+        <p class="description">ドキュメントルートの所有権を変更し、書き込み可能にします。</p>
+        <div class="terminal-window">
+            <pre id="cmd3d">sudo chown -R ubuntu:www-data /var/www/html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3d')">📋 コピー</button>
+
+        <h3>3.6 確認</h3>
+        <div class="terminal-window">
+            <pre id="cmd3e">ls -l /var/www/html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3e')">📋 コピー</button>
     </div>
 
-    <!-- 4. 認証ユーザー名を決定 -->
+    <!-- オリジナルコンテンツの作成 -->
     <div class="command-section">
-        <h2>4. 認証ユーザー名を決定</h2>
+        <h2>4. オリジナルコンテンツの作成</h2>
         <p class="description">
-            認証ユーザー名(admin)を指定してパスワードを設定します。<br>
-            コマンドを実行するとパスワードの入力を求められます。パスワードは<strong>数字4文字</strong>で設定してください。<br>
-            ※確認のため2回入力する必要があります。
+            Webサイトに表示するメッセージを入力してください。<br>
+            ※ 改行は <code>&lt;br&gt;</code> と入力しないとブラウザ上で改行されません。
         </p>
+        
+        <label for="message">メッセージ：</label>
+        <textarea id="message" placeholder="Hello World!<br>&#10;Enjoy Black Friday!" oninput="updateMessage()"></textarea>
+        
+        <p class="description">以下のコマンドでファイルが作成されます（コピーして貼り付けるだけでOKです）。</p>
         <div class="terminal-window">
             <div class="terminal-header">
                 <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
             </div>
-            <pre id="cmd4">sudo htpasswd -c /etc/apache2/.htpasswd admin</pre>
+<pre id="cmd4">cat &lt;&lt; 'EOF' &gt; /var/www/html/mysite.html
+Hello World!&lt;br&gt;
+Enjoy Black Friday!
+EOF
+</pre>
         </div>
         <button onclick="copyToClipboard('cmd4')">📋 コマンドをコピー</button>
     </div>
 
-    <!-- 5. .htaccessファイルの設置 -->
+    <!-- ブラウザからアクセス -->
     <div class="command-section">
-        <h2>5. .htaccessファイルの設置</h2>
-        <p class="description">認証を有効にするための .htaccess ファイルを作成します。</p>
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
-            </div>
-<pre id="cmd5">sudo tee /var/www/html/.htaccess << 'EOF'
-AuthType Basic
-AuthName "Authentication"
-AuthUserFile /etc/apache2/.htpasswd
-Require valid-user
-EOF
-</pre>
+        <h2>5. ブラウザで確認</h2>
+        <p class="description">作成したWebページにアクセスしてみましょう。</p>
+        <div class="terminal-window" style="background: #fff; border: 1px solid #ddd;">
+            <pre id="cmd5" style="color: #007BFF; background: #fff;">http://127.0.0.1/mysite.html</pre>
         </div>
-        <button onclick="copyToClipboard('cmd5')">📋 コマンドをコピー</button>
-        <p class="description" style="margin-top: 10px; font-size: 0.85em;">⚠️ ターミナルに貼り付けた後、入力待ちになる場合は <strong>Enter</strong> キーを押してください。</p>
+        <button onclick="copyToClipboard('cmd5')">🔗 URLをコピー</button>
+        <h4>💡 コピーしたURLをブラウザのアドレスバーに貼り付けて移動してください。</h4>
+    </div>
+
+    <!-- 怪盗shimaからの挑戦状 -->
+    <div class="command-section challenge-section">
+        <h2>EX. 怪盗shimaからの挑戦状</h2>
+        <p>ここからは応用編です。謎を解き明かしましょう。</p>
+        
+        <h3>EX.1 課題ファイルのダウンロード</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX1">curl -O https://raw.githubusercontent.com/vtmacs/kosen/main/setup_kadai.sh</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX1')">📋 コピー</button>
+
+        <h3>EX.2 課題ファイルの実行</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX2">sudo bash ./setup_kadai.sh</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX2')">📋 コピー</button>
+
+        <h3>EX.3 プロローグの確認</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX3">cat /usr/share/kadai/prologue.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX3')">📋 コピー</button>
     </div>
 
 </div>
@@ -294,19 +425,47 @@ EOF
 <div id="hidden-text">✅ コピーしました！</div>
 
 <script>
-    // ユーザー名に合わせてコマンドを動的に更新する
-    function updateCommand1() {
-        const username = document.getElementById("username").value || "桜葉愛";
-        // 安全に文字列を埋め込む
-        const command = `echo "<html><body><meta charset=UTF-8><h1>${username}</h1></body></html>" | sudo tee /var/www/html/name.html`;
+    // IPアドレスに合わせてコマンドを動的に更新する
+    function updateIP() {
+        const inputVal = document.getElementById("IP").value;
+        // 入力が空の場合はデフォルト値を表示に使用するが、ロジックとしては空なら空のまま
+        const displayIP = inputVal ? inputVal : "127.0.0.1"; 
+        
+        const command = `ssh ubuntu@${displayIP}`;
         document.getElementById("cmd1").innerText = command;
+    }
+
+    // IPアドレスに合わせてURLを動的に更新する
+    function updateIP2() {
+        const inputVal = document.getElementById("IP").value;
+        const displayIP = inputVal ? inputVal : "127.0.0.1";
+
+        const command = `http://${displayIP}/mysite.html`;
+        document.getElementById("cmd5").innerText = command;
+    }
+
+    // メッセージに合わせてコマンドを動的に更新する
+    function updateMessage() {
+        let message = document.getElementById("message").value;
+        if(!message) {
+            message = "Hello World!<br>\nEnjoy Black Friday!";
+        }
+        
+        // HTMLエスケープ処理（簡易的）
+        // ユーザーが <br> と書いたものをそのまま表示用に使うため、ここではあえて最小限に
+        
+        const command = `cat << 'EOF' > /var/www/html/mysite.html
+${message}
+EOF`;
+        document.getElementById("cmd4").innerText = command;
     }
 
     // クリップボードにコピーする関数
     function copyToClipboard(elementId) {
         const text = document.getElementById(elementId).innerText;
+        const popup = document.getElementById('hidden-text');
 
-        // Clipboard APIが利用可能な場合
+        // Clipboard API
         if (navigator.clipboard) {
             navigator.clipboard.writeText(text).then(() => {
                 showPopup();
@@ -316,7 +475,6 @@ EOF
         }
     }
 
-    // ポップアップを表示する関数
     function showPopup() {
         const popup = document.getElementById('hidden-text');
         popup.classList.add('show');
@@ -329,7 +487,7 @@ EOF
         }, 2000);
     }
 
-    // Clipboard APIが使えない場合のフォールバック
+    // 古いブラウザなどのためのフォールバック
     function fallbackCopy(text) {
         const textarea = document.createElement("textarea");
         textarea.value = text;
@@ -339,7 +497,7 @@ EOF
             document.execCommand("copy");
             showPopup();
         } catch (err) {
-            alert("コピーに失敗しました: " + err);
+            alert("コピーに失敗しました");
         }
         document.body.removeChild(textarea);
     }
