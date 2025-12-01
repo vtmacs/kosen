@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クラウド運用インサイト・ハブ | Cloud Ops Insight Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        /* Chart Containers */
+        .chart-container { position: relative; width: 100%; height: 300px; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Process Cards */
+        .process-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+        }
+        .process-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .process-card.active {
+            background-color: #fff7ed; /* orange-50 */
+            border-left-color: #ea580c; /* orange-600 */
+            font-weight: bold;
+        }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px;
+            border-radius: 50%; background: #ea580c; cursor: pointer;
+            margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer;
+            background: #e7e5e4; border-radius: 2px;
+        }
+
+        /* Tool Tags - Uniform Design */
+        .tool-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #57534e;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s;
+        }
+        .tool-tag:hover {
+            border-color: #ea580c;
+            color: #ea580c;
+        }
+        
+        /* Section Divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #a8a29e;
+            margin: 4rem 0;
+        }
+        .section-divider::before, .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e7e5e4;
+        }
+        .section-divider:not(:empty)::before { margin-right: 1em; }
+        .section-divider:not(:empty)::after { margin-left: 1em; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-orange-200 selection:text-orange-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-orange-600 text-xl"></i>
+                    <span class="text-xl font-bold tracking-tight text-stone-700">
+                        System<span class="text-orange-600">Ops</span> Hub
+                    </span>
+                </div>
+                <div class="hidden md:flex space-x-1 items-center">
+                    <button onclick="scrollToSection('basics')" class="nav-btn text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md text-sm font-medium transition">基本</button>
+                    <button onclick="scrollToSection('processes')" class="nav-btn text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md text-sm font-medium transition">主要プロセス</button>
+                    <button onclick="scrollToSection('simulations')" class="nav-btn text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md text-sm font-medium transition">体験シミュレーション</button>
+                    <button onclick="scrollToSection('transformation')" class="nav-btn text-stone-600 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-md text-sm font-medium transition">運用の高度化</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-20">
+
+        <!-- Header -->
+        <header class="text-center space-y-6 fade-in pt-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-stone-800 tracking-tight leading-tight">
+                クラウド時代の<br class="md:hidden">システム運用<span class="text-orange-600">標準プロセス</span>
+            </h1>
+            <p class="max-w-3xl mx-auto text-lg text-stone-600 leading-relaxed">
+                システム運用（System Operations）は、サービスを「動かし続ける」ための技術的な活動です。<br>
+                クラウドインフラ(AWS, Azure, さくらのクラウド等)の特性を活かした運用実務と、その先にある自動化への道のりを解説します。
+            </p>
+        </header>
+
+        <!-- PART 1: FOUNDATION -->
+        <div id="basics">
+            <div class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Part 1: 運用の基本構造</div>
+            
+            <!-- SECTION 1: Basics (Iceberg) -->
+            <section class="space-y-8 fade-in">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">1. システム運用の全体像</h2>
+                    <p class="text-stone-600 mt-1">
+                        ユーザーが触れる「アプリケーション」は氷山の一角に過ぎません。その下には、安定稼働を支える膨大な運用の世界（ミドルウェア、インフラ、物理基盤）が広がっています。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <!-- Visual Metaphor: The Iceberg (Static View) -->
+                    <div class="relative bg-white p-8 rounded-2xl shadow-sm border border-stone-100">
+                        <h3 class="text-center font-bold text-stone-500 mb-6 text-sm tracking-wider uppercase">運用の氷山モデル</h3>
+                        
+                        <!-- Visible Part -->
+                        <div class="relative z-10 mx-auto w-3/4 bg-sky-500 text-white rounded-t-xl p-4 text-center shadow-lg mb-2">
+                            <div class="text-3xl mb-1"><i class="fa-solid fa-laptop-code"></i></div>
+                            <div class="font-bold">アプリケーション・UI</div>
+                            <div class="text-xs opacity-90">ユーザー体験 (UX)</div>
+                        </div>
+
+                        <!-- Water Line -->
+                        <div class="relative h-4 bg-sky-100 mb-2 w-full flex items-center justify-center rounded-full">
+                            <span class="bg-white px-3 py-0.5 text-xs text-sky-500 font-bold rounded-full shadow-sm border border-sky-100">運用管理の境界線 (Ops Boundary)</span>
+                        </div>
+
+                        <!-- Invisible Parts (Ops) -->
+                        <div class="space-y-1 mx-auto w-3/4">
+                            <div class="bg-stone-600 text-stone-100 p-3 rounded-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold text-sm"><i class="fa-solid fa-server mr-2"></i>ミドルウェア・データ</span>
+                                </div>
+                                <div class="text-xs text-stone-300 mt-1 leading-snug">DBチューニング, Webサーバー設定, ログ管理</div>
+                            </div>
+                            <div class="bg-stone-700 text-stone-100 p-3 rounded-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold text-sm"><i class="fa-solid fa-network-wired mr-2"></i>インフラ・NW</span>
+                                </div>
+                                <div class="text-xs text-stone-400 mt-1 leading-snug">仮想サーバー管理, ネットワークACL, 構成管理</div>
+                            </div>
+                            <div class="bg-stone-800 text-stone-100 p-3 rounded-b-xl">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold text-sm"><i class="fa-solid fa-building mr-2"></i>物理・基盤</span>
+                                </div>
+                                <div class="text-xs text-stone-500 mt-1 leading-snug">データセンター電力, 空調, ハードウェア保守</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Pillars -->
+                    <div class="space-y-4">
+                        <div class="flex gap-4 items-start p-4 rounded-xl bg-white border border-stone-100 hover:shadow-md transition">
+                            <div class="bg-green-100 text-green-700 w-12 h-12 rounded-lg flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-stone-800">安定稼働 (Stability)</h4>
+                                <p class="text-stone-600 text-sm mt-1">「監視」と「バックアップ」により、システムを止めず、止まってもすぐに戻せる状態を維持します。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start p-4 rounded-xl bg-white border border-stone-100 hover:shadow-md transition">
+                            <div class="bg-blue-100 text-blue-700 w-12 h-12 rounded-lg flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-stone-800">最適化 (Optimization)</h4>
+                                <p class="text-stone-600 text-sm mt-1">「キャパシティ管理」と「資産管理」により、無駄なコストを省きリソース効率を最大化します。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start p-4 rounded-xl bg-white border border-stone-100 hover:shadow-md transition">
+                            <div class="bg-purple-100 text-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-code-branch"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-stone-800">変更管理 (Change)</h4>
+                                <p class="text-stone-600 text-sm mt-1">「構成管理」と「変更管理」により、意図しない設定変更を防ぎ、安全なリリースを実現します。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: 6 Ops Processes -->
+            <section id="processes" class="space-y-8 mt-16 scroll-mt-24">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">2. システム運用の主要6プロセス</h2>
+                    <p class="text-stone-600 mt-1">
+                        クラウドインフラを適切に維持・管理するための6つの活動です。<br>
+                        これらのプロセスを適切に回すことで、システムの品質と信頼性が担保されます。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[650px]">
+                    <div class="lg:col-span-4 flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
+                        <div id="process-list" class="space-y-2"></div>
+                    </div>
+                    <div class="lg:col-span-8 bg-white p-8 rounded-2xl shadow-lg border border-stone-100 flex flex-col relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-8 opacity-5 text-9xl text-stone-400 pointer-events-none icon-bg">
+                            <i class="fa-solid fa-binoculars"></i>
+                        </div>
+                        <div id="process-detail" class="relative z-10 h-full flex flex-col justify-between fade-in"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="section-divider">
+            <span class="px-4 text-sm font-bold bg-stone-50">Part 2: 運用の実践（シミュレーション体験）</span>
+        </div>
+
+        <!-- PART 2: SIMULATIONS -->
+        <div id="simulations">
+            <p class="text-center text-stone-600 mb-12 max-w-2xl mx-auto">
+                運用プロセスの中でも特にクラウドの特徴が出る「キャパシティ管理」「システム監視」、そして「バックアップ戦略」の3つを実際に操作して、その効果とトレードオフを体験しましょう。
+            </p>
+
+            <!-- SECTION 3: Capacity & Auto Scaling Simulator -->
+            <section id="autoscale" class="space-y-8 scroll-mt-24">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">3. キャパシティ管理: オートスケーリング体験</h2>
+                    <p class="text-stone-600 mt-1">
+                        クラウドの「伸縮性」を活かし、需要に合わせてリソースを自動増減させます。<br>
+                        過剰投資を防ぎつつ、ピーク時の性能を維持する「キャパシティ管理」の核心です。
+                    </p>
+                </div>
+
+                <div class="bg-stone-900 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1 space-y-6">
+                            <div class="bg-stone-800 p-4 rounded-xl border border-stone-700">
+                                <label class="block text-sm font-bold text-stone-400 mb-2"><i class="fa-solid fa-users mr-2"></i>ユーザーアクセス (負荷)</label>
+                                <input type="range" id="traffic-slider" min="0" max="100" value="20" class="w-full accent-orange-500">
+                                <div class="flex justify-between mt-2 text-xs text-stone-500"><span>閑散期</span><span id="traffic-value" class="text-orange-400 font-bold text-lg">Low</span><span>繁忙期</span></div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <h4 class="font-bold text-stone-400">ポリシー設定</h4>
+                                <div class="flex justify-between border-b border-stone-700 pb-2"><span>スケールアウト</span><span class="text-red-400 font-mono">CPU > 60%</span></div>
+                                <div class="flex justify-between border-b border-stone-700 pb-2"><span>スケールイン</span><span class="text-blue-400 font-mono">CPU < 30%</span></div>
+                                <div class="flex justify-between"><span>範囲</span><span class="text-stone-300 font-mono">2台 - 10台</span></div>
+                            </div>
+                            <div class="bg-stone-800/50 p-4 rounded-lg text-xs text-stone-400 leading-relaxed"><i class="fa-solid fa-circle-info mr-1 text-orange-500"></i>負荷を最大にするとサーバーは10台まで増え、負荷を下げると速やかに台数が減少するように調整されています。</div>
+                        </div>
+                        <div class="lg:col-span-2 flex flex-col gap-4">
+                            <div class="bg-stone-800 rounded-xl p-4 min-h-[120px] border border-stone-700">
+                                <h4 class="text-xs font-bold text-stone-500 mb-3 uppercase tracking-wider">Active Instances</h4>
+                                <div id="server-container" class="flex flex-wrap gap-3"></div>
+                            </div>
+                            <div class="bg-stone-800 rounded-xl p-4 border border-stone-700 flex-grow">
+                                <div class="chart-container h-48"><canvas id="scalingChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 4: Dashboard (KPI Simulator) -->
+            <section id="dashboard" class="space-y-8 mt-16 scroll-mt-24">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">4. 監視ダッシュボード: 運用状況の可視化</h2>
+                    <p class="text-stone-600 mt-1">
+                        システムの健康状態を定量的に把握します。稼働率や復旧時間（MTTR）などの指標を監視し、
+                        異常があればアラートで検知して対応します。
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 justify-center py-4 bg-white rounded-xl shadow-sm border border-stone-100 p-4">
+                    <span class="text-sm font-bold text-stone-500 flex items-center mr-4">シナリオ選択:</span>
+                    <button onclick="setScenario('stable')" class="px-4 py-2 rounded-full text-xs font-bold border hover:bg-green-50 text-stone-600 hover:text-green-700 transition">🟢 安定稼働</button>
+                    <button onclick="setScenario('incident')" class="px-4 py-2 rounded-full text-xs font-bold border hover:bg-red-50 text-stone-600 hover:text-red-700 transition">🔴 障害発生</button>
+                    <button onclick="setScenario('recovery')" class="px-4 py-2 rounded-full text-xs font-bold border hover:bg-blue-50 text-stone-600 hover:text-blue-700 transition">🔵 復旧中</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-stone-300"><i class="fa-solid fa-bolt"></i></div>
+                        <h3 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">稼働率</h3>
+                        <div class="mt-2 flex items-baseline gap-2"><span id="val-avail" class="text-4xl font-bold text-stone-800">99.99</span><span class="text-xl text-stone-600">%</span></div>
+                        <div class="mt-4 h-1.5 w-full bg-stone-100 rounded-full overflow-hidden"><div id="bar-avail" class="h-full bg-green-500 transition-all duration-1000" style="width: 99.99%"></div></div>
+                        <div class="mt-4 pt-4 border-t border-stone-100"><input type="range" id="input-avail" min="95.00" max="100.00" step="0.01" value="99.99" class="w-full accent-green-600" oninput="manualUpdateKPI()"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-stone-300"><i class="fa-solid fa-stopwatch"></i></div>
+                        <h3 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">平均復旧時間 (MTTR)</h3>
+                        <div class="mt-2 flex items-baseline gap-2"><span id="val-mttr" class="text-4xl font-bold text-stone-800">15</span><span class="text-xl text-stone-600">分</span></div>
+                        <div class="mt-4 h-1.5 w-full bg-stone-100 rounded-full overflow-hidden"><div id="bar-mttr" class="h-full bg-green-500 transition-all duration-1000" style="width: 15%"></div></div>
+                        <div class="mt-4 pt-4 border-t border-stone-100"><input type="range" id="input-mttr" min="0" max="120" step="1" value="15" class="w-full accent-orange-600" oninput="manualUpdateKPI()"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-stone-300"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <h3 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">月間インシデント数</h3>
+                        <div class="mt-2 flex items-baseline gap-2"><span id="val-inc" class="text-4xl font-bold text-stone-800">3</span><span class="text-xl text-stone-600">件</span></div>
+                        <div class="mt-4 h-1.5 w-full bg-stone-100 rounded-full overflow-hidden"><div id="bar-inc" class="h-full bg-green-500 transition-all duration-1000" style="width: 10%"></div></div>
+                        <div class="mt-4 pt-4 border-t border-stone-100"><input type="range" id="input-inc" min="0" max="50" step="1" value="3" class="w-full accent-blue-600" oninput="manualUpdateKPI()"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 mt-6">
+                    <h4 class="font-bold text-stone-700 mb-4">インシデント発生トレンド (シミュレーション)</h4>
+                    <div class="chart-container">
+                        <canvas id="kpiTrendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Backup Strategy Simulator (REDESIGNED) -->
+            <section id="backup-sim" class="space-y-8 mt-16 scroll-mt-24">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">5. バックアップ戦略シミュレーター</h2>
+                    <p class="text-stone-600 mt-1">
+                        データ保護のレベル（RPO）と復旧速度（RTO）はコストとトレードオフの関係にあります。<br>
+                        要件に合わせたバランスを見つけましょう。
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-stone-200">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <!-- Controls -->
+                        <div class="space-y-8">
+                            <!-- Preset Buttons -->
+                            <div>
+                                <label class="block text-sm font-bold text-stone-600 mb-3">プリセットから選択</label>
+                                <div class="flex gap-3">
+                                    <button onclick="setBackupPreset('cost')" class="flex-1 py-2 px-3 text-xs font-bold rounded border border-stone-300 hover:bg-stone-50 text-stone-600 transition">コスト重視<br><span class="font-normal text-[10px]">開発環境など</span></button>
+                                    <button onclick="setBackupPreset('balance')" class="flex-1 py-2 px-3 text-xs font-bold rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition">標準バランス<br><span class="font-normal text-[10px]">Webサービス</span></button>
+                                    <button onclick="setBackupPreset('critical')" class="flex-1 py-2 px-3 text-xs font-bold rounded border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 transition">重要システム<br><span class="font-normal text-[10px]">金融・決済</span></button>
+                                </div>
+                            </div>
+
+                            <hr class="border-stone-100">
+
+                            <!-- Sliders -->
+                            <div>
+                                <label class="flex justify-between text-sm font-bold text-stone-700 mb-2">
+                                    <span><i class="fa-solid fa-clock-rotate-left mr-2 text-stone-400"></i>許容できるデータ損失 (RPO)</span>
+                                    <span id="label-rpo" class="text-orange-600">1日 (24h)</span>
+                                </label>
+                                <input type="range" id="slider-rpo" min="0" max="4" step="1" value="2" class="w-full accent-orange-500" oninput="updateBackupSim()">
+                                <p class="text-xs text-stone-400 mt-1">左：直前まで戻せる (高コスト) ↔ 右：数日分消える (低コスト)</p>
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-sm font-bold text-stone-700 mb-2">
+                                    <span><i class="fa-solid fa-hammer mr-2 text-stone-400"></i>許容できる停止時間 (RTO)</span>
+                                    <span id="label-rto" class="text-blue-600">数時間 (リストア)</span>
+                                </label>
+                                <input type="range" id="slider-rto" min="0" max="3" step="1" value="1" class="w-full accent-blue-500" oninput="updateBackupSim()">
+                                <p class="text-xs text-stone-400 mt-1">左：停止時間長い (低コスト) ↔ 右：即時復旧 (高コスト)</p>
+                            </div>
+                        </div>
+
+                        <!-- Visualization -->
+                        <div class="bg-stone-50 rounded-xl p-6 border border-stone-200 flex flex-col justify-center relative overflow-hidden">
+                            <h4 class="text-center font-bold text-stone-500 mb-6">障害発生時のシミュレーション</h4>
+                            
+                            <!-- Timeline Visual (Center Origin) -->
+                            <div class="relative w-full h-16 flex items-center mb-4">
+                                <!-- Center Line (Crash) -->
+                                <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-stone-300 z-10"></div>
+                                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center z-20 shadow-md text-xs font-bold">
+                                    <i class="fa-solid fa-burst"></i>
+                                </div>
+
+                                <!-- Left Bar (RPO / Data Loss) -->
+                                <div class="absolute right-1/2 h-4 bg-orange-200 rounded-l-md transition-all duration-500 flex items-center justify-end pr-2 overflow-hidden" id="bar-rpo" style="width: 20%">
+                                    <span class="text-[10px] text-orange-800 font-bold whitespace-nowrap">損失データ</span>
+                                </div>
+
+                                <!-- Right Bar (RTO / Downtime) -->
+                                <div class="absolute left-1/2 h-4 bg-blue-200 rounded-r-md transition-all duration-500 flex items-center pl-2 overflow-hidden" id="bar-rto" style="width: 30%">
+                                    <span class="text-[10px] text-blue-800 font-bold whitespace-nowrap">ダウンタイム</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Axis Labels -->
+                            <div class="flex justify-between text-xs text-stone-400 px-2 mb-6">
+                                <span>過去 (データ)</span>
+                                <span>現在 (障害)</span>
+                                <span>未来 (復旧)</span>
+                            </div>
+
+                            <!-- Result Box -->
+                            <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm space-y-3">
+                                <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                                    <span class="text-sm font-bold text-stone-600">推定コスト</span>
+                                    <span id="val-cost" class="text-lg font-bold text-stone-800">標準</span>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-stone-400 uppercase block mb-1">推奨構成イメージ</span>
+                                    <p id="backup-desc" class="text-sm text-stone-700 leading-snug">
+                                        定期的なスナップショット取得と、障害時のリストア手順整備。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="section-divider">
+            <span class="px-4 text-sm font-bold bg-stone-50">Part 3: 運用の高度化と未来</span>
+        </div>
+
+        <!-- PART 3: ADVANCED -->
+        <div id="advanced">
+            <p class="text-center text-stone-600 mb-12 max-w-2xl mx-auto">
+                これまで見てきた「監視」「バックアップ」「キャパシティ管理」などのプロセスを、手動で行うのではなく、コードと自動化によって統合的に管理するのが「SRE（Site Reliability Engineering）」のアプローチです。
+            </p>
+
+            <!-- SECTION 5: Transformation Journey -->
+            <section id="transformation" class="space-y-8 scroll-mt-24">
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">6. 運用の高度化: SREへの道のり</h2>
+                    <p class="text-stone-600 mt-1">
+                        運用プロセスを個別に最適化するだけでなく、組織全体として自動化レベルを上げていく成熟度モデルです。
+                    </p>
+                </div>
+
+                <!-- Stepper -->
+                <div class="grid grid-cols-4 gap-1 md:gap-4 mb-4">
+                    <button onclick="setStage(0)" class="stage-btn p-2 text-xs md:text-sm font-bold bg-stone-200 text-stone-500 rounded-t-lg hover:bg-stone-300 transition active-stage" id="stage-0">Phase 1<br><span class="text-[10px] font-normal">カオス期</span></button>
+                    <button onclick="setStage(1)" class="stage-btn p-2 text-xs md:text-sm font-bold bg-stone-200 text-stone-500 rounded-t-lg hover:bg-stone-300 transition" id="stage-1">Phase 2<br><span class="text-[10px] font-normal">管理期</span></button>
+                    <button onclick="setStage(2)" class="stage-btn p-2 text-xs md:text-sm font-bold bg-stone-200 text-stone-500 rounded-t-lg hover:bg-stone-300 transition" id="stage-2">Phase 3<br><span class="text-[10px] font-normal">DevOps期</span></button>
+                    <button onclick="setStage(3)" class="stage-btn p-2 text-xs md:text-sm font-bold bg-stone-200 text-stone-500 rounded-t-lg hover:bg-stone-300 transition" id="stage-3">Phase 4<br><span class="text-[10px] font-normal">SRE期</span></button>
+                </div>
+
+                <!-- Stage Content -->
+                <div class="bg-white border border-stone-200 rounded-b-xl rounded-tr-xl shadow-sm p-6 md:p-8 min-h-[300px] flex items-center">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                        <div id="stage-text-container" class="fade-in"></div>
+                        <div id="stage-visual-container" class="flex flex-col items-center justify-center bg-stone-50 rounded-xl p-6 border border-stone-100 fade-in"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: ROI Calculator -->
+            <section id="roi" class="space-y-8 mt-16 scroll-mt-24">
+                <div class="border-l-4 border-stone-800 pl-4">
+                    <h2 class="text-2xl font-bold text-stone-800">7. 自動化の価値 (ROI計算)</h2>
+                    <p class="text-stone-600 mt-1">
+                        手作業の運用（Toil）を自動化することで、どれだけの時間とコストを「価値ある活動（エンジニアリング）」に振り向けられるかを試算します。
+                    </p>
+                </div>
+
+                <div class="bg-stone-800 text-white rounded-2xl p-8 shadow-xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-xs text-stone-400 block mb-2">手動作業の頻度 (回/月)</label>
+                                <div class="flex items-center gap-4"><input type="range" id="roi-freq" min="1" max="500" value="100" class="flex-grow accent-orange-500" oninput="calcROI()"><span id="disp-freq" class="font-mono text-xl w-20 text-right">100</span></div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400 block mb-2">1回あたりの作業時間 (分)</label>
+                                <div class="flex items-center gap-4"><input type="range" id="roi-time" min="5" max="120" value="30" class="flex-grow accent-orange-500" oninput="calcROI()"><span id="disp-time" class="font-mono text-xl w-20 text-right">30</span></div>
+                            </div>
+                            <div>
+                                <label class="text-xs text-stone-400 block mb-2">担当者時給 (円)</label>
+                                <div class="flex items-center gap-4"><input type="range" id="roi-rate" min="2000" max="10000" step="500" value="4000" class="flex-grow accent-orange-500" oninput="calcROI()"><span id="disp-rate" class="font-mono text-xl w-20 text-right">4,000</span></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center items-center text-center border-l border-stone-700 pl-0 lg:pl-12 pt-8 lg:pt-0">
+                            <div class="text-sm text-stone-400 uppercase tracking-widest mb-2">年間削減見込み</div>
+                            <div id="roi-result" class="text-5xl lg:text-6xl font-bold text-orange-500 mb-2">¥2,400,000</div>
+                            <div class="text-xs text-stone-500">※自動化成功率90%と仮定。<br>このコストを新機能開発へ投資できます。</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="border-t border-stone-200 py-12 text-center text-stone-500 text-sm">
+            <p>&copy; 2023 Cloud Ops Insight Hub. Built based on standard System Operations processes and cloud operational best practices.</p>
+        </footer>
+
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        // --- DATA: 6 System Operations Processes ---
+        const processesData = [
+            {
+                id: 'monitor',
+                icon: 'fa-eye',
+                title: '1. システム監視 (Monitoring)',
+                subtitle: 'Detect & Notify',
+                color: 'text-blue-600',
+                bg: 'bg-blue-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">状態を観測し、異常を検知する</h3>
+                    <p class="text-stone-600 mb-4">
+                        サーバーやアプリの稼働状況を継続的にチェックします。異常があれば即座に担当者へ通知し、ダウンタイムを最小化します。<br>
+                        ログの収集・分析もここに含まれ、障害の予兆検知や原因究明に役立てます。
+                    </p>
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800 mb-6">
+                        <strong><i class="fa-solid fa-bell mr-1"></i>活動のポイント:</strong> メトリクス監視（CPU使用率等）、死活監視（Ping等）、ログ監視（エラー出力）、アラート通知。
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">さくらのクラウド シンプル監視</span>
+                            <span class="tool-tag">さくらのクラウド モニタリングスイート</span>
+                            <span class="tool-tag">さくらのクラウド EventBus</span>
+                            <span class="tool-tag">さくらのクラウド シンプル通知</span>
+                            <span class="tool-tag">AWS CloudWatch</span>
+                            <span class="tool-tag">Azure Monitor</span>
+                            <span class="tool-tag">Datadog</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'change',
+                icon: 'fa-rotate',
+                title: '2. 変更管理 (Change Mgmt)',
+                subtitle: 'Release & Update',
+                color: 'text-green-600',
+                bg: 'bg-green-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">安全かつ高速に変更を適用する</h3>
+                    <p class="text-stone-600 mb-4">
+                        OSパッチ適用やアプリの新機能リリースなど、システムへの「変更」を管理します。手作業によるミスを防ぐため、CI/CDパイプラインによる自動化が推奨されます。
+                    </p>
+                    <div class="p-4 bg-green-50 border border-green-200 rounded text-sm text-green-800 mb-6">
+                        <strong><i class="fa-solid fa-code-branch mr-1"></i>活動のポイント:</strong> 変更前のテスト自動化、承認フローの整備、IaC（Infrastructure as Code）によるインフラ変更のコード管理。
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">GitHub Actions</span>
+                            <span class="tool-tag">AWS Systems Manager</span>
+                            <span class="tool-tag">Azure Automation</span>
+                            <span class="tool-tag">Usacloud (CLI)</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'config',
+                icon: 'fa-sitemap',
+                title: '3. 構成管理 (Configuration)',
+                subtitle: 'State Management',
+                color: 'text-purple-600',
+                bg: 'bg-purple-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">システムのあるべき状態を保つ</h3>
+                    <p class="text-stone-600 mb-4">
+                        システムの構成要素（OSバージョン、ミドルウェア設定、ネットワーク構成）が「意図した通りの状態」になっているかを管理します。
+                        勝手な設定変更（ドリフト）を検知し、セキュリティリスクを防ぎます。
+                    </p>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">Terraform for さくらのクラウド</span>
+                            <span class="tool-tag">Ansible</span>
+                            <span class="tool-tag">AWS Config</span>
+                            <span class="tool-tag">Azure Policy</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'asset',
+                icon: 'fa-tags',
+                title: '4. 資産管理 (Asset Mgmt)',
+                subtitle: 'Inventory & Cost',
+                color: 'text-yellow-600',
+                bg: 'bg-yellow-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">リソースとコストを把握する</h3>
+                    <p class="text-stone-600 mb-4">
+                        クラウド上で稼働しているVM、ストレージ、IPアドレスなどのリソース（資産）を管理します。
+                        「誰が・何のために・どれくらい使っているか」を可視化し、不要リソースの削除やコスト最適化につなげます。
+                    </p>
+                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 mb-6">
+                        <strong><i class="fa-solid fa-tag mr-1"></i>活動のポイント:</strong> タグ付けによる管理、未利用リソースの棚卸し、コスト分析。
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">さくらのクラウド 利用料金管理</span>
+                            <span class="tool-tag">AWS Resource Explorer</span>
+                            <span class="tool-tag">Cost Explorer</span>
+                            <span class="tool-tag">Google Cloud Asset Inventory</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'capacity',
+                icon: 'fa-chart-area',
+                title: '5. キャパシティ管理 (Capacity)',
+                subtitle: 'Auto Scaling',
+                color: 'text-red-600',
+                bg: 'bg-red-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">リソースを最適化する</h3>
+                    <p class="text-stone-600 mb-4">
+                        システムの負荷状況に応じて、サーバーリソースを適切な量に調整します。
+                        クラウドの「オートスケーリング」機能を活用し、需要増には自動拡張、需要減には自動縮小で対応します。
+                    </p>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">さくらのクラウド オートスケール</span>
+                            <span class="tool-tag">AWS Auto Scaling</span>
+                            <span class="tool-tag">Azure Autoscale</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'backup',
+                icon: 'fa-database',
+                title: '6. バックアップ (Backup)',
+                subtitle: 'Data Protection',
+                color: 'text-indigo-600',
+                bg: 'bg-indigo-100',
+                content: `
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">データを守り、復元する</h3>
+                    <p class="text-stone-600 mb-4">
+                        障害、操作ミス、ランサムウェア攻撃などによるデータ損失に備え、定期的にデータの複製（バックアップ）を取得します。
+                        クラウドでは「スナップショット」機能により、高速かつ容易にバックアップ・復元が可能です。
+                    </p>
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-stone-400 uppercase">主要ツール</span>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="tool-tag">さくらのクラウド 自動バックアップ</span>
+                            <span class="tool-tag">AWS Backup</span>
+                            <span class="tool-tag">Azure Backup</span>
+                            <span class="tool-tag">EBS Snapshots</span>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        // --- DATA: Transformation Journey ---
+        const journeyData = [
+            {
+                title: "Phase 1: カオス期 (Manual)",
+                desc: "障害対応は常に後手。特定の人しかシステムを触れない「属人化」が激しく、手順書も陳腐化している状態。",
+                icon: "fa-fire",
+                color: "text-red-500"
+            },
+            {
+                title: "Phase 2: 管理期 (Managed)",
+                desc: "監視ツールが導入され、状態が見える化。手順書も整備されたが、実行はまだ手動メイン。",
+                icon: "fa-clipboard-list",
+                color: "text-yellow-500"
+            },
+            {
+                title: "Phase 3: DevOps期 (Automated)",
+                desc: "CI/CDパイプラインによりデプロイが自動化。開発と運用が協力し、小さな変更を頻繁に行う。",
+                icon: "fa-rocket",
+                color: "text-green-500"
+            },
+            {
+                title: "Phase 4: SRE期 (Autonomous)",
+                desc: "運用がコード(IaC)で制御される。エラーバジェットに基づき、信頼性と速度のバランスをデータで判断する。",
+                icon: "fa-crown",
+                color: "text-purple-500"
+            }
+        ];
+
+        // --- CHART INSTANCES ---
+        let scalingChart = null;
+        let kpiTrendChart = null;
+        let roiChart = null;
+
+        // --- STATE ---
+        let trafficLevel = 20;
+        let serverCount = 2;
+        let cpuLoad = 20;
+        let currentKpiScenario = 'stable';
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProcesses();
+            selectProcess(0); // Select first by default
+            
+            initScalingChart();
+            startScalingSimulation(); // Start Loop
+            
+            initKpiTrendChart();
+            setScenario('stable');
+            
+            setBackupPreset('balance'); // Init Backup Sim
+            
+            setStage(0);
+            calcROI();
+        });
+
+        // --- PROCESSES LOGIC ---
+        function renderProcesses() {
+            const list = document.getElementById('process-list');
+            list.innerHTML = processesData.map((p, i) => `
+                <div onclick="selectProcess(${i})" id="p-card-${i}" class="process-card cursor-pointer p-4 rounded-xl bg-white border border-stone-100 mb-3 hover:bg-stone-50 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full ${p.bg} ${p.color} flex items-center justify-center shrink-0">
+                        <i class="fa-solid ${p.icon}"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-stone-800 text-sm">${p.title}</div>
+                        <div class="text-xs text-stone-500">${p.subtitle}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectProcess(index) {
+            document.querySelectorAll('.process-card').forEach((el, i) => {
+                if (i === index) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            const p = processesData[index];
+            const detail = document.getElementById('process-detail');
+            
+            detail.style.opacity = 0;
+            detail.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                detail.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 rounded-2xl ${p.bg} ${p.color} flex items-center justify-center text-3xl shadow-sm">
+                            <i class="fa-solid ${p.icon}"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-stone-800">${p.title}</h2>
+                            <p class="text-stone-500 font-mono text-sm">${p.subtitle}</p>
+                        </div>
+                    </div>
+                    <div class="prose prose-stone max-w-none">
+                        ${p.content}
+                    </div>
+                    <style>
+                        .tool-tag {
+                            display: inline-block;
+                            padding: 0.25rem 0.5rem;
+                            background-color: #ffffff;
+                            border: 1px solid #e5e7eb;
+                            border-radius: 0.25rem;
+                            font-size: 0.75rem;
+                            font-weight: 700;
+                            color: #57534e;
+                        }
+                    </style>
+                `;
+                detail.style.opacity = 1;
+                detail.style.transform = 'translateY(0)';
+            }, 200);
+            
+            document.querySelector('.icon-bg').innerHTML = `<i class="fa-solid ${p.icon}"></i>`;
+        }
+
+
+        // --- AUTO SCALING SIMULATION ---
+        function initScalingChart() {
+            const ctx = document.getElementById('scalingChart').getContext('2d');
+            scalingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [
+                        {
+                            label: 'CPU負荷 (%)',
+                            data: Array(20).fill(20),
+                            borderColor: '#f97316', // Orange
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'サーバー台数',
+                            data: Array(20).fill(2),
+                            borderColor: '#3b82f6', // Blue
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            yAxisID: 'y1',
+                            stepped: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 0 },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { labels: { color: '#a8a29e' } } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { min: 0, max: 100, grid: { color: '#44403c' }, ticks: { color: '#a8a29e' } },
+                        y1: { min: 0, max: 12, position: 'right', grid: { display: false }, ticks: { stepSize: 1, color: '#3b82f6' } }
+                    }
+                }
+            });
+
+            document.getElementById('traffic-slider').addEventListener('input', (e) => {
+                trafficLevel = parseInt(e.target.value);
+                let text = "Low";
+                if(trafficLevel > 40) text = "Medium";
+                if(trafficLevel > 80) text = "High";
+                document.getElementById('traffic-value').innerText = text;
+            });
+        }
+
+        function startScalingSimulation() {
+            setInterval(() => {
+                let loadFactor = 3.5 + (trafficLevel / 100) * 4.5; 
+                let targetCpu = (trafficLevel * loadFactor) / serverCount;
+                targetCpu += (Math.random() * 10 - 5);
+                targetCpu = Math.max(5, Math.min(100, targetCpu));
+                cpuLoad = cpuLoad * 0.7 + targetCpu * 0.3;
+
+                if (cpuLoad > 60 && serverCount < 10) {
+                    serverCount++;
+                } else if (cpuLoad < 30 && serverCount > 2) {
+                    serverCount--;
+                }
+
+                const data = scalingChart.data;
+                data.datasets[0].data.shift();
+                data.datasets[0].data.push(cpuLoad);
+                data.datasets[1].data.shift();
+                data.datasets[1].data.push(serverCount);
+                scalingChart.update();
+
+                renderServers();
+            }, 800);
+        }
+
+        function renderServers() {
+            const container = document.getElementById('server-container');
+            let html = '';
+            for(let i=0; i<serverCount; i++) {
+                let color = "text-green-400";
+                if(cpuLoad > 60) color = "text-yellow-400";
+                if(cpuLoad > 85) color = "text-red-400 animate-pulse";
+                html += `<div class="flex flex-col items-center animate-bounce-short"><i class="fa-solid fa-server text-2xl ${color}"></i><span class="text-[10px] text-stone-500 mt-1">#${i+1}</span></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+
+        // --- KPI LOGIC ---
+        function initKpiTrendChart() {
+            const ctx = document.getElementById('kpiTrendChart').getContext('2d');
+            kpiTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['5ヶ月前', '4ヶ月前', '3ヶ月前', '2ヶ月前', '先月', '今月'],
+                    datasets: [{
+                        label: 'インシデント数',
+                        data: [0,0,0,0,0,0],
+                        borderColor: '#ea580c',
+                        backgroundColor: 'rgba(234, 88, 12, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function setScenario(type) {
+            currentKpiScenario = type;
+            const sAvail = document.getElementById('input-avail');
+            const sMttr = document.getElementById('input-mttr');
+            const sInc = document.getElementById('input-inc');
+
+            if (type === 'stable') {
+                sAvail.value = 99.99; sMttr.value = 15; sInc.value = 2;
+            } else if (type === 'incident') {
+                sAvail.value = 98.50; sMttr.value = 120; sInc.value = 25;
+            } else if (type === 'recovery') {
+                sAvail.value = 99.90; sMttr.value = 45; sInc.value = 8;
+            }
+            manualUpdateKPI();
+        }
+
+        function manualUpdateKPI() {
+            const avail = document.getElementById('input-avail').value;
+            const mttr = document.getElementById('input-mttr').value;
+            const inc = document.getElementById('input-inc').value;
+
+            document.getElementById('val-avail').innerText = avail;
+            document.getElementById('val-mttr').innerText = mttr;
+            document.getElementById('val-inc').innerText = inc;
+
+            updateBar('bar-avail', avail, 100, true);
+            updateBar('bar-mttr', mttr, 120, false);
+            updateBar('bar-inc', inc, 50, false);
+
+            updateKpiChart(parseInt(inc));
+        }
+
+        function updateBar(id, val, max, highIsGood) {
+            const el = document.getElementById(id);
+            let pct = (val / max) * 100;
+            if(id === 'bar-avail') pct = val; 
+
+            el.style.width = `${Math.min(100, pct)}%`;
+            
+            let color = 'bg-green-500';
+            if(highIsGood) {
+                if(val < 99) color = 'bg-red-500';
+                else if(val < 99.9) color = 'bg-yellow-500';
+            } else {
+                let r = val / max;
+                if(r > 0.5) color = 'bg-red-500';
+                else if(r > 0.2) color = 'bg-yellow-500';
+            }
+            el.className = `h-full transition-all duration-300 ${color}`;
+        }
+
+        function updateKpiChart(currentVal) {
+            let data = [];
+            if(currentKpiScenario === 'incident') { data = [2, 3, 2, 5, 12, currentVal]; } 
+            else if(currentKpiScenario === 'recovery') { data = [20, 18, 15, 12, 10, currentVal]; } 
+            else { data = [2, 1, 3, 2, 1, currentVal]; }
+            kpiTrendChart.data.datasets[0].data = data;
+            kpiTrendChart.update();
+        }
+
+        // --- BACKUP SIMULATION LOGIC (NEW) ---
+        function setBackupPreset(type) {
+            const sRpo = document.getElementById('slider-rpo');
+            const sRto = document.getElementById('slider-rto');
+            
+            if (type === 'cost') { sRpo.value = 4; sRto.value = 0; } // Low cost
+            else if (type === 'balance') { sRpo.value = 2; sRto.value = 1; } // Mid
+            else if (type === 'critical') { sRpo.value = 0; sRto.value = 3; } // High cost
+            
+            updateBackupSim();
+        }
+
+        function updateBackupSim() {
+            const rpoVal = parseInt(document.getElementById('slider-rpo').value);
+            const rtoVal = parseInt(document.getElementById('slider-rto').value);
+            
+            // Labels (0 is best RPO, 3 is best RTO)
+            const rpoLabels = ["リアルタイム (0)", "1時間 (1h)", "1日 (24h)", "1週間", "手動/不定期"];
+            const rtoLabels = ["テープ/コールド (数日)", "ファイルリストア (数時間)", "VMスタンバイ (数分)", "マルチAZ/自動切替 (即時)"];
+            
+            document.getElementById('label-rpo').innerText = rpoLabels[rpoVal];
+            document.getElementById('label-rto').innerText = rtoLabels[rtoVal];
+
+            // Width Calculation (Max total 100% split)
+            // RPO: Val 0=Small bar, 4=Big bar. 
+            // RTO: Val 3=Small bar, 0=Big bar.
+            // Map values to width %
+            const rpoPercents = [1, 10, 25, 40, 48];
+            const rtoPercents = [48, 25, 10, 1]; // Reverse logic for RTO slider (higher val is better/faster)
+
+            document.getElementById('bar-rpo').style.width = rpoPercents[rpoVal] + "%";
+            document.getElementById('bar-rto').style.width = rtoPercents[rtoVal] + "%";
+
+            // Cost Logic
+            // RPO: Lower is more expensive. RTO: Higher is more expensive.
+            // Score 0-10
+            let costScore = (4 - rpoVal) + rtoVal * 1.5; 
+            
+            let costText = "低 (Low)";
+            let colorClass = "text-green-600";
+            
+            if (costScore > 6) { costText = "最高 (Very High)"; colorClass = "text-red-600"; }
+            else if (costScore > 4) { costText = "高 (High)"; colorClass = "text-orange-500"; }
+            else if (costScore > 2) { costText = "中 (Medium)"; colorClass = "text-blue-600"; }
+
+            const costEl = document.getElementById('val-cost');
+            costEl.innerText = costText;
+            costEl.className = `text-lg font-bold ${colorClass}`;
+
+            // Description
+            let desc = "";
+            if (rpoVal >= 3 && rtoVal <= 1) desc = "開発環境や重要度の低いシステム向け。コストは最小限ですが、復旧には時間がかかります。";
+            else if (rpoVal <= 1 && rtoVal >= 2) desc = "金融系やECサイトなど、止まってはいけない重要システム向け。冗長化コストがかかります。";
+            else desc = "一般的なWebサービスの標準構成。日次バックアップと標準的なリストア手順を想定しています。";
+            
+            document.getElementById('backup-desc').innerText = desc;
+        }
+
+        // --- TRANSFORMATION ---
+        function setStage(idx) {
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`stage-${i}`);
+                if(i===idx) {
+                    btn.classList.add('active-stage', 'bg-orange-50', 'text-orange-700', 'border-t', 'border-l', 'border-r', 'border-orange-200');
+                    btn.classList.remove('bg-stone-200');
+                } else {
+                    btn.classList.remove('active-stage', 'bg-orange-50', 'text-orange-700', 'border-t', 'border-l', 'border-r', 'border-orange-200');
+                    btn.classList.add('bg-stone-200');
+                }
+            }
+
+            const d = journeyData[idx];
+            document.getElementById('stage-text-container').innerHTML = `
+                <span class="inline-block px-3 py-1 rounded-full bg-stone-100 text-stone-600 text-xs font-bold mb-3">${d.title}</span>
+                <h3 class="text-2xl font-bold text-stone-800 mb-4">${d.title.split(':')[1]}</h3>
+                <p class="text-stone-600 leading-relaxed text-lg">${d.desc}</p>
+            `;
+            document.getElementById('stage-visual-container').innerHTML = `
+                <i class="fa-solid ${d.icon} text-6xl ${d.color} mb-4"></i>
+                <div class="w-full bg-stone-200 rounded-full h-2 mt-4 max-w-[200px]">
+                    <div class="h-2 rounded-full ${d.color.replace('text', 'bg')}" style="width: ${(idx+1)*25}%"></div>
+                </div>
+                <span class="text-xs text-stone-400 mt-2">Maturity Level</span>
+            `;
+        }
+
+        // --- ROI ---
+        function calcROI() {
+            const f = parseInt(document.getElementById('roi-freq').value);
+            const t = parseInt(document.getElementById('roi-time').value);
+            const r = parseInt(document.getElementById('roi-rate').value);
+
+            document.getElementById('disp-freq').innerText = f;
+            document.getElementById('disp-time').innerText = t;
+            document.getElementById('disp-rate').innerText = r.toLocaleString();
+
+            const yearlyCost = ((f * t) / 60) * r * 12;
+            const savings = Math.round(yearlyCost * 0.9);
+            document.getElementById('roi-result').innerText = "¥" + savings.toLocaleString();
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
