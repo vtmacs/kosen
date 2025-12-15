@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クラウド基礎 Linuxコマンド手順書 (Christmas Ver.)</title>
+    <style>
+        :root {
+            /* クリスマスカラーパレット */
+            --primary-color: #D42426; /* サンタレッド */
+            --primary-hover: #A81B1D;
+            --secondary-color: #165B33; /* ツリーグリーン */
+            --accent-color: #F8B229; /* ゴールド */
+            --bg-color: #F0F4F8; /* 雪のような薄いグレー */
+            --card-bg: #ffffff;
+            --text-main: #2C3E50;
+            --text-muted: #666;
+            --terminal-bg: #1E1E1E;
+            --terminal-text: #F0F0F0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e6e9f0 10%, transparent 10%), radial-gradient(#e6e9f0 10%, transparent 10%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            color: var(--text-main);
+        }
+
+        /* レイアウト用コンテナ */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 0 #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .intro-text {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 各セクションのカードデザイン */
+        .command-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-top: 5px solid var(--secondary-color); /* 上部に緑のアクセント */
+            transition: transform 0.2s ease;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: var(--secondary-color);
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        h3::before {
+            content: '🎄'; /* ドットの代わりにツリー */
+            font-size: 1rem;
+            margin-right: 8px;
+        }
+
+        h4 {
+            color: #856404;
+            background: #fff3cd;
+            border-left: 5px solid var(--accent-color);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        p.description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin: 0 0 12px 0;
+        }
+
+        /* 入力フォームのデザイン */
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212, 36, 38, 0.1);
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        /* ターミナル風コードブロック */
+        .terminal-window {
+            background: var(--terminal-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border: 1px solid #333;
+        }
+
+        .terminal-header {
+            background: #2d2d2d;
+            padding: 8px 12px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid #444;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            color: var(--terminal-text);
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        /* ボタンのデザイン */
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 50px; /* 丸みを持たせる */
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(212, 36, 38, 0.2);
+            gap: 6px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(212, 36, 38, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* ポップアップ通知 */
+        #hidden-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--secondary-color); /* 緑に変更 */
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px);
+        }
+
+        #hidden-text.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* タブ切り替え用のスタイル */
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .tab-button {
+            background-color: #ddd;
+            color: #555;
+            border-radius: 8px 8px 0 0; /* 上だけ丸く */
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: none;
+            transform: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab-button:hover {
+            background-color: #ccc;
+            transform: none;
+        }
+
+        .tab-button.active {
+            background-color: var(--terminal-bg); /* 黒背景と一体化 */
+            color: #fff;
+            position: relative;
+        }
+        
+        /* プレビュータブがアクティブなときはプレビューエリアと一体化させる */
+        .tab-button.active.preview-tab {
+            background-color: #fff;
+            color: var(--secondary-color);
+            border: 1px solid #ddd;
+            border-bottom: 1px solid #fff; /* 下線を消してコンテンツとつなげる */
+            z-index: 2;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 0 8px 8px 8px;
+            background: #fff;
+            margin-top: -1px; /* タブとの隙間を埋める */
+        }
+        
+        /* コマンド生成エリアの調整（タブ使用時） */
+        .tab-content .terminal-window {
+            margin-top: 0;
+            border-top-left-radius: 0; /* タブとつながるように */
+        }
+
+        /* 特別なセクション（挑戦状） */
+        .challenge-section {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            color: white;
+            border-top: 5px solid var(--accent-color);
+        }
+        .challenge-section h2 {
+            color: var(--accent-color);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .challenge-section h3 {
+            color: #fff;
+        }
+        .challenge-section h3::before {
+            content: '🔒'; /* 鍵アイコン */
+        }
+        .challenge-section p {
+            color: #ccc;
+        }
+        .challenge-section button {
+            background-color: var(--accent-color);
+            color: #2c3e50;
+            box-shadow: 0 4px 6px rgba(248, 178, 41, 0.3);
+        }
+        .challenge-section button:hover {
+            background-color: #ffc107;
+        }
+
+        /* フッターのような装飾 */
+        .footer-deco {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎅 クラウド基礎 Linux手順書 🎄</h1>
+    <p class="intro-text">各コマンドの下にある入力欄を使って動的にコマンドを変更できます。<br>「コピー」ボタンでコマンドをクリップボードにコピーし、ターミナルへ貼り付けてください。</p>
+    
+    <!-- IPアドレス設定 -->
+    <div class="command-section">
+        <h2>1. ターミナルから SSH でサーバにログイン</h2>
+        
+        <h3>1.1 ssh での接続</h3>
+        <p class="description">自分の環境のIPアドレスを入力してください。下のコマンドが自動的に書き換わります。</p>
+        
+        <label for="IP">IPアドレス：</label>
+        <input type="text" id="IP" placeholder="例: 127.0.0.1" oninput="updateIP(); updateIP2();">
+        
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd1">ssh ubuntu@127.0.0.1</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1')">📋 コマンドをコピー</button>
+
+        <h3>1.2 パスワードの入力</h3>
+        <p class="description">接続時にパスワードを求められたら入力します。</p>
+        <div class="terminal-window">
+            <div class="terminal-header"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+            <pre id="cmd1p">handson-sakura</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd1p')">📋 パスワードをコピー</button>
+    </div>
+    
+    <!-- 基本コマンド (新規追加) -->
+    <div class="command-section">
+        <h2>2. 基本コマンド</h2>
+
+        <h3>2.1 現在地の確認 (pwd)</h3>
+        <p class="description">現在自分がいるディレクトリ（場所）のパスを表示します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_pwd">pwd</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_pwd')">📋 コピー</button>
+
+        <h3>2.2 ディレクトリの作成 (mkdir)</h3>
+        <p class="description"><code>test</code> という名前の新しいディレクトリ（フォルダ）を作成します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_mkdir">mkdir test</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_mkdir')">📋 コピー</button>
+
+        <h3>2.3 ファイル一覧の表示 (ls)</h3>
+        <p class="description">ファイルやディレクトリの一覧を表示します。<code>test</code> ディレクトリが作成されたか確認しましょう。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_ls">ls</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_ls')">📋 コピー</button>
+
+        <h3>2.4 ディレクトリの移動 (cd)</h3>
+        <p class="description">作成した <code>test</code> ディレクトリの中に移動します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_cd">cd test</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_cd')">📋 コピー</button>
+
+        <h3>2.5 ファイルの作成 (cat)</h3>
+        <p class="description">
+            <code>test.txt</code> というファイルを作成します。<br>
+            コマンドを実行すると入力待ち状態になるので、<strong>自分の名前（ローマ字）を入力して Enter キーを押し、最後に <code>Ctrl + D</code> を押して保存・終了</strong>してください。
+        </p>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+            </div>
+            <pre id="cmd_basic_cat">cat > test.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_cat')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、test.txt ができたか確認しましょう。</h4>
+
+        <h3>2.6 ファイルのコピー (cp)</h3>
+        <p class="description"><code>test.txt</code> をコピーして、<code>test2.txt</code> を作成します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_cp">cp test.txt test2.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_cp')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、test2.txt が増えているか確認しましょう。</h4>
+
+        <h3>2.7 ファイルの削除 (rm)</h3>
+        <p class="description">元の <code>test.txt</code> を削除します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_rm">rm test.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_rm')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、test.txt が消えているか確認しましょう。</h4>
+
+        <h3>2.8 ファイルの移動 (mv)</h3>
+        <p class="description"><code>test2.txt</code> を一つ上の階層（親ディレクトリ）に移動します。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_mv">mv test2.txt ../</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_mv')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、test2.txt がここから無くなったことを確認しましょう。</h4>
+
+        <h3>2.9 元のディレクトリに戻る (cd)</h3>
+        <p class="description"><code>test</code> ディレクトリでの作業が終わったので、一つ上の階層（元の場所）に戻ります。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_cd_back">cd ..</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_cd_back')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、先ほど移動させた test2.txt があることを確認しましょう。</h4>
+
+        <h3>2.10 名前の変更も可能 (mv)</h3>
+        <p class="description"><code>mv</code> コマンドは場所の移動だけでなく、ファイル名の変更にも使えます。</p>
+        <div class="terminal-window">
+            <pre id="cmd_basic_mv_rename">mv test2.txt newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd_basic_mv_rename')">📋 コピー</button>
+        <h4>💡 実行後に <code>ls</code> コマンドを入力して、test2.txt が newname.txt に変わっていることを確認しましょう。</h4>
+    </div>
+
+    <!-- パーミッションの確認 -->
+    <div class="command-section">
+        <h2>3. パーミッションの変更</h2>
+        
+        <h3>3.1 パーミッションの確認</h3>
+        <p class="description">現在のファイル権限を確認します。</p>
+        <div class="terminal-window">
+            <pre id="cmd2">ls -l</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2')">📋 コピー</button>
+
+        <h3>3.2 読み取り権限を削除</h3>
+        <p class="description"><code>newname.txt</code> の読み取り権限を削除してみます。</p>
+        <div class="terminal-window">
+            <pre id="cmd2a">chmod -r newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2a')">📋 コピー</button>
+
+        <h3>3.3 変更されたことを確認</h3>
+        <div class="terminal-window">
+            <pre id="cmd2b">ls -l</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2b')">📋 コピー</button>
+
+        <h3>3.4 読み込めるかテスト</h3>
+        <p class="description">権限がないためエラーが出ることを確認します。</p>
+        <div class="terminal-window">
+            <pre id="cmd2c">cat newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2c')">📋 コピー</button>
+
+        <h3>3.5 もとに戻す</h3>
+        <p class="description">読み取り権限を元に戻します。</p>
+        <div class="terminal-window">
+            <pre id="cmd2d">chmod +r newname.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd2d')">📋 コピー</button>
+    </div>
+
+    <!-- Apacheのインストール -->
+    <div class="command-section">
+        <h2>4. Webサーバ（Apache2）のインストール</h2>
+        
+        <h3>4.1 パッケージ一覧の更新</h3>
+        <div class="terminal-window">
+            <pre id="cmd3">sudo apt update</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3')">📋 コピー</button>
+
+        <h3>4.2 パスワードの入力</h3>
+        <div class="terminal-window">
+            <pre id="cmd3a">handson-sakura</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3a')">📋 パスワードをコピー</button>
+
+        <h3>4.3 Webサーバのインストール</h3>
+        <p class="description">Apache2をインストールします。</p>
+        <div class="terminal-window">
+            <pre id="cmd3b">sudo apt install -y apache2</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3b')">📋 コピー</button>
+
+        <h3>4.4 グループ設定</h3>
+        <p class="description">ubuntuユーザを <code>www-data</code> グループに追加します。</p>
+        <div class="terminal-window">
+            <pre id="cmd3c">sudo usermod -aG www-data ubuntu</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3c')">📋 コピー</button>
+
+        <h3>4.5 所有権の変更</h3>
+        <p class="description">ドキュメントルートの所有権を変更し、書き込み可能にします。</p>
+        <div class="terminal-window">
+            <pre id="cmd3d">sudo chown -R ubuntu:www-data /var/www/html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3d')">📋 コピー</button>
+
+        <h3>4.6 確認</h3>
+        <div class="terminal-window">
+            <pre id="cmd3e">ls -l /var/www/html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd3e')">📋 コピー</button>
+    </div>
+
+    <!-- オリジナルコンテンツの作成 -->
+    <div class="command-section">
+        <h2>5. オリジナルコンテンツの作成 🎁</h2>
+        <p class="description">
+            Webサイトに表示するメッセージを入力してください。<br>
+            ※ Webページ上で改行を表示するには、改行したい場所に <code>&lt;br&gt;</code> と入力してください。（Enterキーでの改行は無視されます）
+        </p>
+        
+        <label for="message">メッセージ：</label>
+        <textarea id="message" placeholder="Merry Christmas!<br>&#10;Happy Holidays!" oninput="updateMessage()"></textarea>
+        
+        <!-- タブ切り替えボタン -->
+        <div class="tab-container">
+            <button class="tab-button active" onclick="switchTab('cmd-view', this)">💻 コマンドを表示</button>
+            <button class="tab-button preview-tab" onclick="switchTab('preview-view', this)">👁️ プレビューを表示</button>
+        </div>
+
+        <!-- タブ1: コマンド表示 -->
+        <div id="cmd-view" class="tab-content active">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+<pre id="cmd4">cat &lt;&lt; 'EOF' &gt; /var/www/html/mysite.html
+&lt;!DOCTYPE html&gt;
+&lt;html lang='ja'&gt;
+&lt;head&gt;
+&lt;meta charset='UTF-8'&gt;
+&lt;meta name='viewport' content='width=device-width, initial-scale=1.0'&gt;
+&lt;style&gt;
+  body { background-color: #f0f4f8; font-family: sans-serif; text-align: center; padding: 40px; color: #2c3e50; }
+  .card { background: #fff; border: 4px solid #165b33; border-radius: 20px; padding: 40px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  h1 { color: #d42426; font-size: 2.5em; margin: 0 0 20px 0; border-bottom: 2px dashed #d42426; padding-bottom: 15px; }
+  p { font-size: 1.5em; line-height: 1.6; margin: 20px 0; }
+  .footer { font-size: 0.8em; color: #888; margin-top: 30px; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class='card'&gt;
+    &lt;h1&gt;🎄 Merry Christmas 🎄&lt;/h1&gt;
+    &lt;p&gt;
+      Merry Christmas!&lt;br&gt;
+Happy Holidays!
+    &lt;/p&gt;
+    &lt;div class='footer'&gt;Powered by Linux Server&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF
+</pre>
+            </div>
+            <button onclick="copyToClipboard('cmd4')">📋 コマンドをコピー</button>
+        </div>
+
+        <!-- タブ2: プレビュー表示 -->
+        <div id="preview-view" class="tab-content">
+            <iframe id="preview-frame" class="preview-frame" title="Web Page Preview"></iframe>
+            <p class="description" style="margin-top: 10px; font-size: 0.85rem; text-align: right;">※ 実際のWebブラウザでの見え方を確認できます。</p>
+        </div>
+    </div>
+
+    <!-- ブラウザからアクセス -->
+    <div class="command-section">
+        <h2>6. ブラウザで確認</h2>
+        <p class="description">作成したWebページにアクセスしてみましょう。</p>
+        <div class="terminal-window" style="background: #fff; border: 1px solid #ddd;">
+            <pre id="cmd5" style="color: #007BFF; background: #fff;">http://127.0.0.1/mysite.html</pre>
+        </div>
+        <button onclick="copyToClipboard('cmd5')">🔗 URLをコピー</button>
+        <h4>💡 コピーしたURLをブラウザのアドレスバーに貼り付けて移動してください。</h4>
+    </div>
+
+    <!-- 怪盗shimaからの挑戦状 -->
+    <div class="command-section challenge-section">
+        <h2>EX. 怪盗shimaからの挑戦状</h2>
+        <p>ここからは応用編です。謎を解き明かしましょう。</p>
+        
+        <h3>EX.1 課題ファイルのダウンロード</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX1">curl -O https://raw.githubusercontent.com/vtmacs/kosen/main/setup_kadai_christmas.sh</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX1')">📋 コピー</button>
+
+        <h3>EX.2 課題ファイルの実行</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX2">sudo bash ./setup_kadai_christmas.sh</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX2')">📋 コピー</button>
+
+        <h3>EX.3 プロローグの確認</h3>
+        <div class="terminal-window">
+            <pre id="cmdEX3">cat /usr/share/kadai/prologue.txt</pre>
+        </div>
+        <button onclick="copyToClipboard('cmdEX3')">📋 コピー</button>
+    </div>
+
+    <div class="footer-deco">🎄 🎁 🦌</div>
+
+</div>
+
+<div id="hidden-text">✅ コピーしました！</div>
+
+<script>
+    // IPアドレスに合わせてコマンドを動的に更新する
+    function updateIP() {
+        const inputVal = document.getElementById("IP").value;
+        // 入力が空の場合はデフォルト値を表示に使用するが、ロジックとしては空なら空のまま
+        const displayIP = inputVal ? inputVal : "127.0.0.1"; 
+        
+        const command = `ssh ubuntu@${displayIP}`;
+        document.getElementById("cmd1").innerText = command;
+    }
+
+    // IPアドレスに合わせてURLを動的に更新する
+    function updateIP2() {
+        const inputVal = document.getElementById("IP").value;
+        const displayIP = inputVal ? inputVal : "127.0.0.1";
+
+        const command = `http://${displayIP}/mysite.html`;
+        document.getElementById("cmd5").innerText = command;
+    }
+
+    // タブ切り替え機能
+    function switchTab(tabId, btnElement) {
+        // すべてのタブコンテンツを非表示
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        // すべてのタブボタンのアクティブ状態を解除
+        document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+        
+        // 選択されたタブコンテンツを表示
+        document.getElementById(tabId).classList.add('active');
+        // クリックされたボタンをアクティブにする
+        btnElement.classList.add('active');
+
+        // もしプレビューが表示されたら、最新の内容を反映させる（念のため）
+        if (tabId === 'preview-view') {
+            updateMessage(); 
+        }
+    }
+
+    // メッセージに合わせてコマンドを動的に更新する
+    function updateMessage() {
+        let message = document.getElementById("message").value;
+        if(!message) {
+            // クリスマスバージョンに変更
+            message = "Merry Christmas!<br>\nHappy Holidays!";
+        }
+        
+        // HTMLテンプレート（スタイル付き）
+        const htmlContent = `<!DOCTYPE html>
+<html lang='ja'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<style>
+  body { background-color: #f0f4f8; font-family: sans-serif; text-align: center; padding: 40px; color: #2c3e50; }
+  .card { background: #fff; border: 4px solid #165b33; border-radius: 20px; padding: 40px; max-width: 600px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  h1 { color: #d42426; font-size: 2.5em; margin: 0 0 20px 0; border-bottom: 2px dashed #d42426; padding-bottom: 15px; }
+  p { font-size: 1.5em; line-height: 1.6; margin: 20px 0; }
+  .footer { font-size: 0.8em; color: #888; margin-top: 30px; }
+</style>
+</head>
+<body>
+  <div class='card'>
+    <h1>🎄 Merry Christmas 🎄</h1>
+    <p>
+      ${message}
+    </p>
+    <div class='footer'>Powered by Linux Server</div>
+  </div>
+</body>
+</html>`;
+
+        const command = `cat << 'EOF' > /var/www/html/mysite.html
+${htmlContent}
+EOF`;
+        // コマンドの更新
+        document.getElementById("cmd4").innerText = command;
+        
+        // プレビューの更新
+        const iframe = document.getElementById("preview-frame");
+        if(iframe) {
+            iframe.srcdoc = htmlContent;
+        }
+    }
+
+    // クリップボードにコピーする関数
+    function copyToClipboard(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        
+        // Clipboard APIの試行
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showPopup();
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function showPopup() {
+        const popup = document.getElementById('hidden-text');
+        popup.classList.add('show');
+        
+        // 既存のタイマーがあればクリア（連打対策）
+        if(window.popupTimer) clearTimeout(window.popupTimer);
+
+        window.popupTimer = setTimeout(() => {
+            popup.classList.remove('show');
+        }, 2000);
+    }
+
+    // 古いブラウザやiframe環境のためのフォールバック
+    function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand("copy");
+            showPopup();
+        } catch (err) {
+            console.error("コピーに失敗しました", err);
+        }
+        document.body.removeChild(textarea);
+    }
+
+    // 初期化：ページ読み込み時にもプレビューをセットしておく
+    window.onload = function() {
+        updateMessage();
+    };
+</script>
+</body>
+</html>
