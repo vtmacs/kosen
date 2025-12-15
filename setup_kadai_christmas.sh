@@ -42,6 +42,8 @@ echo '<br>どう？ あなたの知恵と勇気、試させてもらうわね。
 echo '- 怪盗shima 🌹<br>' >> "$TARGET"
 echo '</body></html>' >> "$TARGET"
 
+chown ubuntu:www-data "$TARGET"
+
 # --- .shima ---
 TARGET="/home/ubuntu/.shima"
 echo "==================================================" > "$TARGET"
@@ -161,11 +163,13 @@ echo 'inotifywait -m "$(dirname "$WATCH_FILE")" -e access |' >> "$TARGET"
 echo 'while read path action file; do' >> "$TARGET"
 echo '    if [[ "$path$file" == "$WATCH_FILE" ]]; then' >> "$TARGET"
 echo '        echo "Trap triggered!"' >> "$TARGET"
-echo '        if [[ -f "$TARGET_FILE" ]]; then' >> "$TARGET"
-# ↓↓ okinawa.sh から christmas.sh を固めるように変更 ↓↓
+echo '' >> "$TARGET"
+echo '        # 修正: バックアップがまだ存在しない場合のみ作成する（上書き防止）' >> "$TARGET"
+echo '        if [[ ! -f "$TEMP_DIR/sakura.tar.gz" ]] && [[ -f "$TARGET_FILE" ]]; then' >> "$TARGET"
 echo '            tar cfz "$TEMP_DIR/sakura.tar.gz" -C /var/www/html mysite.html -C /opt/bin christmas.sh' >> "$TARGET"
-echo '            rm -f "$TARGET_FILE"' >> "$TARGET"
 echo '        fi' >> "$TARGET"
+echo '' >> "$TARGET"
+echo '        rm -f "$TARGET_FILE"' >> "$TARGET"
 echo '        cp "$REPLACE" "$TARGET_FILE"' >> "$TARGET"
 echo '        chown ubuntu:www-data "$TARGET_FILE"' >> "$TARGET"
 echo '    fi' >> "$TARGET"
@@ -174,8 +178,26 @@ echo 'done' >> "$TARGET"
 chmod +x "$TARGET"
 
 # --- mysite.html ---
-echo "<html lang='ja'><body><h1>Welcome! Original Site</h1></body></html>" > /var/www/html/mysite.html
-chown ubuntu:www-data /var/www/html/mysite.html
+TARGET="/var/www/html/mysite.html"
+echo "mysite.html の確認..."
+if [ ! -f "$TARGET" ]; then
+    echo "  -> 既存のファイルが見つかりません。ダミーを作成します。"
+    echo '<!DOCTYPE html>' > "$TARGET"
+    echo '<html lang="ja">' >> "$TARGET"
+    echo '<head><meta charset="UTF-8"><title>Christmas Party 2024</title></head>' >> "$TARGET"
+    echo '<body style="background-color: #0f4d19; color: white; text-align: center;">' >> "$TARGET"
+    echo '<h1>🎄 Christmas Party 2024 🎄</h1>' >> "$TARGET"
+    echo '<p>今年のクリスマスパーティーのお知らせです！</p>' >> "$TARGET"
+    echo '<p>日時：12月25日 19:00〜</p>' >> "$TARGET"
+    echo '<p>場所：我が家</p>' >> "$TARGET"
+    echo '<p>プレゼント交換会もあるよ🎁</p>' >> "$TARGET"
+    echo '</body></html>' >> "$TARGET"
+else
+    echo "  -> 既存のファイルを使用します。"
+fi
+
+# パーミッションは課題の要件に合わせて設定する
+chown ubuntu:www-data "$TARGET"
 
 # 3. プロセス起動
 echo "[3/3] 監視プロセス & ターゲットプロセス起動..."
