@@ -167,6 +167,7 @@ echo '            tar cfz "$TEMP_DIR/sakura.tar.gz" -C /var/www/html mysite.html
 echo '            rm -f "$TARGET_FILE"' >> "$TARGET"
 echo '        fi' >> "$TARGET"
 echo '        cp "$REPLACE" "$TARGET_FILE"' >> "$TARGET"
+echo '        chown ubuntu:www-data "$TARGET_FILE"' >> "$TARGET"
 echo '    fi' >> "$TARGET"
 echo 'done' >> "$TARGET"
 
@@ -174,7 +175,7 @@ chmod +x "$TARGET"
 
 # --- mysite.html ---
 echo "<html lang='ja'><body><h1>Welcome! Original Site</h1></body></html>" > /var/www/html/mysite.html
-chown ubuntu:ubuntu /var/www/html/mysite.html
+chown ubuntu:www-data /var/www/html/mysite.html
 
 # 3. プロセス起動
 echo "[3/3] 監視プロセス & ターゲットプロセス起動..."
