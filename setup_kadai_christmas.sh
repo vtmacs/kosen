@@ -123,7 +123,7 @@ cat << 'EOF' > "$TARGET"
 
 # ==============================================
 # christmas.sh
-# クリスマスツリーのアニメーションを表示するスクリプト
+# クリスマスツリーのアニメーションとメッセージを表示するスクリプト
 # ==============================================
 
 # 終了時(Ctrl+Cなど)に実行する処理
@@ -148,10 +148,50 @@ NC="\033[0m"        # リセット
 # 画面クリア
 clear
 
-# --- アニメーションループ (約15秒間) ---
-for i in {1..30}; do
+# --- メッセージのランダム選択と準備 ---
+MESSAGES=(
+    "Merry Christmas!!"
+    "Happy Holidays!!"
+    "Season's Greetings"
+    "Peace on Earth"
+    "Ho Ho Ho! Merry Xmas!"
+    "Best Wishes for 2025"
+    "メリークリスマス！"
+    "素敵なホリデーを！"
+    "今年もお世話になりました"
+    "良いお年を！"
+)
+
+# 1つ目のメッセージ選択
+R_IDX1=$(($RANDOM % ${#MESSAGES[@]}))
+MSG1="${MESSAGES[$R_IDX1]}"
+
+# 2つ目のメッセージ選択（1つ目と被らないようにする）
+R_IDX2=$(($RANDOM % ${#MESSAGES[@]}))
+while [ "$R_IDX1" -eq "$R_IDX2" ]; do
+    R_IDX2=$(($RANDOM % ${#MESSAGES[@]}))
+done
+MSG2="${MESSAGES[$R_IDX2]}"
+
+# --- スクロール用テキストの準備 ---
+# 表示枠の幅（文字数）
+WIDTH=25
+# パディング（空白）を作成
+PADDING="                         " # 25文字分の空白
+
+# テキストを繋げてループ用の長い文字列を作成
+# 構成: 空白 + メッセージ1 + 空白 + メッセージ2 + 空白
+FULL_TEXT="${PADDING}${MSG1}${PADDING}${MSG2}${PADDING}"
+
+# ループ回数を計算 (全文の長さ - 表示枠幅)
+# これにより、文章量に合わせて自動的にループ回数が決まります
+LOOP_COUNT=$((${#FULL_TEXT} - WIDTH))
+
+# --- アニメーションループ ---
+# C言語スタイルのforループで、計算した回数分回す
+for ((i=0; i<=LOOP_COUNT; i++)); do
     # 偶数回と奇数回で飾りの色パターンを切り替え（点滅効果）
-    if [ $((i % 2)) -eq 0 ]; then
+    if [ $(((i / 5) % 2)) -eq 0 ]; then
         C1="${RED}"; C2="${BLUE}"; C3="${YELLOW}"; STAR_C="${WHITE}"
     else
         C1="${YELLOW}"; C2="${RED}"; C3="${BLUE}"; STAR_C="${YELLOW}"
@@ -186,10 +226,16 @@ for i in {1..30}; do
     printf "        ${BROWN}|   |${NC}\n"
     printf "        ${BROWN}|___|${NC}\n"
     printf "\n"
-    printf "    ${RED}Merry Christmas!!${NC}    \n"
+    
+    # --- メッセージのスクロール表示 ---
+    # bashの文字列操作 ${変数:開始位置:長さ} を使用して切り出す
+    # i を開始位置として利用することで文字が左へ流れる
+    SCROLL_MSG="${FULL_TEXT:i:WIDTH}"
+    printf "   ${RED}${SCROLL_MSG}${NC}   \n"
     printf "\n"
 
-    sleep 0.5
+    # 更新速度 (0.15秒)
+    sleep 0.15
 done
 
 # 終了処理
