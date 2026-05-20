@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Docker環境構築 & さくらのクラウドAppRun ハンズオン</title>
-    <!-- フォントとアイコンの読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -209,6 +208,19 @@
             font-size: 1.2rem;
         }
 
+        /* 変更不可のデフォルト値を示すバッジ */
+        .default-badge {
+            background-color: #64748b;
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 8px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
         /* IP入力欄のスタイル */
         .ip-input-group {
             margin-top: 15px;
@@ -272,6 +284,7 @@
                 position: static;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
+                z-index: 100;
             }
             .main-content {
                 margin-left: 0;
@@ -282,56 +295,52 @@
 </head>
 <body>
 
-    <!-- サイドバー -->
     <nav class="sidebar">
         <div class="sidebar-header">
             <h2>ハンズオン目次</h2>
             <div class="ip-input-group">
-                <label for="bastion-ip"><i class="fa-solid fa-shield-halved"></i> 踏み台サーバIP</label>
+                <label for="bastion-ip"><i class="fa-solid fa-shield-halved"></i> 踏み台サーバーIP</label>
                 <input type="text" id="bastion-ip" placeholder="例: 203.0.113.1">
             </div>
             <div class="ip-input-group">
-                <label for="user-ip"><i class="fa-solid fa-server"></i> 実習用サーバIP</label>
+                <label for="user-ip"><i class="fa-solid fa-server"></i> 実習用サーバーIP</label>
                 <input type="text" id="user-ip" placeholder="例: 198.51.100.1">
             </div>
         </div>
         <div class="sidebar-nav">
             <ul>
                 <li><a href="#intro" class="active">1. はじめに</a></li>
-                <li><a href="#bastion-setup">2. 踏み台サーバへの接続</a></li>
+                <li><a href="#bastion-setup">2. 踏み台サーバーへの接続</a></li>
                 <li><a href="#docker-setup">3. Docker環境の構築</a></li>
                 <li><a href="#docker-run">4. コンテナの起動実験</a></li>
-                <li><a href="#docker-apache">5. Apache(Webサーバ)の起動</a></li>
-                <li><a href="#apprun-intro">6. AppRunによるサーバレス体験</a></li>
+                <li><a href="#docker-apache">5. Apache(Webサーバー)の起動</a></li>
+                <li><a href="#apprun-intro">6. AppRunによるサーバーレス体験</a></li>
                 <li><a href="#apprun-deploy">7. ネームボードのデプロイ</a></li>
                 <li><a href="#cleanup">8. 環境の片付け</a></li>
             </ul>
         </div>
     </nav>
 
-    <!-- メインコンテンツ -->
     <main class="main-content">
         <h1 class="page-title">Docker & さくらのクラウドAppRun ハンズオン</h1>
 
-        <!-- 1. はじめに -->
         <section id="intro">
             <h2>1. はじめに</h2>
-            <p>このハンズオンでは、クラウド上のUbuntuサーバにDocker環境を構築し、基本的なコンテナ操作を学びます。後半では、作成したコンテナを**さくらのクラウド「AppRun」**を使って、インフラ管理不要（サーバレス）でインターネットに公開する一連の開発フローを体験します。</p>
+            <p>このハンズオンでは、クラウド上のUbuntuサーバーにDocker環境を構築し、基本的なコンテナ操作を学びます。後半では、作成したコンテナを**さくらのクラウド「AppRun」**を使って、インフラ管理不要（サーバーレス）でインターネットに公開する一連の開発フローを体験します。</p>
             
             <div class="alert alert-info">
                 <i class="fa-solid fa-circle-info"></i>
                 <div>
                     <strong>本日のゴール</strong><br>
-                    ① 踏み台経由で実習用Ubuntuに接続し、DockerをインストールしてWebサーバを立ち上げる。<br>
+                    ① 踏み台経由で実習用サーバーに接続し、DockerをインストールしてWebサーバーを立ち上げる。<br>
                     ② AppRunを使って、自分の名前と色を設定した「ネームボード」コンテナをデプロイし、クラス全体のボードと連携させる。
                 </div>
             </div>
         </section>
 
-        <!-- 2. 踏み台サーバへの接続 -->
         <section id="bastion-setup">
-            <h2>2. 踏み台サーバへの接続</h2>
-            <p>今回の実習環境はセキュリティを高めるため、直接アクセスすることができません。まずは入り口となる「踏み台サーバ」にSSH接続します。</p>
+            <h2>2. 踏み台サーバーへの接続</h2>
+            <p>今回の実習環境はセキュリティを高めるため、直接アクセスすることができません。まずは入り口となる「踏み台サーバー」にSSH接続します。</p>
             
             <p>ターミナル（WindowsはPowerShell、Macはターミナル）を開き、以下のコマンドを実行してください。</p>
             <div class="code-container">
@@ -339,43 +348,42 @@
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>ssh ubuntu@<span class="ip-placeholder bastion-ip-placeholder">&lt;踏み台サーバIPアドレス&gt;</span></code></pre>
+                <pre><code>ssh -l ubuntu <span class="ip-placeholder bastion-ip-placeholder">&lt;踏み台サーバーIPアドレス&gt;</span></code></pre>
             </div>
             <p>パスワードを求められた場合は、教員から指示されたパスワードを入力します。（※入力中、画面に文字は表示されません）</p>
         </section>
 
-        <!-- 3. Docker環境の構築 -->
         <section id="docker-setup">
             <h2>3. Docker環境の構築</h2>
-            <p>踏み台サーバを経由して、実際にDockerを動かす演習用のUbuntuサーバに接続し、Dockerをインストールします。</p>
+            <p>踏み台サーバーを経由して、実際にDockerを動かす実習用のUbuntuサーバーに接続し、Dockerをインストールします。</p>
 
-            <h3>3.1 実習用サーバへのログイン</h3>
-            <p>踏み台サーバにログインした状態のまま、続けて実習用サーバにSSH接続します。</p>
+            <h3>3.1 実習用サーバーへのログイン</h3>
+            <p>踏み台サーバーにログインした状態のまま、続けて実習用サーバーにSSH接続します。</p>
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>ssh ubuntu@<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span></code></pre>
+                <pre><code>ssh -l ubuntu <span class="ip-placeholder user-ip-placeholder">&lt;実習用サーバーIPアドレス&gt;</span></code></pre>
             </div>
 
             <div class="alert alert-info">
                 <i class="fa-solid fa-circle-check"></i>
                 <div>
-                    <strong>ログインの確認</strong><br>
-                    ログイン後、ターミナルの入力行（プロンプト）の表示が <code>ubuntu@jump-host-**</code> から <code>ubuntu@server**</code>（**は数字）に変わっていることを確認してください。表示が変わっていれば、実習用サーバへの接続は成功です。
+                    <strong>ログインの確認＆パスワード</strong><br>
+                    パスワードを入力（<code>handson-sakura</code>）してログインした後、ターミナルの入力行（プロンプト）の表示が <code>ubuntu@jump-host-**</code> から <code>ubuntu@server**</code>（**は数字）に変わっていることを確認してください。表示が変わっていれば、実習用サーバーへの接続は成功です。
                 </div>
             </div>
 
             <h3>3.2 Dockerのインストール</h3>
-            <p>Ubuntuのパッケージを最新化し、Dockerの公式インストールスクリプトを実行します。</p>
+            <p>自動インストールスクリプトをダウンロードし、実行します。</p>
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>curl -fsSL https://get.docker.com -o install.sh
-sudo sh ./install.sh</code></pre>
+                <pre><code>curl -fsSL https://get.docker.com -o install-docker.sh
+sudo sh ./install-docker.sh</code></pre>
             </div>
 
             <h3>3.3 ユーザー権限の設定</h3>
@@ -407,9 +415,9 @@ sudo sh ./install.sh</code></pre>
             <div class="alert alert-warning">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <div>
-                    <strong>注意: 踏み台サーバに戻ります</strong><br>
-                    <code>exit</code> を実行すると、手前の<strong>踏み台サーバ</strong>に戻ります。<br>
-                    そのため、もう一度以下のコマンドを実行し、<strong>実習用サーバ</strong>に再ログインしてください。
+                    <strong>注意: 踏み台サーバーに戻ります</strong><br>
+                    <code>exit</code> を実行すると、手前の<strong>踏み台サーバー</strong>に戻ります。<br>
+                    そのため、もう一度以下のコマンドを実行し、<strong>実習用サーバー</strong>に再ログインしてください。
                 </div>
             </div>
 
@@ -418,25 +426,34 @@ sudo sh ./install.sh</code></pre>
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>ssh ubuntu@<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span></code></pre>
+                <pre><code>ssh -l ubuntu <span class="ip-placeholder user-ip-placeholder">&lt;実習用サーバーIPアドレス&gt;</span></code></pre>
             </div>
 
-            <p>再ログイン後、以下のコマンドを実行してDockerのバージョンが表示されれば設定は完了です。</p>
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-check"></i>
+                <div>
+                    <strong>再ログイン後の確認</strong><br>
+                    3.1節の「ログインの確認＆パスワード」を参考に、実習用サーバーに再接続した後は、ターミナルの入力行（プロンプト）の表示が <code>ubuntu@jump-host-**</code> から <code>ubuntu@server**</code>（**は数字）に変わっていることを必ず確認してください。
+                </div>
+            </div>
+
+            <p>再ログイン後、以下のコマンドを実行してDockerのバージョン情報（ClientやServerの情報）がターミナルに表示されれば準備完了です。</p>
 
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>docker -v</code></pre>
+                <pre><code>docker version</code></pre>
             </div>
         </section>
 
-        <!-- 4. コンテナの起動実験 -->
         <section id="docker-run">
             <h2>4. コンテナの起動実験</h2>
-            <p>環境が整ったので、世界で一番有名なテストコンテナを動かしてみましょう。</p>
+            <p>環境が整ったので、テスト用のコンテナを実行してみましょう。ここではコンテナを2回起動し、その後に<b>コンテナとイメージの片付け（基本ライフサイクル）</b>までを体験して環境を一度リセットします。</p>
             
+            <h3>4.1 コンテナを2回起動してみる</h3>
+            <p>まずは以下のコマンドを入力し、最初のコンテナを立ち上げます。</p>
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
@@ -444,45 +461,166 @@ sudo sh ./install.sh</code></pre>
                 </div>
                 <pre><code>docker run hello-world</code></pre>
             </div>
-            <p><code>Hello from Docker!</code> というメッセージが表示されれば、正常にDockerが動作しています。</p>
-        </section>
-
-        <!-- 5. Apacheの起動 -->
-        <section id="docker-apache">
-            <h2>5. Apache(Webサーバ)の起動</h2>
-            <p>次に、実際のWebサーバである「Apache」をコンテナとして立ち上げます。</p>
-
-            <h3>5.1 コンテナの起動（バックグラウンド実行）</h3>
-            <p>以下のコマンドを実行します。ホストの8080番ポートをコンテナの80番に繋いでいます。</p>
             
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    <strong>1回目の動作の特徴</strong><br>
+                    最初は <code>Unable to find image 'hello-world:latest' locally</code> と表示されます。手元のサーバーにイメージが存在しないため、Docker Hubから自動的にダウンロード（Pull）を行っている様子を示しています。
+                </div>
+            </div>
+
+            <p>1回目が完了したら、まったく同じコマンドを**もう一度**実行してみてください。</p>
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>docker run -d -p 8080:80 --name my-apache httpd</code></pre>
+                <pre><code>docker run hello-world</code></pre>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-check"></i>
+                <div>
+                    <strong>2回目の動作の特徴（確認事項）</strong><br>
+                    2回目の実行ではダウンロード処理が入らず、**コマンドを押した瞬間に一瞬でメッセージが出力されたこと**を確認してください。すでに手元に <code>hello-world</code> イメージが保存（キャッシュ）されているためです。
+                </div>
+            </div>
+
+            <p>ダウンロードされたイメージ一覧を確認してみます。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker images</code></pre>
+            </div>
+            <p>実行結果として、<code>hello-world</code> イメージがローカルにしっかりと保存されていることが確認できます。</p>
+
+            <h3>4.2 実験用コンテナとイメージの片付け</h3>
+            <p>次の実習に進む前に、起動した実験用コンテナとイメージを削除しておきましょう。</p>
+
+            <p>① まず、停止中のものも含めて、実行したすべてのコンテナの一覧を確認します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker ps -a</code></pre>
+            </div>
+            <p>※ `hello-world` コンテナが <code>STATUS: Exited (0) ...</code>（停止中）としてリストに存在するはずです。また、右端にある自動付与されたコンテナ名（NAMES）を確認します。</p>
+
+            <p>② 確認したコンテナの「CONTAINER ID」または自動生成された「NAMES（コンテナ名）」を指定して、コンテナを完全に削除します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker rm &lt;確認したコンテナ名、またはIDを入力&gt;</code></pre>
+            </div>
+            <p>※ 削除後、再度 <code>docker ps -a</code> を実行してリストから消えたことを確認しましょう。</p>
+
+            <p>③ 最後に、ローカルにダウンロードされた <code>hello-world</code> のイメージ自体も削除して環境を元通りにリセットします。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker rmi hello-world</code></pre>
+            </div>
+        </section>
+
+        <section id="docker-apache">
+            <h2>5. Apache(Webサーバー)の起動</h2>
+            <p>実験環境がきれいになったところで、次は実践的なWebサーバーである「Apache」をコンテナとして立ち上げ、動作確認と削除までを行います。</p>
+
+            <h3>5.1 Apacheイメージの取得と起動</h3>
+            <p>Webサーバーソフトウェア「Apache」があらかじめ含まれている公式イメージ <code>httpd</code> をダウンロード（Pull）し、コンテナをバックグラウンドで起動します。</p>
+            
+            <p>① まず、<code>httpd</code>イメージをダウンロードします。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker pull httpd</code></pre>
+            </div>
+
+            <p>② 正常にイメージが取得できたか一覧で確認します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker images</code></pre>
+            </div>
+
+            <p>③ コンテナをバックグラウンド（<code>-d</code> オプション）で起動します。この際、ホストのポートとコンテナのポートを接続します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker run -d -p 8080:80 httpd</code></pre>
+            </div>
+
+            <p>④ コンテナが正常に動作しているか確認し、自動生成された「NAMES（コンテナ名）」を確認します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker ps</code></pre>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-question"></i>
+                <div>
+                    <strong>[解説] ポート設定（-p 8080:80）の仕組み</strong><br>
+                    ブラウザからコンテナのWebサービスにアクセスするには、コンテナ作成時に通信の出入り口となる「ポート」を設定する必要があります。<br>
+                    コマンド内の <code>-p 8080:80</code> は、外部からホストサーバーの「ポート 8080」に届いたリクエストを、コンテナ側の「ポート 80 (Apacheの入り口)」へ自動転送(フォワーディング)するようつなぐ設定を行っています。
+                </div>
             </div>
 
             <h3>5.2 動作確認</h3>
-            <p>ブラウザを開き、<code>http://<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span>:8080</code> にアクセスしてください。「<strong>It works!</strong>」と表示されれば成功です。</p>
+            <p>ブラウザを開き、<code>http://<span class="ip-placeholder user-ip-placeholder">&lt;実習用サーバーIPアドレス&gt;</span>:8080</code> にアクセスしてください。「<strong>It works!</strong>」と表示されればWebサーバーの起動に成功しています。</p>
 
-            <h3>5.3 コンテナの停止と削除</h3>
-            <p>確認が終わったら、起動中のコンテナを停止し、削除してリソースを解放します。</p>
+            <h3>5.3 Apacheコンテナの停止と片付け</h3>
+            <p>確認が終わったら、先ほど学んだライフサイクル管理の復習として、起動中のApacheコンテナを停止・削除し、最後にイメージも片付けます。</p>
+            
+            <p>① バックグラウンドで起動しているApacheコンテナを安全に停止させます。</p>
             <div class="code-container">
                 <div class="code-header">
                     <span>bash</span>
                     <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
                 </div>
-                <pre><code>docker stop my-apache
-docker rm my-apache</code></pre>
+                <pre><code>docker stop &lt;確認したコンテナ名、またはIDを入力&gt;</code></pre>
+            </div>
+
+            <p>② 停止状態になったコンテナ（STATUSがExitedになっていること）を確認した後、システムから完全に削除します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker ps -a
+docker rm &lt;確認したコンテナ名、またはIDを入力&gt;</code></pre>
+            </div>
+
+            <p>③ 最後に、不要になった <code>httpd</code> イメージ自体も削除してディスクを整理します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker rmi httpd</code></pre>
             </div>
         </section>
 
-        <!-- 6. AppRunによるサーバレス体験 -->
         <section id="apprun-intro">
             <h2>6. さくらのクラウドAppRun ハンズオン</h2>
-            <p>ここまではUbuntuサーバ上でDockerを動かしました。しかし実際のサービス運用では、「サーバのOSアップデート」や「セキュリティ対策」などのインフラ管理が大変になります。</p>
-            <p>そこで、<strong>「コンテナイメージを渡すだけで、あとはクラウドが勝手に自動運用してくれる」</strong>というサーバレス技術である「AppRun」を体験します。</p>
+            <p>ここまではUbuntuサーバー上でDockerを動かしました。しかし実際のサービス運用では、「サーバーのOSアップデート」や「セキュリティ対策」などのインフラ管理が大変になります。</p>
+            <p>そこで、<strong>「コンテナイメージを渡すだけで、あとはクラウドが勝手に自動運用してくれる」</strong>というサーバーレス技術である「AppRun」を体験します。</p>
             
             <div class="alert alert-info">
                 <i class="fa-regular fa-lightbulb"></i>
@@ -493,40 +631,53 @@ docker rm my-apache</code></pre>
             </div>
         </section>
 
-        <!-- 7. ネームボード of デプロイ -->
         <section id="apprun-deploy">
             <h2>7. AppRunへのデプロイ手順</h2>
             
             <h3>7.1 コントロールパネルへログイン</h3>
-            <p>ブラウザでさくらのクラウドコントロールパネルにアクセスし、教員から配布されたアカウント情報でログインします。</p>
+            <p>ブラウザで以下のURLにアクセスし、教員から配布されたアカウント情報（会員ID、パスワード）で、さくらのクラウドコントロールパネルにログインします。</p>
+            
+            <div class="alert alert-info" style="margin-top: 15px;">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <div>
+                    <strong>さくらのクラウド コントロールパネル ログインURL:</strong><br>
+                    <a href="https://secure.sakura.ad.jp/cloud/" target="_blank" style="color: #004488; font-weight: bold; text-decoration: underline; word-break: break-all;">
+                        https://secure.sakura.ad.jp/cloud/
+                    </a>
+                </div>
+            </div>
             
             <h3>7.2 アプリケーションの作成</h3>
-            <p>左側メニューから「AppRun（共用型）」を選択し、「追加」ボタンをクリックします。以下の通り設定してください。</p>
+            <p>ログイン後、画面上部に表示される<strong>「さくらのクラウドホーム」</strong>画面中央の<strong>「クラウド/クラウド連携サービス」</strong>エリアに移動します。</p>
+            <p>その中にある<strong>「AppRun専用型 / AppRun共用型」</strong>と書かれた青い文字のリンクを探し、その右側の<strong>「AppRun共用型」</strong>をクリックします。遷移後のアプリケーション一覧画面で、右上の<strong>「アプリケーションを作成」</strong>ボタンをクリックします。</p>
+            <p>コントロールパネル画面には多くの設定項目が表示されますが、<strong>学生の皆さんが入力・設定するのは以下の「2つの項目」のみ</strong>です。</p>
+            
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong>注意: 他の項目は変更しないでください</strong><br>
+                    表に記載のない項目（オートスケーリング設定、タイムアウト値、ポート設定、レジストリアクセス設定など）は、最初から入っているデフォルト値のまま<b>決して変更しないでください</b>。
+                </div>
+            </div>
             
             <table>
                 <tr>
                     <th style="width: 30%;">設定項目</th>
-                    <th>入力値</th>
+                    <th>設定方法 / 入力値</th>
                 </tr>
                 <tr>
-                    <td>アプリケーション名</td>
-                    <td><code>my-nameboard</code> (※任意の英数字)</td>
+                    <td><strong>アプリケーション名</strong></td>
+                    <td>
+                        <code>nameboard</code> <small>(※任意の英数字)</small><br>
+                        <small style="color: #64748b;">※画面上部<strong>「アプリケーションの設定をしてください」</strong>エリアの一番最初に入力します。</small>
+                    </td>
                 </tr>
                 <tr>
-                    <td>コンテナイメージ</td>
-                    <td><code>kosen-handson.sakuracr.jp/nameboard:latest</code></td>
-                </tr>
-                <tr>
-                    <td>ポート設定</td>
-                    <td><code>8080</code></td>
-                </tr>
-                <tr>
-                    <td>最小スケール数</td>
-                    <td><code>0</code> (※アクセスがないと自動停止してコストを節約します)</td>
-                </tr>
-                <tr>
-                    <td>最大スケール数</td>
-                    <td><code>1</code></td>
+                    <td><strong>コンテナイメージ</strong></td>
+                    <td>
+                        <code>kosen-handson.sakuracr.jp/nameboard:latest</code><br>
+                        <small style="color: #64748b;">※画面下部<strong>「コンテナの構成情報を設定してください」</strong>エリアの「コンテナ」タブ内にある最初の入力欄に入力します。</small>
+                    </td>
                 </tr>
             </table>
 
@@ -537,37 +688,47 @@ docker rm my-apache</code></pre>
                 <i class="fa-solid fa-window-restore"></i>
                 <div>
                     <strong>設定タブ切り替えの手順</strong><br>
-                    ① AppRun作成画面の「コンテナ構成」エリアを見ると、最初は <code>コンテナ</code> タブが選択されています。<br>
+                    ① AppRun作成画面の最下部「コンテナ構成」エリアを見ると、最初は <code>コンテナ</code> タブが選択されています。<br>
                     ② その右側にある <strong><code>変数</code> タブ</strong> をクリックして切り替えてください。
                 </div>
             </div>
 
-            <p>「変数」タブに切り替えたら、設定エリアに以下のペア（3つの設定）を追加してください。</p>
+            <p>「変数」タブに切り替えたら、設定エリアに「＋ 変数を追加」ボタンを使いながら、以下のペア（3つの設定）を追加してください。</p>
             <ul>
-                <li>キー：<code>MY_NAME</code> / 値：<strong>自分の名前（ニックネーム可）</strong></li>
-                <li>キー：<code>MY_COLOR</code> / 値：<strong>好きなカラーコード（例: <code>#ff9900</code> や <code>blue</code>）</strong></li>
-                <li>キー：<code>MY_GROUP</code> / 値：<strong>自分の所属グループ名（例: <code>A組</code>、<code>1班</code> など）</strong></li>
+                <li>キー（名前）：<code>MY_NAME</code> / 値：<strong>ニックネーム</strong> <small style="color: #64748b;">※本名は入力しないこと</small></li>
+                <li>キー（名前）：<code>MY_COLOR</code> / 値：<strong>好きなカラーコード（例: <code>blue</code>、<code>#ff9900</code> など）</strong></li>
+                <li>キー（名前）：<code>MY_GROUP</code> / 値：<strong>自分の所属グループ名（例: <code>高専</code>、<code>組</code>、<code>班</code> など）</strong></li>
             </ul>
 
             <h3>7.4 デプロイと確認</h3>
-            <p>「作成」をクリックしてデプロイを開始します。完了すると <code>https://xxx.apprun.sakura.ne.jp</code> という専用URLが発行されるので、クリックして自分のネームボードが表示されるか確認してください。</p>
+            <p>入力情報をもう一度確認し、問題がなければ最下部にある「作成する」ボタンをクリックしてデプロイを開始します。完了すると <code>https://xxx.apprun.sakura.ne.jp</code> という専用の「公開URL」が発行されるので、クリックして自分のネームボードが表示されるか確認してください。</p>
 
             <h3>7.5 親サイトへの登録</h3>
-            <p>自分のAppRun URLをコピーし、教員が提示したダッシュボード（親サイト）の登録欄に貼り付けて「参加する」を押してください。教室のスクリーンにあなたのボードが出現します！</p>
+            <p>自分のAppRun URLをコピーし、クラス全員のボードが集まる「親サイト（ダッシュボード）」にアクセスして登録しましょう。</p>
+
+            <div class="alert alert-info" style="margin-top: 20px;">
+                <i class="fa-solid fa-square-poll-horizontal"></i>
+                <div>
+                    <strong>クラス・ネームボード・ダッシュボード（親サイト）のURL:</strong><br>
+                    <a href="https://app-696c8387-6310-4934-af1f-7e58ed600a3c.ingress.apprun.sakura.ne.jp/" target="_blank" style="color: #004488; font-weight: bold; word-break: break-all; text-decoration: underline;">
+                        https://app-696c8387-6310-4934-af1f-7e58ed600a3c.ingress.apprun.sakura.ne.jp/
+                    </a>
+                    <p style="margin: 10px 0 0 0; font-size: 0.9em; color: #475569;">※上記のリンクをクリックして親サイトを開き、自分のAppRun URLを入力して「参加する」ボタンを押してください。教室のスクリーンにあなたのネームボードが出現します！</p>
+                </div>
+            </div>
         </section>
 
-        <!-- 8. 環境の片付け -->
         <section id="cleanup">
             <h2>8. 環境の片付け</h2>
             <p>パブリッククラウド環境は、リソースを起動している間コストが発生します。ハンズオンが終了したら、無駄なリソースを消費しないように必ず片付けを行いましょう。</p>
             
             <ol>
-                <li>さくらのクラウドコントロールパネルのAppRun画面を開く。</li>
-                <li>作成したアプリケーション（<code>my-nameboard</code>）を選択する。</li>
-                <li>右上または下部にある「削除」ボタンをクリックし、アプリケーションを完全に削除する。</li>
+                <li>さくらのクラウドコントロールパネルのAppRun画面を開く.</li>
+                <li>作成したアプリケーション（<code>nameboard</code>）を選択する.</li>
+                <li>右上または下部にある「削除」ボタンをクリックし、アプリケーションを完全に削除する.</li>
             </ol>
             
-            <p>以上で、Dockerからクラウドサーバレスへの一連のハンズオンは終了です。お疲れ様でした！</p>
+            <p>以上で, Dockerからクラウドサーバーレスへの一連のハンズオンは終了です。お疲れ様でした！</p>
         </section>
 
     </main>
@@ -630,7 +791,7 @@ docker rm my-apache</code></pre>
             
             bastionIpInput.addEventListener('input', function() {
                 const ip = this.value.trim();
-                const textToSet = ip !== '' ? ip : '<踏み台サーバIPアドレス>';
+                const textToSet = ip !== '' ? ip : '<踏み台サーバーIPアドレス>';
                 
                 bastionIpPlaceholders.forEach(span => {
                     span.textContent = textToSet;
@@ -648,7 +809,7 @@ docker rm my-apache</code></pre>
 
             userIpInput.addEventListener('input', function() {
                 const ip = this.value.trim();
-                const textToSet = ip !== '' ? ip : '<指定されたIPアドレス>';
+                const textToSet = ip !== '' ? ip : '<実習用サーバーIPアドレス>';
                 
                 userIpPlaceholders.forEach(span => {
                     span.textContent = textToSet;
