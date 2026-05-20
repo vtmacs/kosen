@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker環境構築 & さくらのクラウドAppRun ハンズオン</title>
+    <!-- フォントとアイコンの読み込み -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #004488; /* さくらインターネットブルー */
+            --accent-color: #11caa0;
+            --text-main: #334155;
+            --bg-main: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --border-color: #e2e8f0;
+            --code-bg: #1e293b;
+            --code-text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            line-height: 1.6;
+        }
+
+        /* サイドバーのスタイル */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 16px;
+            font-weight: 500;
+        }
+
+        /* メインコンテンツのスタイル */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .page-title {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+        }
+
+        section {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            color: #0f172a;
+            margin-top: 30px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        p, li {
+            font-size: 1.05rem;
+        }
+
+        /* コードブロックのスタイル */
+        .code-container {
+            position: relative;
+            margin: 20px 0;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: var(--code-bg);
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #334155;
+            padding: 5px 15px;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #ffffff;
+        }
+
+        pre {
+            margin: 0;
+            padding: 15px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--code-text);
+            font-size: 0.95rem;
+        }
+
+        /* インラインコード・警告内コード・テーブル内コード */
+        p code, li code, .alert code, table code {
+            background-color: #f1f5f9;
+            color: #dc2626;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        /* アラート/情報のスタイル */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        .alert-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            color: #1e3a8a;
+        }
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+        .alert i {
+            margin-top: 3px;
+            font-size: 1.2rem;
+        }
+
+        /* IP入力欄のスタイル */
+        .ip-input-group {
+            margin-top: 15px;
+            background-color: #f1f5f9;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .ip-input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .ip-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .ip-input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 68, 136, 0.2);
+        }
+        .ip-placeholder {
+            color: #ef4444; /* 未入力時は赤色 */
+            font-style: italic;
+        }
+        .ip-placeholder.filled {
+            color: inherit;
+            font-style: normal;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- サイドバー -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>ハンズオン目次</h2>
+            <div class="ip-input-group">
+                <label for="bastion-ip"><i class="fa-solid fa-shield-halved"></i> 踏み台サーバIP</label>
+                <input type="text" id="bastion-ip" placeholder="例: 203.0.113.1">
+            </div>
+            <div class="ip-input-group">
+                <label for="user-ip"><i class="fa-solid fa-server"></i> 実習用サーバIP</label>
+                <input type="text" id="user-ip" placeholder="例: 198.51.100.1">
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <ul>
+                <li><a href="#intro" class="active">1. はじめに</a></li>
+                <li><a href="#bastion-setup">2. 踏み台サーバへの接続</a></li>
+                <li><a href="#docker-setup">3. Docker環境の構築</a></li>
+                <li><a href="#docker-run">4. コンテナの起動実験</a></li>
+                <li><a href="#docker-apache">5. Apache(Webサーバ)の起動</a></li>
+                <li><a href="#apprun-intro">6. AppRunによるサーバレス体験</a></li>
+                <li><a href="#apprun-deploy">7. ネームボードのデプロイ</a></li>
+                <li><a href="#cleanup">8. 環境の片付け</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <h1 class="page-title">Docker & さくらのクラウドAppRun ハンズオン</h1>
+
+        <!-- 1. はじめに -->
+        <section id="intro">
+            <h2>1. はじめに</h2>
+            <p>このハンズオンでは、クラウド上のUbuntuサーバにDocker環境を構築し、基本的なコンテナ操作を学びます。後半では、作成したコンテナを**さくらのクラウド「AppRun」**を使って、インフラ管理不要（サーバレス）でインターネットに公開する一連の開発フローを体験します。</p>
+            
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    <strong>本日のゴール</strong><br>
+                    ① 踏み台経由で実習用Ubuntuに接続し、DockerをインストールしてWebサーバを立ち上げる。<br>
+                    ② AppRunを使って、自分の名前と色を設定した「ネームボード」コンテナをデプロイし、クラス全体のボードと連携させる。
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 踏み台サーバへの接続 -->
+        <section id="bastion-setup">
+            <h2>2. 踏み台サーバへの接続</h2>
+            <p>今回の実習環境はセキュリティを高めるため、直接アクセスすることができません。まずは入り口となる「踏み台サーバ」にSSH接続します。</p>
+            
+            <p>ターミナル（WindowsはPowerShell、Macはターミナル）を開き、以下のコマンドを実行してください。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>ssh ubuntu@<span class="ip-placeholder bastion-ip-placeholder">&lt;踏み台サーバIPアドレス&gt;</span></code></pre>
+            </div>
+            <p>パスワードを求められた場合は、教員から指示されたパスワードを入力します。（※入力中、画面に文字は表示されません）</p>
+        </section>
+
+        <!-- 3. Docker環境の構築 -->
+        <section id="docker-setup">
+            <h2>3. Docker環境の構築</h2>
+            <p>踏み台サーバを経由して、実際にDockerを動かす演習用のUbuntuサーバに接続し、Dockerをインストールします。</p>
+
+            <h3>3.1 実習用サーバへのログイン</h3>
+            <p>踏み台サーバにログインした状態のまま、続けて実習用サーバにSSH接続します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>ssh ubuntu@<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span></code></pre>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-check"></i>
+                <div>
+                    <strong>ログインの確認</strong><br>
+                    ログイン後、ターミナルの入力行（プロンプト）の表示が <code>ubuntu@jump-host-**</code> から <code>ubuntu@server**</code>（**は数字）に変わっていることを確認してください。表示が変わっていれば、実習用サーバへの接続は成功です。
+                </div>
+            </div>
+
+            <h3>3.2 Dockerのインストール</h3>
+            <p>Ubuntuのパッケージを最新化し、Dockerの公式インストールスクリプトを実行します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>curl -fsSL https://get.docker.com -o install.sh
+sudo sh ./install.sh</code></pre>
+            </div>
+
+            <h3>3.3 ユーザー権限の設定</h3>
+            <p>現在の <code>ubuntu</code> ユーザーが <code>sudo</code> なしでDockerコマンドを実行できるように、グループに追加します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>sudo usermod -aG docker ubuntu</code></pre>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong>重要: グループ設定の反映には再ログインが必要です</strong><br>
+                    設定を反映させるため、ターミナルで以下の <code>exit</code> コマンドを実行して一度ログアウトしてください。
+                </div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>exit</code></pre>
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong>注意: 踏み台サーバに戻ります</strong><br>
+                    <code>exit</code> を実行すると、手前の<strong>踏み台サーバ</strong>に戻ります。<br>
+                    そのため、もう一度以下のコマンドを実行し、<strong>実習用サーバ</strong>に再ログインしてください。
+                </div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>ssh ubuntu@<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span></code></pre>
+            </div>
+
+            <p>再ログイン後、以下のコマンドを実行してDockerのバージョンが表示されれば設定は完了です。</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker -v</code></pre>
+            </div>
+        </section>
+
+        <!-- 4. コンテナの起動実験 -->
+        <section id="docker-run">
+            <h2>4. コンテナの起動実験</h2>
+            <p>環境が整ったので、世界で一番有名なテストコンテナを動かしてみましょう。</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker run hello-world</code></pre>
+            </div>
+            <p><code>Hello from Docker!</code> というメッセージが表示されれば、正常にDockerが動作しています。</p>
+        </section>
+
+        <!-- 5. Apacheの起動 -->
+        <section id="docker-apache">
+            <h2>5. Apache(Webサーバ)の起動</h2>
+            <p>次に、実際のWebサーバである「Apache」をコンテナとして立ち上げます。</p>
+
+            <h3>5.1 コンテナの起動（バックグラウンド実行）</h3>
+            <p>以下のコマンドを実行します。ホストの8080番ポートをコンテナの80番に繋いでいます。</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker run -d -p 8080:80 --name my-apache httpd</code></pre>
+            </div>
+
+            <h3>5.2 動作確認</h3>
+            <p>ブラウザを開き、<code>http://<span class="ip-placeholder user-ip-placeholder">&lt;指定されたIPアドレス&gt;</span>:8080</code> にアクセスしてください。「<strong>It works!</strong>」と表示されれば成功です。</p>
+
+            <h3>5.3 コンテナの停止と削除</h3>
+            <p>確認が終わったら、起動中のコンテナを停止し、削除してリソースを解放します。</p>
+            <div class="code-container">
+                <div class="code-header">
+                    <span>bash</span>
+                    <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>docker stop my-apache
+docker rm my-apache</code></pre>
+            </div>
+        </section>
+
+        <!-- 6. AppRunによるサーバレス体験 -->
+        <section id="apprun-intro">
+            <h2>6. さくらのクラウドAppRun ハンズオン</h2>
+            <p>ここまではUbuntuサーバ上でDockerを動かしました。しかし実際のサービス運用では、「サーバのOSアップデート」や「セキュリティ対策」などのインフラ管理が大変になります。</p>
+            <p>そこで、<strong>「コンテナイメージを渡すだけで、あとはクラウドが勝手に自動運用してくれる」</strong>というサーバレス技術である「AppRun」を体験します。</p>
+            
+            <div class="alert alert-info">
+                <i class="fa-regular fa-lightbulb"></i>
+                <div>
+                    <strong>プロジェクト: クラス・ネームボード</strong><br>
+                    今回は、各自が自分の名前と好きな色を表示するコンテナをAppRunにデプロイします。デプロイされたURLを集約サイトに登録すると、教室のスクリーンに全員のボードがリアルタイムで表示されます。
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. ネームボード of デプロイ -->
+        <section id="apprun-deploy">
+            <h2>7. AppRunへのデプロイ手順</h2>
+            
+            <h3>7.1 コントロールパネルへログイン</h3>
+            <p>ブラウザでさくらのクラウドコントロールパネルにアクセスし、教員から配布されたアカウント情報でログインします。</p>
+            
+            <h3>7.2 アプリケーションの作成</h3>
+            <p>左側メニューから「AppRun（共用型）」を選択し、「追加」ボタンをクリックします。以下の通り設定してください。</p>
+            
+            <table>
+                <tr>
+                    <th style="width: 30%;">設定項目</th>
+                    <th>入力値</th>
+                </tr>
+                <tr>
+                    <td>アプリケーション名</td>
+                    <td><code>my-nameboard</code> (※任意の英数字)</td>
+                </tr>
+                <tr>
+                    <td>コンテナイメージ</td>
+                    <td><code>kosen-handson.sakuracr.jp/nameboard:latest</code></td>
+                </tr>
+                <tr>
+                    <td>ポート設定</td>
+                    <td><code>8080</code></td>
+                </tr>
+                <tr>
+                    <td>最小スケール数</td>
+                    <td><code>0</code> (※アクセスがないと自動停止してコストを節約します)</td>
+                </tr>
+                <tr>
+                    <td>最大スケール数</td>
+                    <td><code>1</code></td>
+                </tr>
+            </table>
+
+            <h3>7.3 【重要】環境変数の設定（タブ切り替え）</h3>
+            <p>コンテナのコードを直接書き換える代わりに、環境変数を使ってWebアプリの表示（名前や好きな色、所属するグループ名）をカスタマイズします。</p>
+            
+            <div class="alert alert-info">
+                <i class="fa-solid fa-window-restore"></i>
+                <div>
+                    <strong>設定タブ切り替えの手順</strong><br>
+                    ① AppRun作成画面の「コンテナ構成」エリアを見ると、最初は <code>コンテナ</code> タブが選択されています。<br>
+                    ② その右側にある <strong><code>変数</code> タブ</strong> をクリックして切り替えてください。
+                </div>
+            </div>
+
+            <p>「変数」タブに切り替えたら、設定エリアに以下のペア（3つの設定）を追加してください。</p>
+            <ul>
+                <li>キー：<code>MY_NAME</code> / 値：<strong>自分の名前（ニックネーム可）</strong></li>
+                <li>キー：<code>MY_COLOR</code> / 値：<strong>好きなカラーコード（例: <code>#ff9900</code> や <code>blue</code>）</strong></li>
+                <li>キー：<code>MY_GROUP</code> / 値：<strong>自分の所属グループ名（例: <code>A組</code>、<code>1班</code> など）</strong></li>
+            </ul>
+
+            <h3>7.4 デプロイと確認</h3>
+            <p>「作成」をクリックしてデプロイを開始します。完了すると <code>https://xxx.apprun.sakura.ne.jp</code> という専用URLが発行されるので、クリックして自分のネームボードが表示されるか確認してください。</p>
+
+            <h3>7.5 親サイトへの登録</h3>
+            <p>自分のAppRun URLをコピーし、教員が提示したダッシュボード（親サイト）の登録欄に貼り付けて「参加する」を押してください。教室のスクリーンにあなたのボードが出現します！</p>
+        </section>
+
+        <!-- 8. 環境の片付け -->
+        <section id="cleanup">
+            <h2>8. 環境の片付け</h2>
+            <p>パブリッククラウド環境は、リソースを起動している間コストが発生します。ハンズオンが終了したら、無駄なリソースを消費しないように必ず片付けを行いましょう。</p>
+            
+            <ol>
+                <li>さくらのクラウドコントロールパネルのAppRun画面を開く。</li>
+                <li>作成したアプリケーション（<code>my-nameboard</code>）を選択する。</li>
+                <li>右上または下部にある「削除」ボタンをクリックし、アプリケーションを完全に削除する。</li>
+            </ol>
+            
+            <p>以上で、Dockerからクラウドサーバレスへの一連のハンズオンは終了です。お疲れ様でした！</p>
+        </section>
+
+    </main>
+
+    <script>
+        function copyCode(button) {
+            const codeBlock = button.parentElement.nextElementSibling.querySelector('code');
+            const textToCopy = codeBlock.innerText;
+
+            // iframe環境やプレビュー制限を回避するため、textareaを使ったコピー方式を採用
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                button.style.color = '#11caa0';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.color = '#cbd5e1';
+                }, 2000);
+            } catch (err) {
+                console.error('コピーに失敗しました', err);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // スムーススクロールとサイドバーのアクティブ化
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll("section");
+            const navLinks = document.querySelectorAll(".sidebar-nav a");
+
+            window.addEventListener("scroll", () => {
+                let current = "";
+                sections.forEach((section) => {
+                    const sectionTop = section.offsetTop;
+                    if (scrollY >= (sectionTop - 100)) {
+                        current = section.getAttribute("id");
+                    }
+                });
+
+                navLinks.forEach((link) => {
+                    link.classList.remove("active");
+                    if (link.getAttribute("href").includes(current)) {
+                        link.classList.add("active");
+                    }
+                });
+            });
+
+            // 踏み台IPアドレスの動的置換ロジック
+            const bastionIpInput = document.getElementById('bastion-ip');
+            const bastionIpPlaceholders = document.querySelectorAll('.bastion-ip-placeholder');
+            
+            bastionIpInput.addEventListener('input', function() {
+                const ip = this.value.trim();
+                const textToSet = ip !== '' ? ip : '<踏み台サーバIPアドレス>';
+                
+                bastionIpPlaceholders.forEach(span => {
+                    span.textContent = textToSet;
+                    if (ip !== '') {
+                        span.classList.add('filled');
+                    } else {
+                        span.classList.remove('filled');
+                    }
+                });
+            });
+
+            // 実習用IPアドレスの動的置換ロジック
+            const userIpInput = document.getElementById('user-ip');
+            const userIpPlaceholders = document.querySelectorAll('.user-ip-placeholder');
+
+            userIpInput.addEventListener('input', function() {
+                const ip = this.value.trim();
+                const textToSet = ip !== '' ? ip : '<指定されたIPアドレス>';
+                
+                userIpPlaceholders.forEach(span => {
+                    span.textContent = textToSet;
+                    if (ip !== '') {
+                        span.classList.add('filled');
+                    } else {
+                        span.classList.remove('filled');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
