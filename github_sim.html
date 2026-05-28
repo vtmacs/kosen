@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full w-full overflow-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GitHub Visual Learning Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Flow line animations for visualizing data transfer */
+        @keyframes pulse-flow {
+            0% { stroke-dashoffset: 24; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .flowing-line {
+            stroke-dasharray: 8, 4;
+            animation: pulse-flow 1.2s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full w-full flex flex-col overflow-hidden selection:bg-teal-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="flex-none border-b border-slate-800 bg-slate-900/80 px-4 py-2 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-2.5">
+            <i class="fab fa-github text-2xl text-teal-400"></i>
+            <div>
+                <h1 class="text-sm font-black tracking-wider text-white leading-tight">GITHUB VISUAL SIMULATOR</h1>
+                <p class="text-[9px] text-slate-400">実践的Git共同開発ビジュアルシミュレーター</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="reset-app-btn" class="text-[9px] bg-red-950/50 text-red-400 border border-red-900/50 px-2 py-1 rounded hover:bg-red-900 hover:text-white transition-all">
+                <i class="fas fa-undo mr-1"></i> リセット
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Desktop Layout (Always 100% window height, no scroll) -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0 w-full">
+
+        <!-- Left Control Board: Quest Instruction & Score -->
+        <div class="w-full md:w-72 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col flex-none min-h-0">
+            <!-- Mode Switch Tabs -->
+            <div class="p-2 border-b border-slate-800 flex space-x-1 flex-none bg-slate-950/40">
+                <button id="tab-quest" class="flex-1 py-1 text-center text-xs font-bold rounded bg-teal-600 text-white transition-all shadow">
+                    <i class="fas fa-graduation-cap mr-1"></i> 習得クエスト
+                </button>
+                <button id="tab-sandbox" class="flex-1 py-1 text-center text-xs font-bold rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all">
+                    <i class="fas fa-cubes mr-1"></i> 自由モード
+                </button>
+            </div>
+
+            <!-- Quest Board Body -->
+            <div id="quest-panel" class="p-3 flex-1 flex flex-col justify-between min-h-0 overflow-y-auto">
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] text-teal-400 font-extrabold tracking-widest uppercase">Mission Control</span>
+                        <span id="quest-number" class="text-xs text-slate-400 font-mono">1 / 2</span>
+                    </div>
+                    <div>
+                        <h2 id="quest-title" class="text-xs font-bold text-white mb-1 flex items-center"></h2>
+                        <p id="quest-desc" class="text-[10px] text-slate-300 leading-relaxed border-l-2 border-teal-500 pl-2 py-0.5 bg-slate-950/20 rounded-r"></p>
+                    </div>
+
+                    <!-- Dynamic Goal Tracker -->
+                    <div class="bg-slate-950/60 p-2 rounded border border-slate-800">
+                        <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <span>ミッション目標</span>
+                            <span class="text-teal-400 text-[8px] font-mono">GOAL CHECK</span>
+                        </h3>
+                        <ul id="goal-list" class="space-y-1 text-[10px] text-slate-300">
+                            <!-- Injected by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Pro Git Concepts Tips -->
+                    <div class="bg-teal-950/15 border border-teal-900/40 p-2 rounded text-[9.5px] leading-relaxed text-teal-300">
+                        <h4 class="font-extrabold mb-0.5 text-teal-400"><i class="fas fa-microchip mr-1"></i> Git解説・Tips:</h4>
+                        <p id="quest-tip"></p>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation inside panel -->
+                <div class="pt-2 border-t border-slate-800/60 flex justify-between items-center flex-none mt-2">
+                    <button id="prev-quest-btn" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-all disabled:opacity-35">
+                        <i class="fas fa-chevron-left mr-1"></i> 前へ
+                    </button>
+                    <button id="next-quest-btn" class="text-[9px] bg-teal-600 hover:bg-teal-500 text-white px-2.5 py-1 rounded font-bold transition-all disabled:opacity-35">
+                        次へ <i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sandbox Mode Body (Hidden by default) -->
+            <div id="sandbox-panel" class="p-3 hidden flex-1 flex flex-col justify-between min-h-0 overflow-y-auto">
+                <div class="space-y-2.5">
+                    <h2 class="text-xs font-bold text-white flex items-center"><i class="fas fa-cubes text-teal-400 mr-1.5"></i>自由サンドボックス</h2>
+                    <p class="text-[10px] text-slate-300 leading-relaxed">
+                        すべての制限が解除された開発環境です。自由自在に作業用ブランチを切ったり、変更を記録してプッシュし、共同マージまでのフローを手元で何度でも試行できます。
+                    </p>
+                    <div class="bg-amber-950/15 border border-amber-900/40 p-2 rounded text-[10px] text-amber-300 leading-relaxed">
+                        <strong class="text-amber-400"><i class="fas fa-map-signs mr-1"></i>おすすめの実験手順:</strong><br>
+                        1. まず本家を <strong class="text-white">Fork</strong> する<br>
+                        2. 手元のローカルPCで <strong class="text-white">checkout -b</strong> で新機能を作る<br>
+                        3. 何度か <strong class="text-white">commit</strong> を繰り返し履歴を作る<br>
+                        4. 自分のリモートへ <strong class="text-white">push origin</strong> でアップロード<br>
+                        5. 本家に対し <strong class="text-white">Pull Request</strong> ➔ <strong class="text-white">Merge</strong> して反映！
+                    </div>
+                </div>
+                <div class="text-[8.5px] text-slate-500 font-mono text-center pt-2 border-t border-slate-800">
+                    SABDBOX ACTIVE // RESTRICTIONS OVERRIDDEN
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Control Board: Interactive Map & Live Console Terminal -->
+        <div class="flex-1 flex flex-col min-h-0 bg-slate-950">
+
+            <!-- Visualizer Section (Dynamic 2D Map) -->
+            <div class="flex-1 p-2 relative min-h-0 border-b border-slate-800">
+                
+                <!-- Background Layer Labels -->
+                <div id="layer-separators-container" class="absolute inset-0 flex flex-col pointer-events-none z-0">
+                    <!-- Layer dividers injected here by JS depending on 2 or 3 layers mode -->
+                </div>
+
+                <!-- SVG Graphics and Interaction Elements -->
+                <div class="relative w-full h-full z-10">
+                    <svg id="git-svg-canvas" class="w-full h-full">
+                        <g id="svg-connections"></g>
+                    </svg>
+
+                    <!-- Interactive Floating DOM Nodes Overlay -->
+                    <div id="dom-nodes-container" class="absolute inset-0 pointer-events-none">
+                        <!-- Commits and Branch labels rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operating Panel & Log Terminal (Completely auto-sized to never leak outside screen) -->
+            <div class="h-44 flex-none bg-slate-900 border-t border-slate-800 flex flex-row min-h-0">
+                
+                <!-- Commands Action Panel -->
+                <div class="w-1/2 p-2.5 flex flex-col justify-between overflow-y-auto">
+                    <div>
+                        <h3 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                            <span>COMMAND PALETTE</span>
+                            <span class="text-teal-400 text-[8px] font-mono">CLICK ACTION</span>
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <!-- Local Operations (Git CLI) -->
+                            <div class="col-span-full text-[8px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-0.5 mb-0.5">
+                                LOCAL WORKSPACE (パソコン手元の操作)
+                            </div>
+                            <button id="btn-branch" class="text-[10px] bg-sky-950/60 hover:bg-sky-900/80 border border-sky-800/40 text-sky-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
+                                <i class="fas fa-code-branch text-[9px]"></i>
+                                <span>checkout -b</span>
+                            </button>
+                            <button id="btn-commit" class="text-[10px] bg-sky-950/60 hover:bg-sky-900/80 border border-sky-800/40 text-sky-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
+                                <i class="fas fa-plus-circle text-[9px]"></i>
+                                <span>commit</span>
+                            </button>
+                            <button id="btn-push" class="text-[10px] bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-800/40 text-indigo-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95 col-span-2">
+                                <i class="fas fa-cloud-upload-alt text-[9px]"></i>
+                                <span>push origin [branch-name]</span>
+                            </button>
+
+                            <!-- Remote Operations (GitHub Web UI) -->
+                            <div class="col-span-full text-[8px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-0.5 mb-0.5 mt-1">
+                                REMOTE GITHUB (ブラウザ上でのWeb操作)
+                            </div>
+                            <button id="btn-fork" class="text-[10px] bg-amber-950/60 hover:bg-amber-900/80 border border-amber-800/40 text-amber-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
+                                <i class="fas fa-code-fork text-[9px]"></i>
+                                <span>Fork (フォーク)</span>
+                            </button>
+                            <button id="btn-pr" class="text-[10px] bg-teal-950/60 hover:bg-teal-900/80 border border-teal-800/40 text-teal-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
+                                <i class="fas fa-paper-plane text-[9px]"></i>
+                                <span>Pull Request</span>
+                            </button>
+                            <button id="btn-merge" class="text-[10px] bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/40 text-emerald-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95 col-span-2">
+                                <i class="fas fa-check-double text-[9px]"></i>
+                                <span>Merge Pull Request (Upstreamマージ)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CLI Log Monitor Terminal -->
+                <div class="w-1/2 p-2.5 flex flex-col h-full bg-slate-950 border-l border-slate-800">
+                    <div class="flex justify-between items-center mb-1 flex-none">
+                        <h3 class="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center">
+                            <i class="fas fa-keyboard mr-1.5 text-slate-400"></i> CLI TERMINAL LOG
+                        </h3>
+                        <button id="clear-log-btn" class="text-[8px] text-slate-400 hover:text-white transition-all bg-slate-800 px-1.5 py-0.5 rounded">
+                            クリア
+                        </button>
+                    </div>
+                    <!-- Live Console Output (Auto scrolling) -->
+                    <div id="terminal-log" class="flex-1 bg-slate-950 rounded p-2 overflow-y-auto text-[10px] code-font text-emerald-400 leading-relaxed shadow-inner">
+                        <div class="text-slate-500">// GitHub ビジュアルシミュレーターが起動しました。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Overlay Popups Layout: Goal Success Message -->
+    <div id="modal-container" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-5 max-w-sm w-full mx-4 shadow-2xl relative">
+            <button id="modal-close-btn" class="absolute top-3 right-3 text-slate-400 hover:text-white transition-all text-base">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="text-center mb-2.5">
+                <div id="modal-icon-container" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-teal-900/40 text-teal-400 text-xl mb-2 border border-teal-500/25">
+                    <i class="fas fa-trophy animate-bounce"></i>
+                </div>
+                <h3 id="modal-title" class="text-sm font-black text-white">クエストクリア！</h3>
+            </div>
+            <div id="modal-body" class="text-xs text-slate-300 leading-relaxed space-y-2 mb-4">
+                <!-- Text contents filled dynamically -->
+            </div>
+            <div class="flex justify-center">
+                <button id="modal-action-btn" class="bg-teal-600 hover:bg-teal-500 text-white px-5 py-1.5 rounded text-xs font-bold transition-all shadow-md">
+                    次のミッションへ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Central Overlay Popups Layout: Custom Text Prompt Input -->
+    <div id="action-prompt-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-3.5 max-w-xs w-full mx-4 shadow-2xl">
+            <h3 id="prompt-title" class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center border-b border-slate-800 pb-1.5">
+                <i class="fas fa-edit mr-1.5 text-teal-400"></i> 要入力
+            </h3>
+            <div class="space-y-2.5">
+                <div>
+                    <label id="prompt-label" class="block text-[10px] text-slate-300 mb-1 font-semibold">作成ブランチ名を入力してください:</label>
+                    <input type="text" id="prompt-input" class="w-full bg-slate-950 border border-slate-700 text-white rounded px-2 py-1.5 text-xs focus:outline-none focus:border-teal-500 code-font shadow-inner" />
+                </div>
+                <div class="flex justify-end space-x-1.5 text-[10px]">
+                    <button id="prompt-cancel-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition-all">
+                        キャンセル
+                    </button>
+                    <button id="prompt-submit-btn" class="bg-teal-600 hover:bg-teal-500 text-white px-4 py-1.5 rounded font-bold transition-all shadow-sm">
+                        決定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Effect overlay -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+    <script>
+        // State Management for Git Simulation
+        const state = {
+            activeTab: 'quest',
+            currentQuestIndex: 0,
+            hasForked: false, 
+
+            // Local workspace states
+            localBranch: 'main',
+            localBranches: ['main'],
+            localBranchHeads: { 'main': 'c1' }, 
+            localCommits: [
+                { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'local', status: 'clean' }
+            ],
+
+            // Origin states (your remote fork)
+            originBranch: 'main',
+            originBranches: ['main'],
+            originBranchHeads: { 'main': 'c1' },
+            originCommits: [],
+
+            // Upstream states (original target)
+            upstreamBranches: ['main'],
+            upstreamBranchHeads: { 'main': 'c1' },
+            upstreamCommits: [
+                { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'upstream' }
+            ],
+
+            // Pull Request states
+            pullRequests: [] 
+        };
+
+        const quests = [
+            {
+                title: "Quest 1: 基本のブランチ作成とPush",
+                desc: "Gitローカル（手元のPC）で新機能開発用のブランチを作り、変更をコミットして、自分のGitHubリモート（Origin）にプッシュする基本フローを学習しましょう！",
+                tip: "プロジェクト開発時、基本となるメインブランチ（main）を壊さないため、必ず機能ごとに新しい『ブランチ』を切って安全に作業を行い、そこへコミットします。",
+                goals: [
+                    { id: 'branch-created', text: "Localで新ブランチ 'feature-web' を作成する", check: () => state.localBranches.includes('feature-web') },
+                    { id: 'committed-feature', text: "'feature-web' ブランチで変更をコミットする", check: () => state.localCommits.filter(c => c.branch === 'feature-web').length >= 1 },
+                    { id: 'pushed-feature', text: "Originへ 'feature-web' ブランチをPushする", check: () => state.originBranches.includes('feature-web') && state.originCommits.some(c => c.branch === 'feature-web') }
+                ],
+                successMsg: "素晴らしい！手元の開発環境（Local）でブランチを安全に管理し、クラウド（Origin）に反映させることができました。<br><br>次は、いよいよ開発의 醍醐味である、他人のプロジェクトに貢献する「フォークとプルリクエスト」をマスターします！"
+            },
+            {
+                title: "Quest 2: フォークとプルリクエスト (OSS貢献)",
+                desc: "本家リポジトリ（Upstream）にあるプログラムにバグを修正します！ 本家からGitHub（Origin）へフォークし、ローカルで修正後、プルリクエストを出して本家にマージされましょう！",
+                tip: "他人が管理している本家のプログラム（Upstream）に直接Pushはできません。そのため、「Fork（複製）」を行い自分自身のリポジトリを作り、そこで作業したものを「Pull Request（マージ提案）」として送ります。",
+                goals: [
+                    { id: 'forked', text: "Upstream（本家）を自分のOriginに 'Fork' する", check: () => state.hasForked },
+                    { id: 'branch-bugfix', text: "Localで 'bugfix' ブランチを作成して修正コミットする", check: () => state.localBranches.includes('bugfix') && state.localCommits.some(c => c.branch === 'bugfix' && c.id !== 'c1') },
+                    { id: 'pushed-bugfix', text: "修正した 'bugfix' ブランチを自分のOriginへ 'Push' する", check: () => state.originBranches.includes('bugfix') && state.originCommits.some(c => c.branch === 'bugfix') },
+                    { id: 'pr-created', text: "Originの'bugfix'からUpstreamの'main'へ 'Pull Request' を作成する", check: () => state.pullRequests.some(pr => pr.status === 'open' || pr.status === 'merged') },
+                    { id: 'pr-merged', text: "Upstream（本家側）でPRを 'Merge' して取り込んでもらう", check: () => state.pullRequests.some(pr => pr.status === 'merged') }
+                ],
+                successMsg: "おめでとうございます！これこそがGitHubの共同開発モデル（OSS貢献）の全貌です！<br><br><strong>フォーク ➔ 修正作業 ➔ プッシュ ➔ プルリクエスト ➔ マージ</strong> の流れを体得できました。チーム開発のグループワークや実際の開発現場でも最も使われる手法です！"
+            }
+        ];
+
+        // App Initializer
+        function initApp() {
+            resetToState();
+            setupEventListeners();
+            updateUI();
+            logTerm("System", "シミュレーターを初期化しました。");
+        }
+
+        function resetToState() {
+            // Setup dynamic states according to current active scenario
+            if (state.currentQuestIndex === 0 && state.activeTab === 'quest') {
+                // Quest 1 is a 2-Layer Layout: Origin Remote exists from the very beginning. Fork not needed.
+                state.hasForked = true; 
+                state.localBranch = 'main';
+                state.localBranches = ['main'];
+                state.localBranchHeads = { 'main': 'c1' };
+                state.localCommits = [
+                    { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'local', isPushed: true }
+                ];
+                state.originBranches = ['main'];
+                state.originBranchHeads = { 'main': 'c1' };
+                state.originCommits = [
+                    { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'origin', isPushed: true }
+                ];
+                state.upstreamBranches = ['main'];
+                state.upstreamBranchHeads = { 'main': 'c1' };
+                state.upstreamCommits = [
+                    { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'upstream' }
+                ];
+            } else {
+                // Quest 2 / Sandbox is a 3-Layer Collaboration Flow
+                state.hasForked = false;
+                state.localBranch = 'main';
+                state.localBranches = ['main'];
+                state.localBranchHeads = { 'main': 'c1' };
+                state.localCommits = [
+                    { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'local', isPushed: true }
+                ];
+                state.originBranches = ['main'];
+                state.originBranchHeads = {};
+                state.originCommits = [];
+                state.upstreamBranches = ['main'];
+                state.upstreamBranchHeads = { 'main': 'c1' };
+                state.upstreamCommits = [
+                    { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'upstream' }
+                ];
+
+                // Inject a Bug commit on Upstream for Quest 2
+                if (state.currentQuestIndex === 1 && state.activeTab === 'quest') {
+                    state.upstreamCommits.push({
+                        id: 'c2-upstream',
+                        parent: 'c1',
+                        message: 'Bug inside layout.js 🐛',
+                        branch: 'main',
+                        visualLevel: 'upstream'
+                    });
+                    state.upstreamBranchHeads['main'] = 'c2-upstream';
+
+                    state.localCommits.push({
+                        id: 'c2-upstream',
+                        parent: 'c1',
+                        message: 'Bug inside layout.js 🐛',
+                        branch: 'main',
+                        visualLevel: 'local'
+                    });
+                    state.localBranchHeads['main'] = 'c2-upstream';
+                }
+            }
+            state.pullRequests = [];
+        }
+
+        function setupEventListeners() {
+            // Mode Switching Tab Elements
+            document.getElementById('tab-quest').onclick = () => switchTab('quest');
+            document.getElementById('tab-sandbox').onclick = () => switchTab('sandbox');
+
+            // Quests Navigation Buttons
+            document.getElementById('prev-quest-btn').onclick = () => moveQuest(-1);
+            document.getElementById('next-quest-btn').onclick = () => moveQuest(1);
+
+            // Controls Operating buttons
+            document.getElementById('btn-branch').onclick = handleBranchAction;
+            document.getElementById('btn-commit').onclick = handleCommitAction;
+            document.getElementById('btn-push').onclick = handlePushAction;
+            document.getElementById('btn-fork').onclick = handleForkAction;
+            document.getElementById('btn-pr').onclick = handlePRAction;
+            document.getElementById('btn-merge').onclick = handleMergeAction;
+
+            // Popup Modals buttons
+            document.getElementById('modal-close-btn').onclick = hideModal;
+            document.getElementById('modal-action-btn').onclick = handleModalAction;
+
+            // Log Console Clear
+            document.getElementById('clear-log-btn').onclick = () => {
+                document.getElementById('terminal-log').innerHTML = '<div class="text-slate-500">// Log cleared.</div>';
+            };
+
+            // Overlay Custom Prompt modal actions
+            document.getElementById('prompt-submit-btn').onclick = submitPrompt;
+            document.getElementById('prompt-cancel-btn').onclick = hidePrompt;
+            document.getElementById('prompt-input').onkeypress = (e) => {
+                if (e.key === 'Enter') submitPrompt();
+            };
+
+            // Global System reset
+            document.getElementById('reset-app-btn').onclick = () => {
+                if(confirm("進行中のデータを破棄し、最初からリセットしますか？")) {
+                    state.currentQuestIndex = 0;
+                    initApp();
+                }
+            };
+        }
+
+        function switchTab(tab) {
+            state.activeTab = tab;
+            const qBtn = document.getElementById('tab-quest');
+            const sBtn = document.getElementById('tab-sandbox');
+            const qPanel = document.getElementById('quest-panel');
+            const sPanel = document.getElementById('sandbox-panel');
+
+            if (tab === 'quest') {
+                qBtn.className = "flex-1 py-1 text-center text-xs font-bold rounded bg-teal-600 text-white transition-all shadow";
+                sBtn.className = "flex-1 py-1 text-center text-xs font-bold rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all";
+                qPanel.classList.remove('hidden');
+                sPanel.classList.add('hidden');
+            } else {
+                sBtn.className = "flex-1 py-1 text-center text-xs font-bold rounded bg-teal-600 text-white transition-all shadow";
+                qBtn.className = "flex-1 py-1 text-center text-xs font-bold rounded bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all";
+                sPanel.classList.remove('hidden');
+                qPanel.classList.add('hidden');
+            }
+            initApp();
+        }
+
+        function moveQuest(direction) {
+            state.currentQuestIndex += direction;
+            if (state.currentQuestIndex < 0) state.currentQuestIndex = 0;
+            if (state.currentQuestIndex >= quests.length) state.currentQuestIndex = quests.length - 1;
+            initApp();
+        }
+
+        // Floating Modal Custom Text Prompts Trigger
+        let activePromptCallback = null;
+        function showPrompt(title, label, defaultValue, callback) {
+            const modal = document.getElementById('action-prompt-modal');
+            const promptTitle = document.getElementById('prompt-title');
+            const promptLabel = document.getElementById('prompt-label');
+            const promptInput = document.getElementById('prompt-input');
+
+            promptTitle.innerHTML = `<i class="fas fa-edit mr-1.5 text-teal-400"></i> ${title}`;
+            promptLabel.textContent = label;
+            promptInput.value = defaultValue;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.add('opacity-100'); 
+                promptInput.focus();
+                promptInput.select();
+            }, 50);
+
+            activePromptCallback = callback;
+        }
+
+        function hidePrompt() {
+            const modal = document.getElementById('action-prompt-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+            activePromptCallback = null;
+        }
+
+        function submitPrompt() {
+            const val = document.getElementById('prompt-input').value.trim();
+            if (!val) return;
+            const callback = activePromptCallback;
+            hidePrompt();
+            if (callback) {
+                callback(val);
+            }
+        }
+
+        // Realtime Terminal Logs Monitor
+        function logTerm(type, message, isCommand = false) {
+            const term = document.getElementById('terminal-log');
+            let colorClass = "text-emerald-400";
+            let prefix = "$ ";
+
+            if (type === "GitHub") {
+                colorClass = "text-amber-400";
+                prefix = "[GitHub] ";
+            } else if (type === "System") {
+                colorClass = "text-teal-300 font-bold";
+                prefix = "[SYSTEM] ";
+            } else if (type === "Error") {
+                colorClass = "text-red-400";
+                prefix = "[ERROR] ";
+            }
+
+            if (!isCommand && type !== "System" && type !== "Error" && type !== "GitHub") {
+                prefix = "  > ";
+            }
+
+            const line = document.createElement('div');
+            line.className = `${colorClass} mb-1`;
+            line.textContent = `${prefix}${message}`;
+            term.appendChild(line);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        // Action Trigger logic: Create Local Branch
+        function handleBranchAction() {
+            const isQuest1 = (state.currentQuestIndex === 0 && state.activeTab === 'quest');
+            const defaultBranch = isQuest1 ? "feature-web" : "bugfix";
+
+            showPrompt("Git Checkout", "新しく切り替える作業用ブランチの名前:", defaultBranch, (branchName) => {
+                if (state.localBranches.includes(branchName)) {
+                    logTerm("Error", `ブランチ '${branchName}' はすでに存在します。`);
+                    return;
+                }
+
+                const currentHeadId = state.localBranchHeads[state.localBranch] || 'c1';
+
+                state.localBranches.push(branchName);
+                state.localBranch = branchName;
+                state.localBranchHeads[branchName] = currentHeadId;
+
+                logTerm("Git", `git checkout -b ${branchName}`, true);
+                logTerm("Git", `新しいブランチ '${branchName}' にチェックアウトしました。`);
+                updateUI();
+                checkGoals();
+            });
+        }
+
+        // Action Trigger logic: Record Local Commit
+        function handleCommitAction() {
+            const activeBranch = state.localBranch;
+            showPrompt("Git Commit", "コミットメッセージを入力してください:", "Add patch code change", (msg) => {
+                const parentId = state.localBranchHeads[activeBranch] || 'c1';
+                const newCommitId = 'c_' + Math.random().toString(36).substr(2, 5);
+                
+                state.localCommits.push({
+                    id: newCommitId,
+                    parent: parentId,
+                    message: msg,
+                    branch: activeBranch,
+                    visualLevel: 'local'
+                });
+
+                state.localBranchHeads[activeBranch] = newCommitId;
+
+                logTerm("Git", `git commit -m "${msg}"`, true);
+                logTerm("Git", `[${activeBranch} ${newCommitId}] ${msg}`);
+                updateUI();
+                checkGoals();
+            });
+        }
+
+        // Action Trigger logic: Push Branch Up to Origin Remote
+        function handlePushAction() {
+            const activeBranch = state.localBranch;
+            const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            
+            if (isThreeLayerMode && !state.hasForked) {
+                logTerm("Error", "複製先(Origin)がありません。先にUpstreamから「Fork」を行ってください。");
+                return;
+            }
+
+            logTerm("Git", `git push origin ${activeBranch}`, true);
+            
+            if (!state.originBranches.includes(activeBranch)) {
+                state.originBranches.push(activeBranch);
+            }
+
+            const commitsToPush = state.localCommits.filter(lc => {
+                return lc.branch === activeBranch || lc.branch === 'main';
+            });
+
+            commitsToPush.forEach(lc => {
+                if (!state.originCommits.some(oc => oc.id === lc.id)) {
+                    state.originCommits.push({
+                        ...lc,
+                        visualLevel: 'origin'
+                    });
+                }
+            });
+
+            state.originBranchHeads[activeBranch] = state.localBranchHeads[activeBranch];
+
+            logTerm("Git", `github.com:your-account/repository.git にアップロード中...`);
+            logTerm("Git", ` * [new branch]      ${activeBranch} -> ${activeBranch}`);
+            
+            updateUI();
+            checkGoals();
+        }
+
+        // Action Trigger logic: Fork Repository from Upstream to Origin Remote
+        function handleForkAction() {
+            const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            if (!isThreeLayerMode) {
+                logTerm("Error", "現在のクエスト（個人リモートでの開発）では Fork は不要です。");
+                return;
+            }
+            if (state.hasForked) {
+                logTerm("Error", "すでに本家（Upstream）からForkが完了しています。");
+                return;
+            }
+
+            state.hasForked = true;
+            
+            const overlay = document.getElementById('no-fork-overlay');
+            if (overlay) {
+                overlay.style.opacity = "0";
+                setTimeout(() => { overlay.style.pointerEvents = "none"; }, 350);
+            }
+
+            logTerm("GitHub", "本家リポジトリ 'upstream/project' のコピーを作成しています...");
+            
+            state.originCommits = state.upstreamCommits.map(c => ({
+                ...c,
+                visualLevel: 'origin'
+            }));
+            state.originBranches = [...state.upstreamBranches];
+            state.originBranchHeads = { ...state.upstreamBranchHeads };
+
+            logTerm("GitHub", "Forkが完了しました！ あなたのOriginリモートリポジトリが作成されました。");
+            updateUI();
+            checkGoals();
+        }
+
+        // Action Trigger logic: Submit Pull Request (Origin -> Upstream)
+        function handlePRAction() {
+            const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            if (!isThreeLayerMode) {
+                logTerm("Error", "PRマージフローはこのミッションでは必要ありません。");
+                return;
+            }
+            if (!state.hasForked) {
+                logTerm("Error", "自分のOriginリモートがありません。先にForkを完了させてください。");
+                return;
+            }
+
+            const prBranches = state.originBranches.filter(b => b !== 'main');
+            if (prBranches.length === 0) {
+                logTerm("Error", "PRとして送信可能な作業ブランチ（main以外）がOriginにありません。Pushを完了させてください。");
+                return;
+            }
+
+            const fromBranch = prBranches[0]; 
+
+            showPrompt("Create Pull Request", "本家に送信するプルリクエストのタイトル:", "Fix layout bug inside module", (title) => {
+                const prId = 'pr-' + Math.floor(Math.random() * 1000);
+                const prCommits = state.originCommits.filter(oc => oc.branch === fromBranch);
+
+                state.pullRequests.push({
+                    id: prId,
+                    title: title,
+                    fromBranch: fromBranch,
+                    toBranch: 'main',
+                    commits: prCommits,
+                    status: 'open'
+                });
+
+                logTerm("GitHub", `Pull Request #${prId} [${fromBranch}] ➔ [upstream/main] を作成・提案しました。`);
+                logTerm("GitHub", `PRタイトル: "${title}" (${prCommits.length}個のコミット)`);
+                updateUI();
+                checkGoals();
+            });
+        }
+
+        // Action Trigger logic: Merge Open Pull Request into Upstream Main Branch
+        function handleMergeAction() {
+            const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            if (!isThreeLayerMode) {
+                logTerm("Error", "マージ不要の構成です。");
+                return;
+            }
+            const openPRs = state.pullRequests.filter(pr => pr.status === 'open');
+            if (openPRs.length === 0) {
+                logTerm("Error", "マージ待ち状態のオープンなPull Requestが見当たりません。");
+                return;
+            }
+
+            const prToMerge = openPRs[0];
+            prToMerge.status = 'merged';
+
+            logTerm("GitHub", `Pull Request #${prToMerge.id} が管理者により承認、本家にマージされました！ 🎉`);
+            
+            prToMerge.commits.forEach(oc => {
+                if (!state.upstreamCommits.some(uc => uc.id === oc.id)) {
+                    state.upstreamCommits.push({
+                        ...oc,
+                        visualLevel: 'upstream',
+                        branch: 'main' 
+                    });
+                }
+            });
+
+            const mergeCommitId = 'merge-' + Math.random().toString(36).substr(2, 5);
+            state.upstreamCommits.push({
+                id: mergeCommitId,
+                parent: state.upstreamCommits[state.upstreamCommits.length - 1].id,
+                message: `Merge pull request #${prToMerge.id} from your-account/${prToMerge.fromBranch}`,
+                branch: 'main',
+                visualLevel: 'upstream'
+            });
+
+            state.upstreamBranchHeads['main'] = mergeCommitId;
+
+            logTerm("GitHub", `本家（Upstream）のmainブランチに統合が完了しました。`);
+            updateUI();
+            checkGoals();
+        }
+
+        // Goals Checker & Progress tracker
+        function checkGoals() {
+            if (state.activeTab !== 'quest') return; 
+            
+            const quest = quests[state.currentQuestIndex];
+            let allCleared = true;
+
+            quest.goals.forEach((goal) => {
+                const checked = goal.check();
+                const element = document.getElementById(`goal-item-${goal.id}`);
+                const icon = document.getElementById(`goal-icon-${goal.id}`);
+
+                if (element && icon) {
+                    if (checked) {
+                        element.classList.add('text-teal-400', 'line-through');
+                        element.classList.remove('text-slate-300');
+                        icon.className = "fas fa-check-circle text-teal-400 mr-1.5";
+                    } else {
+                        element.classList.remove('text-teal-400', 'line-through');
+                        element.classList.add('text-slate-300');
+                        icon.className = "far fa-circle text-slate-500 mr-1.5";
+                        allCleared = false;
+                    }
+                }
+            });
+
+            if (allCleared) {
+                showModal(quest.title + " クリア！ 🚀", quest.successMsg);
+                startConfetti();
+            }
+        }
+
+        function showModal(title, bodyHtml) {
+            const modal = document.getElementById('modal-container');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = bodyHtml;
+
+            const btn = document.getElementById('modal-action-btn');
+            if (state.currentQuestIndex < quests.length - 1) {
+                btn.textContent = "次のクエストへ";
+            } else {
+                btn.textContent = "自由Sandboxモードで遊ぶ";
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.add('opacity-100'); }, 50);
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('modal-container');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+            stopConfetti();
+        }
+
+        function handleModalAction() {
+            hideModal();
+            if (state.currentQuestIndex < quests.length - 1) {
+                moveQuest(1);
+            } else {
+                switchTab('sandbox');
+            }
+        }
+
+        // Interactive Visualizer Engine (SVG Draw based on canvas size)
+        function updateUI() {
+            const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+
+            // Render Backplane separators dynamically
+            const separators = document.getElementById('layer-separators-container');
+            if (isThreeLayerMode) {
+                separators.innerHTML = `
+                    <!-- Upstream Layer -->
+                    <div class="h-1/3 border-b border-slate-800 bg-slate-950/20 relative">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-red-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-red-900/30">
+                            <i class="fas fa-code-branch text-[8px]"></i>
+                            <span>Upstream (本家GitHubリポジトリ)</span>
+                        </div>
+                    </div>
+                    <!-- Origin Layer -->
+                    <div class="h-1/3 border-b border-slate-800 bg-slate-900/5 relative">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-orange-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-orange-900/30">
+                            <i class="fab fa-github text-[8px]"></i>
+                            <span>Origin (あなたの複製GitHubリポジトリ)</span>
+                        </div>
+                        <!-- Lock overlay if unforked -->
+                        <div id="no-fork-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center pointer-events-auto transition-opacity duration-300 z-30">
+                            <i class="fas fa-lock text-slate-500 text-base mb-1 animate-pulse"></i>
+                            <p class="text-[10px] text-slate-400 font-bold">Origin（あなたのクラウド）は未作成です</p>
+                            <p class="text-[9px] text-slate-500">本家プロジェクトを「Fork (複製)」すると有効になります。</p>
+                        </div>
+                    </div>
+                    <!-- Local Layer -->
+                    <div class="h-1/3 bg-slate-950/5 relative">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-sky-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-sky-900/30">
+                            <i class="fas fa-laptop-code text-[8px]"></i>
+                            <span>Local (あなたの手元パソコン)</span>
+                        </div>
+                    </div>
+                `;
+                
+                const overlay = document.getElementById('no-fork-overlay');
+                if (overlay) {
+                    if (state.hasForked) {
+                        overlay.style.opacity = "0";
+                        overlay.style.pointerEvents = "none";
+                    } else {
+                        overlay.style.opacity = "1";
+                        overlay.style.pointerEvents = "auto";
+                    }
+                }
+            } else {
+                // Quest 1: 2-Layer System
+                separators.innerHTML = `
+                    <!-- Origin Layer -->
+                    <div class="h-1/2 border-b border-slate-800 bg-slate-950/20 relative">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-orange-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-orange-900/30">
+                            <i class="fab fa-github text-[8px]"></i>
+                            <span>Origin (あなたのGitHubリモートリポジトリ)</span>
+                        </div>
+                    </div>
+                    <!-- Local Layer -->
+                    <div class="h-1/2 bg-slate-950/5 relative">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-sky-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-sky-900/30">
+                            <i class="fas fa-laptop-code text-[8px]"></i>
+                            <span>Local (あなたの手元パソコン)</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (state.activeTab === 'quest') {
+                const quest = quests[state.currentQuestIndex];
+                document.getElementById('quest-number').textContent = `${state.currentQuestIndex + 1} / ${quests.length}`;
+                document.getElementById('quest-title').textContent = quest.title;
+                document.getElementById('quest-desc').textContent = quest.desc;
+                document.getElementById('quest-tip').textContent = quest.tip;
+
+                const goalList = document.getElementById('goal-list');
+                goalList.innerHTML = '';
+                quest.goals.forEach(goal => {
+                    const li = document.createElement('li');
+                    li.id = `goal-item-${goal.id}`;
+                    li.className = "flex items-center text-slate-300 transition-all";
+                    li.innerHTML = `<i id="goal-icon-${goal.id}" class="far fa-circle text-slate-500 mr-1.5"></i> ${goal.text}`;
+                    goalList.appendChild(li);
+                });
+
+                document.getElementById('prev-quest-btn').disabled = state.currentQuestIndex === 0;
+                document.getElementById('next-quest-btn').disabled = state.currentQuestIndex === quests.length - 1;
+                
+                checkGoals(); 
+            }
+
+            const svgGroup = document.getElementById('svg-connections');
+            const nodesContainer = document.getElementById('dom-nodes-container');
+            svgGroup.innerHTML = '';
+            nodesContainer.innerHTML = '';
+
+            const canvasWidth = document.getElementById('git-svg-canvas').clientWidth || 600;
+            const containerHeight = document.getElementById('git-svg-canvas').clientHeight || 280;
+
+            const yPositions = {};
+            if (isThreeLayerMode) {
+                yPositions.upstream = containerHeight * 0.16;
+                yPositions.origin = containerHeight * 0.5;
+                yPositions.local = containerHeight * 0.84;
+            } else {
+                yPositions.origin = containerHeight * 0.25;
+                yPositions.local = containerHeight * 0.75;
+            }
+
+            // Draw Upstream (Only in 3-layer mode)
+            if (isThreeLayerMode) {
+                drawRepositoryGroup('upstream', state.upstreamCommits, state.upstreamBranchHeads, yPositions.upstream, canvasWidth, '#ef4444');
+            }
+
+            // Draw Origin
+            if (state.hasForked || !isThreeLayerMode) {
+                drawRepositoryGroup('origin', state.originCommits, state.originBranchHeads, yPositions.origin, canvasWidth, '#f97316');
+            }
+
+            // Draw Local
+            drawRepositoryGroup('local', state.localCommits, state.localBranchHeads, yPositions.local, canvasWidth, '#3b82f6');
+
+            // Draw Crossing connections flow lines
+            drawDataFlowLines(yPositions, canvasWidth, isThreeLayerMode);
+        }
+
+        function drawRepositoryGroup(levelName, commitsList, branchHeads, levelY, canvasWidth, colorHex) {
+            const svgGroup = document.getElementById('svg-connections');
+            const nodesContainer = document.getElementById('dom-nodes-container');
+
+            if (commitsList.length === 0) return;
+
+            const branchOffsets = {
+                'main': 0,
+                'feature-web': -14,
+                'bugfix': -14,
+                'feature-test': -14
+            };
+
+            const xPositions = {};
+            commitsList.forEach((c, idx) => {
+                xPositions[c.id] = 70 + (idx * 60);
+            });
+
+            // Draw Commit Link Lines (Edges)
+            commitsList.forEach(c => {
+                const parentX = xPositions[c.parent];
+                const currentX = xPositions[c.id];
+                const currentY = levelY + (branchOffsets[c.branch] || 0);
+
+                if (c.parent && parentX) {
+                    const parentCommit = commitsList.find(pc => pc.id === c.parent);
+                    if (parentCommit) {
+                        const parentY = levelY + (branchOffsets[parentCommit.branch] || 0);
+
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        const d = `M ${parentX} ${parentY} C ${(parentX + currentX)/2} ${parentY}, ${(parentX + currentX)/2} ${currentY}, ${currentX} ${currentY}`;
+                        
+                        line.setAttribute("d", d);
+                        line.setAttribute("stroke", colorHex);
+                        line.setAttribute("stroke-width", "2");
+                        line.setAttribute("fill", "none");
+                        line.setAttribute("opacity", "0.5");
+                        svgGroup.appendChild(line);
+                    }
+                }
+            });
+
+            // Draw Commit Circles (Nodes)
+            commitsList.forEach(c => {
+                const x = xPositions[c.id];
+                const y = levelY + (branchOffsets[c.branch] || 0);
+
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = `absolute w-4.5 h-4.5 rounded-full flex items-center justify-center pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 border transition-all cursor-pointer shadow hover:scale-110`;
+                nodeDiv.style.left = `${x}px`;
+                nodeDiv.style.top = `${y}px`;
+                nodeDiv.style.width = '18px';
+                nodeDiv.style.height = '18px';
+                
+                if (c.branch === 'main') {
+                    nodeDiv.style.backgroundColor = '#020617'; 
+                    nodeDiv.style.borderColor = colorHex;
+                } else {
+                    nodeDiv.style.backgroundColor = colorHex;
+                    nodeDiv.style.borderColor = '#ffffff';
+                }
+
+                const innerText = document.createElement('span');
+                innerText.className = "text-[6.5px] font-bold text-white uppercase code-font";
+                innerText.textContent = c.id.replace('c_', '').substring(0, 3);
+                nodeDiv.appendChild(innerText);
+
+                // Setup dynamic hover tooltips
+                const tooltip = document.createElement('div');
+                tooltip.className = "absolute hidden bg-slate-950 border border-slate-800 text-white text-[8px] p-1.5 rounded shadow-2xl z-40 w-36 pointer-events-none";
+                tooltip.style.left = `50%`;
+                tooltip.style.top = `110%`;
+                tooltip.style.transform = `translateX(-50%)`;
+                tooltip.innerHTML = `
+                    <div class="font-bold text-teal-400 code-font">${c.id}</div>
+                    <div class="text-slate-300 mt-0.5">${c.message}</div>
+                    <div class="text-[7px] text-slate-500 mt-0.5">Branch: <span class="bg-slate-900 px-1 py-0.2 rounded text-slate-300 font-bold">${c.branch}</span></div>
+                `;
+                nodeDiv.appendChild(tooltip);
+
+                nodeDiv.addEventListener('mouseenter', () => tooltip.classList.remove('hidden'));
+                nodeDiv.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+
+                nodesContainer.appendChild(nodeDiv);
+
+                // Pointing Heads & Active Star tracker
+                const pointingBranches = [];
+                for (const bName in branchHeads) {
+                    if (branchHeads[bName] === c.id) {
+                        pointingBranches.push(bName);
+                    }
+                }
+
+                pointingBranches.forEach((bName, bIdx) => {
+                    const headBadge = document.createElement('div');
+                    headBadge.className = "absolute text-[7px] px-1 py-0.2 rounded font-bold border pointer-events-none transform -translate-x-1/2 -translate-y-1/2 shadow-sm transition-all";
+                    headBadge.style.left = `${x}px`;
+                    headBadge.style.top = `${y - 14 - (bIdx * 10)}px`; 
+                    headBadge.style.backgroundColor = colorHex + '20';
+                    headBadge.style.borderColor = colorHex;
+                    headBadge.style.color = '#ffffff';
+                    headBadge.textContent = bName;
+                    nodesContainer.appendChild(headBadge);
+
+                    if (levelName === 'local' && state.localBranch === bName) {
+                        const star = document.createElement('div');
+                        star.className = "absolute text-[8px] text-yellow-400 transform -translate-x-1/2 -translate-y-1/2 animate-bounce";
+                        star.style.left = `${x}px`;
+                        star.style.top = `${y - 23 - (bIdx * 10)}px`;
+                        star.innerHTML = `<i class="fas fa-star"></i>`;
+                        nodesContainer.appendChild(star);
+                    }
+                });
+            });
+        }
+
+        function drawDataFlowLines(yPositions, canvasWidth, isThreeLayerMode) {
+            const svgGroup = document.getElementById('svg-connections');
+
+            // 1. Upstream ➔ Origin: Fork Line (Only in 3-layer mode)
+            if (isThreeLayerMode && state.hasForked) {
+                const forkLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const startX = 70;
+                const startY = yPositions.upstream;
+                const endX = 70;
+                const endY = yPositions.origin;
+                
+                const d = `M ${startX} ${startY} C ${startX + 30} ${(startY + endY)/2}, ${endX + 30} ${(startY + endY)/2}, ${endX} ${endY}`;
+                forkLine.setAttribute("d", d);
+                forkLine.setAttribute("stroke", "#f97316"); 
+                forkLine.setAttribute("stroke-width", "2");
+                forkLine.setAttribute("class", "flowing-line");
+                forkLine.setAttribute("fill", "none");
+                forkLine.setAttribute("opacity", "0.3");
+                svgGroup.appendChild(forkLine);
+            }
+
+            // 2. Local ➔ Origin: Push Line
+            const syncedLocalBranch = state.originBranches.find(b => b !== 'main');
+            if (syncedLocalBranch && (state.hasForked || !isThreeLayerMode)) {
+                const pushLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const startX = 160; 
+                const startY = yPositions.local;
+                const endX = 160;
+                const endY = yPositions.origin;
+
+                const d = `M ${startX} ${startY} C ${startX - 25} ${(startY + endY)/2}, ${endX - 25} ${(startY + endY)/2}, ${endX} ${endY}`;
+                pushLine.setAttribute("d", d);
+                pushLine.setAttribute("stroke", "#6366f1"); 
+                pushLine.setAttribute("stroke-width", "2");
+                pushLine.setAttribute("class", "flowing-line");
+                pushLine.setAttribute("fill", "none");
+                pushLine.setAttribute("opacity", "0.4");
+                svgGroup.appendChild(pushLine);
+            }
+
+            // 3. PR Visual Connections (Only in 3-layer mode)
+            if (isThreeLayerMode) {
+                state.pullRequests.forEach(pr => {
+                    const prLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    const startX = canvasWidth - 90;
+                    const startY = yPositions.origin;
+                    const endX = canvasWidth - 60;
+                    const endY = yPositions.upstream;
+
+                    const d = `M ${startX} ${startY} C ${startX} ${(startY + endY)/2}, ${endX} ${(startY + endY)/2}, ${endX} ${endY}`;
+                    prLine.setAttribute("d", d);
+                    
+                    const color = pr.status === 'merged' ? '#10b981' : '#14b8a6'; 
+                    prLine.setAttribute("stroke", color);
+                    prLine.setAttribute("stroke-width", "2.5");
+                    if (pr.status === 'open') {
+                        prLine.setAttribute("class", "flowing-line");
+                    }
+                    prLine.setAttribute("fill", "none");
+                    prLine.setAttribute("opacity", "0.45");
+                    svgGroup.appendChild(prLine);
+
+                    // Float PR Info box
+                    const badgeX = (startX + endX) / 2;
+                    const badgeY = (startY + endY) / 2;
+
+                    const prBadge = document.createElement('div');
+                    prBadge.className = "absolute text-[7px] px-1.5 py-0.2 rounded border shadow font-bold text-white transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer flex items-center space-x-1 z-30";
+                    prBadge.style.left = `${badgeX}px`;
+                    prBadge.style.top = `${badgeY}px`;
+                    
+                    if (pr.status === 'open') {
+                        prBadge.classList.add('bg-teal-950', 'border-teal-500');
+                        prBadge.innerHTML = `<i class="fas fa-paper-plane text-teal-300"></i> <span>PR Open</span>`;
+                    } else {
+                        prBadge.classList.add('bg-emerald-900', 'border-emerald-500');
+                        prBadge.innerHTML = `<i class="fas fa-check text-emerald-300"></i> <span>Merged</span>`;
+                    }
+
+                    prBadge.addEventListener('click', () => {
+                        logTerm("GitHub", `Pull Request #${pr.id}: タイトル "${pr.title}" [${pr.status.toUpperCase()}]`);
+                    });
+
+                    document.getElementById('dom-nodes-container').appendChild(prBadge);
+                });
+            }
+        }
+
+        // Gamification Celebration confetti logic
+        let confettiInterval = null;
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let pieces = [];
+
+        function startConfetti() {
+            canvas.classList.remove('hidden');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            pieces = [];
+            for (let i = 0; i < 80; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 5 + 3,
+                    color: `hsl(${Math.random() * 360}, 85%, 50%)`,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 4 - 2
+                });
+            }
+            if(!confettiInterval) {
+                confettiInterval = setInterval(updateConfetti, 25);
+            }
+        }
+
+        function updateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pieces.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y > canvas.height) {
+                    p.y = -20;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function stopConfetti() {
+            if (confettiInterval) {
+                clearInterval(confettiInterval);
+                confettiInterval = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+        }
+
+        window.addEventListener('resize', () => {
+            updateUI();
+        });
+
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
