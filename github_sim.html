@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GitHub Visual Learning Simulator</title>
+    <title>Git & GitHub/GitLab Visual Learning Simulator</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -36,10 +36,21 @@
         <div class="flex items-center space-x-2.5">
             <i class="fab fa-github text-2xl text-teal-400"></i>
             <div>
-                <h1 class="text-sm font-black tracking-wider text-white leading-tight">GITHUB VISUAL SIMULATOR</h1>
-                <p class="text-[9px] text-slate-400">実践的Git共同開発ビジュアルシミュレーター</p>
+                <h1 class="text-sm font-black tracking-wider text-white leading-tight">GIT VISUAL SIMULATOR</h1>
+                <p class="text-[9px] text-slate-400">実践的Git共同開発ビジュアルシミュレーター (GitHub / GitLab 対応)</p>
             </div>
         </div>
+        
+        <!-- Platform Toggle Switcher (Based on slide page 19) -->
+        <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-md border border-slate-800">
+            <button id="platform-github" class="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-slate-850 text-slate-400">
+                GitHub (PR)
+            </button>
+            <button id="platform-gitlab" class="px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-teal-600 text-white shadow-sm">
+                GitLab (MR)
+            </button>
+        </div>
+
         <div class="flex items-center space-x-2">
             <button id="reset-app-btn" class="text-[9px] bg-red-950/50 text-red-400 border border-red-900/50 px-2 py-1 rounded hover:bg-red-900 hover:text-white transition-all">
                 <i class="fas fa-undo mr-1"></i> リセット
@@ -85,7 +96,7 @@
                         </ul>
                     </div>
 
-                    <!-- Pro Git Concepts Tips -->
+                    <!-- Pro Git Concepts Tips (Slide context enriched) -->
                     <div class="bg-teal-950/15 border border-teal-900/40 p-2 rounded text-[9.5px] leading-relaxed text-teal-300">
                         <h4 class="font-extrabold mb-0.5 text-teal-400"><i class="fas fa-microchip mr-1"></i> Git解説・Tips:</h4>
                         <p id="quest-tip"></p>
@@ -116,7 +127,7 @@
                         2. 手元のローカルPCで <strong class="text-white">checkout -b</strong> で新機能を作る<br>
                         3. 何度か <strong class="text-white">commit</strong> を繰り返し履歴を作る<br>
                         4. 自分のリモートへ <strong class="text-white">push origin</strong> でアップロード<br>
-                        5. 本家に対し <strong class="text-white">Pull Request</strong> ➔ <strong class="text-white">Merge</strong> して反映！
+                        5. 本家に対し <span id="sandbox-tip-req-name" class="text-white font-bold">Merge Request</span> ➔ <strong class="text-white">Merge</strong> して反映！
                     </div>
                 </div>
                 <div class="text-[8.5px] text-slate-500 font-mono text-center pt-2 border-t border-slate-800">
@@ -175,12 +186,12 @@
                             </button>
                             <button id="btn-push" class="text-[10px] bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-800/40 text-indigo-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95 col-span-2">
                                 <i class="fas fa-cloud-upload-alt text-[9px]"></i>
-                                <span>push origin [branch-name]</span>
+                                <span id="push-btn-text">push origin [branch-name]</span>
                             </button>
 
-                            <!-- Remote Operations (GitHub Web UI) -->
+                            <!-- Remote Operations (Web UI) -->
                             <div class="col-span-full text-[8px] text-slate-500 font-bold uppercase tracking-wider border-b border-slate-800 pb-0.5 mb-0.5 mt-1">
-                                REMOTE GITHUB (ブラウザ上でのWeb操作)
+                                REMOTE PLATFORM (ブラウザ上でのWeb操作)
                             </div>
                             <button id="btn-fork" class="text-[10px] bg-amber-950/60 hover:bg-amber-900/80 border border-amber-800/40 text-amber-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
                                 <i class="fas fa-code-fork text-[9px]"></i>
@@ -188,11 +199,11 @@
                             </button>
                             <button id="btn-pr" class="text-[10px] bg-teal-950/60 hover:bg-teal-900/80 border border-teal-800/40 text-teal-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95">
                                 <i class="fas fa-paper-plane text-[9px]"></i>
-                                <span>Pull Request</span>
+                                <span id="pr-btn-text">Merge Request</span>
                             </button>
                             <button id="btn-merge" class="text-[10px] bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-800/40 text-emerald-300 py-1 px-2 rounded font-semibold transition-all flex items-center justify-center space-x-1 shadow active:scale-95 col-span-2">
                                 <i class="fas fa-check-double text-[9px]"></i>
-                                <span>Merge Pull Request (Upstreamマージ)</span>
+                                <span id="merge-btn-text">Merge (マージ承認)</span>
                             </button>
                         </div>
                     </div>
@@ -210,7 +221,7 @@
                     </div>
                     <!-- Live Console Output (Auto scrolling) -->
                     <div id="terminal-log" class="flex-1 bg-slate-950 rounded p-2 overflow-y-auto text-[10px] code-font text-emerald-400 leading-relaxed shadow-inner">
-                        <div class="text-slate-500">// GitHub ビジュアルシミュレーターが起動しました。</div>
+                        <div class="text-slate-500">// Git ビジュアルシミュレーターが起動しました。</div>
                     </div>
                 </div>
             </div>
@@ -272,6 +283,7 @@
             activeTab: 'quest',
             currentQuestIndex: 0,
             hasForked: false, 
+            platform: 'gitlab', // 'github' or 'gitlab' (Slide uses GitLab predominantly)
 
             // Local workspace states
             localBranch: 'main',
@@ -294,34 +306,46 @@
                 { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'upstream' }
             ],
 
-            // Pull Request states
+            // Pull Request / Merge Request states
             pullRequests: [] 
         };
 
         const quests = [
             {
                 title: "Quest 1: 基本のブランチ作成とPush",
-                desc: "Gitローカル（手元のPC）で新機能開発用のブランチを作り、変更をコミットして、自分のGitHubリモート（Origin）にプッシュする基本フローを学習しましょう！",
-                tip: "プロジェクト開発時、基本となるメインブランチ（main）を壊さないため、必ず機能ごとに新しい『ブランチ』を切って安全に作業を行い、そこへコミットします。",
+                desc: "手元のローカル環境で新機能開発用のブランチを切り、ファイルを変更して変更内容を確定（コミット）後、リモートリポジトリ（Origin）にプッシュして保管する流れを学びます！",
+                tip: "元の main ブランチを壊さないため、実習手順（資料PAGE 52）でもまず新ブランチ 'dev' を作成しています。ここで作った変更をクラウドの 'Origin' へ push して安全に送信・保存します。",
                 goals: [
-                    { id: 'branch-created', text: "Localで新ブランチ 'feature-web' を作成する", check: () => state.localBranches.includes('feature-web') },
-                    { id: 'committed-feature', text: "'feature-web' ブランチで変更をコミットする", check: () => state.localCommits.filter(c => c.branch === 'feature-web').length >= 1 },
-                    { id: 'pushed-feature', text: "Originへ 'feature-web' ブランチをPushする", check: () => state.originBranches.includes('feature-web') && state.originCommits.some(c => c.branch === 'feature-web') }
+                    { id: 'branch-created', text: "Localで新ブランチ (例: 'dev' や 'feature-web') を作成する", check: () => state.localBranches.length > 1 },
+                    { id: 'committed-feature', text: "新規ブランチ上で変更内容を確定 (commit) する", check: () => {
+                        const nonMainBranches = state.localBranches.filter(b => b !== 'main');
+                        return state.localCommits.some(c => nonMainBranches.includes(c.branch));
+                    }},
+                    { id: 'pushed-feature', text: "Originへ変更したブランチを 'Push' する", check: () => {
+                        const nonMainBranches = state.localBranches.filter(b => b !== 'main');
+                        return state.originBranches.some(ob => nonMainBranches.includes(ob)) && state.originCommits.some(c => nonMainBranches.includes(c.branch));
+                    }}
                 ],
-                successMsg: "素晴らしい！手元の開発環境（Local）でブランチを安全に管理し、クラウド（Origin）に反映させることができました。<br><br>次は、いよいよ開発의 醍醐味である、他人のプロジェクトに貢献する「フォークとプルリクエスト」をマスターします！"
+                successMsg: "お見事です！手元の開発環境（Local）でブランチを安全に切り分け、変更をコミットしてクラウド（Origin）に反映させることができました。<br><br>次は、資料にある『他の人のリポジトリに貢献する（マージ/プルリクエスト）』の共同開発フローに挑戦します！"
             },
             {
-                title: "Quest 2: フォークとプルリクエスト (OSS貢献)",
-                desc: "本家リポジトリ（Upstream）にあるプログラムにバグを修正します！ 本家からGitHub（Origin）へフォークし、ローカルで修正後、プルリクエストを出して本家にマージされましょう！",
-                tip: "他人が管理している本家のプログラム（Upstream）に直接Pushはできません。そのため、「Fork（複製）」を行い自分自身のリポジトリを作り、そこで作業したものを「Pull Request（マージ提案）」として送ります。",
+                title: "Quest 2: フォークと変更リクエスト (共同開発・OSS貢献)",
+                desc: "他の人が管理している本家プロジェクト（Upstream）を変更したい状況を想定します！ まず本家を自分の空間（Origin）に複製（Fork）し、ローカルで修正を加えた後、本家に統合をリクエストしましょう！",
+                tip: "他人が管理しているプロジェクト（Upstream）には直接 push できません。そのため、まず「Fork（複製）」して自分のOriginを作り、そこで作業したブランチを本家に『取り込んで！』と申請（PR/MR）します（資料PAGE 59, 62）。",
                 goals: [
                     { id: 'forked', text: "Upstream（本家）を自分のOriginに 'Fork' する", check: () => state.hasForked },
-                    { id: 'branch-bugfix', text: "Localで 'bugfix' ブランチを作成して修正コミットする", check: () => state.localBranches.includes('bugfix') && state.localCommits.some(c => c.branch === 'bugfix' && c.id !== 'c1') },
-                    { id: 'pushed-bugfix', text: "修正した 'bugfix' ブランチを自分のOriginへ 'Push' する", check: () => state.originBranches.includes('bugfix') && state.originCommits.some(c => c.branch === 'bugfix') },
-                    { id: 'pr-created', text: "Originの'bugfix'からUpstreamの'main'へ 'Pull Request' を作成する", check: () => state.pullRequests.some(pr => pr.status === 'open' || pr.status === 'merged') },
-                    { id: 'pr-merged', text: "Upstream（本家側）でPRを 'Merge' して取り込んでもらう", check: () => state.pullRequests.some(pr => pr.status === 'merged') }
+                    { id: 'branch-bugfix', text: "Localで作業用の新ブランチを作成して修正コミットする", check: () => {
+                        const nonMainBranches = state.localBranches.filter(b => b !== 'main');
+                        return nonMainBranches.length > 0 && state.localCommits.some(c => nonMainBranches.includes(c.branch) && c.id !== 'c1');
+                    }},
+                    { id: 'pushed-bugfix', text: "作成した作業用ブランチを自分のOriginへ 'Push' する", check: () => {
+                        const nonMainBranches = state.localBranches.filter(b => b !== 'main');
+                        return state.originBranches.some(ob => nonMainBranches.includes(ob)) && state.originCommits.some(c => nonMainBranches.includes(c.branch));
+                    }},
+                    { id: 'pr-created', text: "本家（Upstream）に対してマージ／プルリクエストを送信する", check: () => state.pullRequests.some(pr => pr.status === 'open' || pr.status === 'merged') },
+                    { id: 'pr-merged', text: "本家リポジトリ側でリクエストを 'Merge'（承認マージ）してもらう", check: () => state.pullRequests.some(pr => pr.status === 'merged') }
                 ],
-                successMsg: "おめでとうございます！これこそがGitHubの共同開発モデル（OSS貢献）の全貌です！<br><br><strong>フォーク ➔ 修正作業 ➔ プッシュ ➔ プルリクエスト ➔ マージ</strong> の流れを体得できました。チーム開発のグループワークや実際の開発現場でも最も使われる手法です！"
+                successMsg: "素晴らしい！共同開発のためのワークフローを完全に達成しました！<br><br><strong>フォーク ➔ 手元での変更 ➔ 自分のリモートへPush ➔ 共同マージリクエスト ➔ マージ承認</strong>。この一連の正しい作法は、実世界のプログラミングチームやコンテスト（DCON等）の共同開発でも核となる技術です！"
             }
         ];
 
@@ -330,7 +354,7 @@
             resetToState();
             setupEventListeners();
             updateUI();
-            logTerm("System", "シミュレーターを初期化しました。");
+            logTerm("System", "Gitシミュレーターを起動しました。実習スライドに合わせて操作してみましょう。");
         }
 
         function resetToState() {
@@ -372,12 +396,12 @@
                     { id: 'c1', parent: null, message: 'Initial commit', branch: 'main', visualLevel: 'upstream' }
                 ];
 
-                // Inject a Bug commit on Upstream for Quest 2
+                // Inject a Bug commit on Upstream for Quest 2 to solve (Layout Bug inside Slide concept)
                 if (state.currentQuestIndex === 1 && state.activeTab === 'quest') {
                     state.upstreamCommits.push({
                         id: 'c2-upstream',
                         parent: 'c1',
-                        message: 'Bug inside layout.js 🐛',
+                        message: 'Fix broken assets link 🐛',
                         branch: 'main',
                         visualLevel: 'upstream'
                     });
@@ -386,7 +410,7 @@
                     state.localCommits.push({
                         id: 'c2-upstream',
                         parent: 'c1',
-                        message: 'Bug inside layout.js 🐛',
+                        message: 'Fix broken assets link 🐛',
                         branch: 'main',
                         visualLevel: 'local'
                     });
@@ -397,6 +421,10 @@
         }
 
         function setupEventListeners() {
+            // Platform Mode toggle switches (Slide is GitLab, typical is GitHub)
+            document.getElementById('platform-github').onclick = () => setPlatform('github');
+            document.getElementById('platform-gitlab').onclick = () => setPlatform('gitlab');
+
             // Mode Switching Tab Elements
             document.getElementById('tab-quest').onclick = () => switchTab('quest');
             document.getElementById('tab-sandbox').onclick = () => switchTab('sandbox');
@@ -419,7 +447,7 @@
 
             // Log Console Clear
             document.getElementById('clear-log-btn').onclick = () => {
-                document.getElementById('terminal-log').innerHTML = '<div class="text-slate-500">// Log cleared.</div>';
+                document.getElementById('terminal-log').innerHTML = '<div class="text-slate-500">// ログをクリアしました。</div>';
             };
 
             // Overlay Custom Prompt modal actions
@@ -431,11 +459,29 @@
 
             // Global System reset
             document.getElementById('reset-app-btn').onclick = () => {
-                if(confirm("進行中のデータを破棄し、最初からリセットしますか？")) {
+                if(confirm("進行状況を破棄し、最初からやり直しますか？")) {
                     state.currentQuestIndex = 0;
                     initApp();
                 }
             };
+        }
+
+        // Sets GitHub vs GitLab modes dynamically
+        function setPlatform(platform) {
+            state.platform = platform;
+            const ghBtn = document.getElementById('platform-github');
+            const glBtn = document.getElementById('platform-gitlab');
+            
+            if (platform === 'github') {
+                ghBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-teal-600 text-white shadow-sm";
+                glBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-slate-850 text-slate-400 hover:text-white";
+                logTerm("System", "表示モードを『GitHub (PR優先)』に切り替えました。");
+            } else {
+                glBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-teal-600 text-white shadow-sm";
+                ghBtn.className = "px-2 py-0.5 rounded text-[10px] font-bold transition-all bg-slate-850 text-slate-400 hover:text-white";
+                logTerm("System", "表示モードを『GitLab (MR優先 - 実習スライド準拠)』に切り替えました。");
+            }
+            updateUI();
         }
 
         function switchTab(tab) {
@@ -513,7 +559,7 @@
 
             if (type === "GitHub") {
                 colorClass = "text-amber-400";
-                prefix = "[GitHub] ";
+                prefix = state.platform === 'gitlab' ? "[GitLab Web] " : "[GitHub Web] ";
             } else if (type === "System") {
                 colorClass = "text-teal-300 font-bold";
                 prefix = "[SYSTEM] ";
@@ -533,12 +579,11 @@
             term.scrollTop = term.scrollHeight;
         }
 
-        // Action Trigger logic: Create Local Branch
+        // Action Trigger logic: Create Local Branch (Slide PAGE 31, 52 uses 'dev' branch)
         function handleBranchAction() {
-            const isQuest1 = (state.currentQuestIndex === 0 && state.activeTab === 'quest');
-            const defaultBranch = isQuest1 ? "feature-web" : "bugfix";
+            const defaultBranchName = state.currentQuestIndex === 0 ? "dev" : "bugfix";
 
-            showPrompt("Git Checkout", "新しく切り替える作業用ブランチの名前:", defaultBranch, (branchName) => {
+            showPrompt("Git Checkout", "新しく作成・切り替える作業用ブランチの名前:", defaultBranchName, (branchName) => {
                 if (state.localBranches.includes(branchName)) {
                     logTerm("Error", `ブランチ '${branchName}' はすでに存在します。`);
                     return;
@@ -551,16 +596,18 @@
                 state.localBranchHeads[branchName] = currentHeadId;
 
                 logTerm("Git", `git checkout -b ${branchName}`, true);
-                logTerm("Git", `新しいブランチ '${branchName}' にチェックアウトしました。`);
+                logTerm("Git", `新しい作業ブランチ '${branchName}' へ切り替えました。`);
                 updateUI();
                 checkGoals();
             });
         }
 
-        // Action Trigger logic: Record Local Commit
+        // Action Trigger logic: Record Local Commit (Slide PAGE 54 mentions adding 'new.txt')
         function handleCommitAction() {
             const activeBranch = state.localBranch;
-            showPrompt("Git Commit", "コミットメッセージを入力してください:", "Add patch code change", (msg) => {
+            const defaultCommitMsg = activeBranch === 'dev' ? "new.txt を追加 (hello world!)" : "Fix layout broken reference";
+
+            showPrompt("Git Commit", "コミットメッセージを入力してください:", defaultCommitMsg, (msg) => {
                 const parentId = state.localBranchHeads[activeBranch] || 'c1';
                 const newCommitId = 'c_' + Math.random().toString(36).substr(2, 5);
                 
@@ -581,7 +628,7 @@
             });
         }
 
-        // Action Trigger logic: Push Branch Up to Origin Remote
+        // Action Trigger logic: Push Branch Up to Origin Remote (Slide PAGE 55)
         function handlePushAction() {
             const activeBranch = state.localBranch;
             const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
@@ -612,14 +659,14 @@
 
             state.originBranchHeads[activeBranch] = state.localBranchHeads[activeBranch];
 
-            logTerm("Git", `github.com:your-account/repository.git にアップロード中...`);
+            logTerm("Git", `github.com:your-account/repository.git にアップロード完了しました。`);
             logTerm("Git", ` * [new branch]      ${activeBranch} -> ${activeBranch}`);
             
             updateUI();
             checkGoals();
         }
 
-        // Action Trigger logic: Fork Repository from Upstream to Origin Remote
+        // Action Trigger logic: Fork Repository (Slide PAGE 59, 62)
         function handleForkAction() {
             const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
             if (!isThreeLayerMode) {
@@ -636,10 +683,10 @@
             const overlay = document.getElementById('no-fork-overlay');
             if (overlay) {
                 overlay.style.opacity = "0";
-                setTimeout(() => { overlay.style.pointerEvents = "none"; }, 350);
+                setTimeout(() => { overlay.style.pointerEvents = "none"; }, 300);
             }
 
-            logTerm("GitHub", "本家リポジトリ 'upstream/project' のコピーを作成しています...");
+            logTerm("GitHub", "本家リポジトリ 'upstream/project' のコピー(Fork)を開始します...");
             
             state.originCommits = state.upstreamCommits.map(c => ({
                 ...c,
@@ -648,16 +695,18 @@
             state.originBranches = [...state.upstreamBranches];
             state.originBranchHeads = { ...state.upstreamBranchHeads };
 
-            logTerm("GitHub", "Forkが完了しました！ あなたのOriginリモートリポジトリが作成されました。");
+            logTerm("GitHub", "Fork完了！ あなた専用のOriginリモートリポジトリが有効化されました。");
             updateUI();
             checkGoals();
         }
 
-        // Action Trigger logic: Submit Pull Request (Origin -> Upstream)
+        // Action Trigger logic: Submit Pull/Merge Request (Slide PAGE 55, 56)
         function handlePRAction() {
             const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            const reqLabel = state.platform === 'gitlab' ? 'Merge Request' : 'Pull Request';
+
             if (!isThreeLayerMode) {
-                logTerm("Error", "PRマージフローはこのミッションでは必要ありません。");
+                logTerm("Error", `${reqLabel}マージフローはこのミッションでは必要ありません。`);
                 return;
             }
             if (!state.hasForked) {
@@ -667,14 +716,15 @@
 
             const prBranches = state.originBranches.filter(b => b !== 'main');
             if (prBranches.length === 0) {
-                logTerm("Error", "PRとして送信可能な作業ブランチ（main以外）がOriginにありません。Pushを完了させてください。");
+                logTerm("Error", `${reqLabel}を作成するための作業ブランチがOriginにありません。Pushを先に完了させてください。`);
                 return;
             }
 
             const fromBranch = prBranches[0]; 
+            const defaultTitle = fromBranch === 'dev' ? "新しいファイルを追加 (new.txt)" : "Fix layout Broken Images asset";
 
-            showPrompt("Create Pull Request", "本家に送信するプルリクエストのタイトル:", "Fix layout bug inside module", (title) => {
-                const prId = 'pr-' + Math.floor(Math.random() * 1000);
+            showPrompt(`Create ${reqLabel}`, `本家に送信する${reqLabel}のタイトル:`, defaultTitle, (title) => {
+                const prId = 'req-' + Math.floor(Math.random() * 1000);
                 const prCommits = state.originCommits.filter(oc => oc.branch === fromBranch);
 
                 state.pullRequests.push({
@@ -686,30 +736,32 @@
                     status: 'open'
                 });
 
-                logTerm("GitHub", `Pull Request #${prId} [${fromBranch}] ➔ [upstream/main] を作成・提案しました。`);
-                logTerm("GitHub", `PRタイトル: "${title}" (${prCommits.length}個のコミット)`);
+                logTerm("GitHub", `${reqLabel} #${prId} [${fromBranch}] ➔ [upstream/main] を作成しました。`);
+                logTerm("GitHub", `タイトル: "${title}" (${prCommits.length}個のコミットを含む)`);
                 updateUI();
                 checkGoals();
             });
         }
 
-        // Action Trigger logic: Merge Open Pull Request into Upstream Main Branch
+        // Action Trigger logic: Merge Request (Slide PAGE 57)
         function handleMergeAction() {
             const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            const reqLabel = state.platform === 'gitlab' ? 'Merge Request' : 'Pull Request';
+
             if (!isThreeLayerMode) {
                 logTerm("Error", "マージ不要の構成です。");
                 return;
             }
             const openPRs = state.pullRequests.filter(pr => pr.status === 'open');
             if (openPRs.length === 0) {
-                logTerm("Error", "マージ待ち状態のオープンなPull Requestが見当たりません。");
+                logTerm("Error", `マージ可能な状態の${reqLabel}が存在しません。先に作成してください。`);
                 return;
             }
 
             const prToMerge = openPRs[0];
             prToMerge.status = 'merged';
 
-            logTerm("GitHub", `Pull Request #${prToMerge.id} が管理者により承認、本家にマージされました！ 🎉`);
+            logTerm("GitHub", `${reqLabel} #${prToMerge.id} が承認され、本家(Upstream)にマージされました！ 🎉`);
             
             prToMerge.commits.forEach(oc => {
                 if (!state.upstreamCommits.some(uc => uc.id === oc.id)) {
@@ -725,14 +777,14 @@
             state.upstreamCommits.push({
                 id: mergeCommitId,
                 parent: state.upstreamCommits[state.upstreamCommits.length - 1].id,
-                message: `Merge pull request #${prToMerge.id} from your-account/${prToMerge.fromBranch}`,
+                message: `Merge branch '${prToMerge.fromBranch}' into 'main' (${state.platform === 'gitlab' ? 'Merge Request' : 'PR'} #${prToMerge.id})`,
                 branch: 'main',
                 visualLevel: 'upstream'
             });
 
             state.upstreamBranchHeads['main'] = mergeCommitId;
 
-            logTerm("GitHub", `本家（Upstream）のmainブランチに統合が完了しました。`);
+            logTerm("GitHub", `本家（Upstream）のmainブランチに無事統合されました。`);
             updateUI();
             checkGoals();
         }
@@ -764,7 +816,13 @@
             });
 
             if (allCleared) {
-                showModal(quest.title + " クリア！ 🚀", quest.successMsg);
+                // Terminology alignment based on platform mode
+                const adjustedTitle = state.platform === 'gitlab' ? 
+                    quest.title.replace("プルリクエスト", "マージリクエスト") : quest.title;
+                const adjustedMsg = state.platform === 'gitlab' ? 
+                    quest.successMsg.replace(/プルリクエスト/g, "マージリクエスト") : quest.successMsg;
+
+                showModal(adjustedTitle + " クリア！ 🚀", adjustedMsg);
                 startConfetti();
             }
         }
@@ -804,36 +862,47 @@
         // Interactive Visualizer Engine (SVG Draw based on canvas size)
         function updateUI() {
             const isThreeLayerMode = (state.currentQuestIndex === 1 || state.activeTab === 'sandbox');
+            const reqLabel = state.platform === 'gitlab' ? 'Merge Request' : 'Pull Request';
 
-            // Render Backplane separators dynamically
+            // Change button text dynamically to align with slides (PR/MR terminology)
+            document.getElementById('pr-btn-text').textContent = reqLabel;
+            document.getElementById('merge-btn-text').textContent = `Merge (マージ承認)`;
+            document.getElementById('push-btn-text').textContent = `push origin [branch-name]`;
+            document.getElementById('sandbox-tip-req-name').textContent = reqLabel;
+
+            // Render Backplane separators dynamically (Slide PAGE 19, 43 mentions GitLab)
             const separators = document.getElementById('layer-separators-container');
+            const platformText = state.platform === 'gitlab' ? 'GitLab' : 'GitHub';
+            const upstreamColor = state.platform === 'gitlab' ? 'text-orange-500 border-orange-900/30' : 'text-red-400 border-red-900/30';
+            const originColor = state.platform === 'gitlab' ? 'text-indigo-400 border-indigo-900/30' : 'text-orange-400 border-orange-900/30';
+
             if (isThreeLayerMode) {
                 separators.innerHTML = `
                     <!-- Upstream Layer -->
                     <div class="h-1/3 border-b border-slate-800 bg-slate-950/20 relative">
-                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-red-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-red-900/30">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-xs font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border ${upstreamColor}">
                             <i class="fas fa-code-branch text-[8px]"></i>
-                            <span>Upstream (本家GitHubリポジトリ)</span>
+                            <span>Upstream (本家 ${platformText} リポジトリ)</span>
                         </div>
                     </div>
                     <!-- Origin Layer -->
                     <div class="h-1/3 border-b border-slate-800 bg-slate-900/5 relative">
-                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-orange-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-orange-900/30">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-xs font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border ${originColor}">
                             <i class="fab fa-github text-[8px]"></i>
-                            <span>Origin (あなたの複製GitHubリポジトリ)</span>
+                            <span>Origin (あなたの複製 ${platformText} リポジトリ)</span>
                         </div>
                         <!-- Lock overlay if unforked -->
                         <div id="no-fork-overlay" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center pointer-events-auto transition-opacity duration-300 z-30">
                             <i class="fas fa-lock text-slate-500 text-base mb-1 animate-pulse"></i>
-                            <p class="text-[10px] text-slate-400 font-bold">Origin（あなたのクラウド）は未作成です</p>
-                            <p class="text-[9px] text-slate-500">本家プロジェクトを「Fork (複製)」すると有効になります。</p>
+                            <p class="text-[10px] text-slate-400 font-bold">Originは未作成です</p>
+                            <p class="text-[9px] text-slate-500">本家プロジェクトを「Fork (フォーク)」するとコピーがここに作られます。</p>
                         </div>
                     </div>
                     <!-- Local Layer -->
                     <div class="h-1/3 bg-slate-950/5 relative">
                         <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-sky-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-sky-900/30">
                             <i class="fas fa-laptop-code text-[8px]"></i>
-                            <span>Local (あなたの手元パソコン)</span>
+                            <span>Local (手元のPC環境)</span>
                         </div>
                     </div>
                 `;
@@ -849,20 +918,20 @@
                     }
                 }
             } else {
-                // Quest 1: 2-Layer System
+                // Quest 1: 2-Layer System (Local & Origin)
                 separators.innerHTML = `
                     <!-- Origin Layer -->
                     <div class="h-1/2 border-b border-slate-800 bg-slate-950/20 relative">
-                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-orange-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-orange-900/30">
+                        <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-xs font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border ${originColor}">
                             <i class="fab fa-github text-[8px]"></i>
-                            <span>Origin (あなたのGitHubリモートリポジトリ)</span>
+                            <span>Origin (あなたの個人 ${platformText} リポジトリ)</span>
                         </div>
                     </div>
                     <!-- Local Layer -->
                     <div class="h-1/2 bg-slate-950/5 relative">
                         <div class="absolute top-1.5 left-3 flex items-center space-x-1.5 text-sky-400 text-[9px] font-bold uppercase tracking-widest bg-slate-950/80 px-2 py-0.5 rounded border border-sky-900/30">
                             <i class="fas fa-laptop-code text-[8px]"></i>
-                            <span>Local (あなたの手元パソコン)</span>
+                            <span>Local (手元のPC環境)</span>
                         </div>
                     </div>
                 `;
@@ -871,9 +940,18 @@
             if (state.activeTab === 'quest') {
                 const quest = quests[state.currentQuestIndex];
                 document.getElementById('quest-number').textContent = `${state.currentQuestIndex + 1} / ${quests.length}`;
-                document.getElementById('quest-title').textContent = quest.title;
-                document.getElementById('quest-desc').textContent = quest.desc;
-                document.getElementById('quest-tip').textContent = quest.tip;
+                
+                // Adjust Quest terminologies dynamically for PR vs MR representation
+                const adjustedTitle = state.platform === 'gitlab' ? 
+                    quest.title.replace("Push", "Push (GitLab実習)") : quest.title;
+                const adjustedDesc = state.platform === 'gitlab' ? 
+                    quest.desc.replace(/GitHub/g, "GitLab").replace(/プルリクエスト/g, "マージリクエスト") : quest.desc;
+                const adjustedTip = state.platform === 'gitlab' ? 
+                    quest.tip.replace(/GitHub/g, "GitLab").replace(/プル/g, "マージ").replace(/PR/g, "MR") : quest.tip;
+
+                document.getElementById('quest-title').textContent = adjustedTitle;
+                document.getElementById('quest-desc').textContent = adjustedDesc;
+                document.getElementById('quest-tip').textContent = adjustedTip;
 
                 const goalList = document.getElementById('goal-list');
                 goalList.innerHTML = '';
@@ -881,7 +959,14 @@
                     const li = document.createElement('li');
                     li.id = `goal-item-${goal.id}`;
                     li.className = "flex items-center text-slate-300 transition-all";
-                    li.innerHTML = `<i id="goal-icon-${goal.id}" class="far fa-circle text-slate-500 mr-1.5"></i> ${goal.text}`;
+                    
+                    // Replace text goals based on current mode
+                    let goalText = goal.text;
+                    if (state.platform === 'gitlab') {
+                        goalText = goalText.replace("Pull Request", "Merge Request");
+                    }
+
+                    li.innerHTML = `<i id="goal-icon-${goal.id}" class="far fa-circle text-slate-500 mr-1.5"></i> ${goalText}`;
                     goalList.appendChild(li);
                 });
 
@@ -934,6 +1019,7 @@
 
             const branchOffsets = {
                 'main': 0,
+                'dev': -14,
                 'feature-web': -14,
                 'bugfix': -14,
                 'feature-test': -14
@@ -1044,6 +1130,7 @@
 
         function drawDataFlowLines(yPositions, canvasWidth, isThreeLayerMode) {
             const svgGroup = document.getElementById('svg-connections');
+            const prBadgeText = state.platform === 'gitlab' ? 'MR' : 'PR';
 
             // 1. Upstream ➔ Origin: Fork Line (Only in 3-layer mode)
             if (isThreeLayerMode && state.hasForked) {
@@ -1115,14 +1202,14 @@
                     
                     if (pr.status === 'open') {
                         prBadge.classList.add('bg-teal-950', 'border-teal-500');
-                        prBadge.innerHTML = `<i class="fas fa-paper-plane text-teal-300"></i> <span>PR Open</span>`;
+                        prBadge.innerHTML = `<i class="fas fa-paper-plane text-teal-300"></i> <span>${prBadgeText} Open</span>`;
                     } else {
                         prBadge.classList.add('bg-emerald-900', 'border-emerald-500');
                         prBadge.innerHTML = `<i class="fas fa-check text-emerald-300"></i> <span>Merged</span>`;
                     }
 
                     prBadge.addEventListener('click', () => {
-                        logTerm("GitHub", `Pull Request #${pr.id}: タイトル "${pr.title}" [${pr.status.toUpperCase()}]`);
+                        logTerm("GitHub", `${prBadgeText} #${pr.id}: タイトル "${pr.title}" [${pr.status.toUpperCase()}]`);
                     });
 
                     document.getElementById('dom-nodes-container').appendChild(prBadge);
