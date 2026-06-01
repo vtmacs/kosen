@@ -1,13 +1,13 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Flaskと、通信用のrequests、本番サーバー用のgunicornをインストール
-RUN pip install --no-cache-dir Flask requests gunicorn
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 
 EXPOSE 8080
 
-# gunicornを使って安全に起動（ポート8080で待受）
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "app:app"]
+# メインプロセス1、並列実行スレッド40を固定割り当てして起動
+CMD ["gunicorn", "-w", "1", "--threads", "40", "-b", "0.0.0.0:8080", "app:app"]
