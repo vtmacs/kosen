@@ -22,11 +22,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           driver: cloud
-          endpoint: "vtmacs003b/student-namespace"
+          endpoint: "vtmacs003b/kosen"
 
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:apprun/student-namespace"
-          tags: "${{ vars.DOCKER_USER }}/docker-build-student-namespace:latest"
+          tags: "${{ vars.DOCKER_USER }}/docker-student-namespace:latest"
           outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry' }}
