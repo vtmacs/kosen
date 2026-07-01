@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "apprun/teacher-dashboard/**"
 
 jobs:
   docker:
@@ -20,9 +22,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver: cloud
-          endpoint: "vtmacs003b/kosen"
 
       - name: Build and push
         uses: docker/build-push-action@v6
