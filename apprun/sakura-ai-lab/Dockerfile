@@ -21,9 +21,10 @@ ARG TTYD_VERSION=1.7.7
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8 \
     LAB_HOME=/lab
 
-# --- OSパッケージ (Python本体 + 音声分割用ffmpeg + tmux + 最低限のライブラリ) ---
+# --- OSパッケージ (Python本体 + 音声分割用ffmpeg + tmux + 日本語ロケール + 最低限のライブラリ) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 \
       python3-pip \
@@ -34,7 +35,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       bash \
       ffmpeg \
       tmux \
+      locales \
+    && sed -i 's/^# *ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen ja_JP.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=ja_JP.UTF-8 \
+    LANGUAGE=ja_JP:ja \
+    LC_ALL=ja_JP.UTF-8
 
 # --- ttyd (ブラウザ上のターミナル。AppRunのHTTP待受要件を満たすためのラッパー) ---
 # ネットワークが制限された環境でビルドする場合は --build-arg INSTALL_TTYD=false を指定してください。
