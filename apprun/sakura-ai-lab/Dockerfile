@@ -63,7 +63,7 @@ COPY scripts ./scripts
 COPY docker-entrypoint.sh ./
 COPY .env.example ./
 RUN mkdir -p ${LAB_HOME}/scripts/workspace \
-    && chmod +x ./scripts/lab-menu.sh ./docker-entrypoint.sh ./scripts/time-server.js
+    && chmod +x ./scripts/lab-menu.sh ./scripts/start-shell.sh ./docker-entrypoint.sh ./scripts/time-server.js
 
 # --- 非rootユーザーを作成し、/lab配下の所有者を変更 ---
 RUN useradd --create-home --shell /bin/bash lab \
