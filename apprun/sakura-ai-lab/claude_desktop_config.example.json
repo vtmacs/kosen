@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "time-server": {
+      "command": "node",
+      "args": [
+        "/絶対パスに書き換えてください/sakura-ai-lab/scripts/time-server.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "time-mcp-server",
+  "version": "1.0.0",
+  "description": "A simple MCP server that returns current time",
+  "main": "scripts/time-server.js",
+  "bin": {
+    "time-server": "./scripts/time-server.js"
+  },
+  "scripts": {
+    "start": "node scripts/time-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  }
+}

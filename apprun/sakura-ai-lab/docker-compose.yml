@@ -1,0 +1,43 @@
+# ==========================================================================
+# ローカル検証用 docker-compose
+#   lab        : このリポジトリのCLIラボ環境（対話シェル）
+#   open-webui : さくらのAI Engine を OpenAI互換エンドポイントとして使う
+#                チャットUI（公式イメージ ghcr.io/open-webui/open-webui を使用）
+#
+# 起動:
+#   cp .env.example .env   # SAKURA_API_KEY等を設定してから
+#   docker compose run --rm lab       # CLIラボを対話利用
+#   docker compose up -d open-webui   # ブラウザチャットUIを起動 (http://localhost:3000)
+#
+# 注意: AppRunは1アプリ=1コンポーネント（コンテナ）が前提のため、
+#       本番でOpen WebUIも使いたい場合は lab とは別のAppRunアプリとして
+#       個別にデプロイしてください。
+# ==========================================================================
+services:
+  lab:
+    build:
+      context: .
+      args:
+        INSTALL_TTYD: "false"   # ローカルでは直接ttyなしで対話利用するため不要
+    image: sakura-ai-engine-lab:local
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    volumes:
+      - ./workspace:/lab/workspace
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    environment:
+      - ENABLE_OPENAI_API=true
+      - OPENAI_API_BASE_URL=${SAKURA_API_BASE:-https://api.ai.sakura.ad.jp/v1}
+      - OPENAI_API_KEY=${SAKURA_API_KEY}
+      - ENABLE_OLLAMA_API=false
+    volumes:
+      - open-webui-data:/app/backend/data
+
+volumes:
+  open-webui-data:
