@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "apprun/sakura-ai-lab/**"
 jobs:
   docker:
     runs-on: ubuntu-latest
