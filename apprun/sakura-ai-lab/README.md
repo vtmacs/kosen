@@ -72,17 +72,49 @@ docker build -t sakura-ai-engine-lab .
 docker run -it --rm --env-file .env -v "$PWD/workspace:/lab/workspace" sakura-ai-engine-lab
 ```
 
-起動すると番号選択式のCLIメニューが表示されます。画像/音声ファイルは `workspace/` に置いてから
-パスを指定してください（コンテナ内の `/lab/workspace` にマウントされています）。
+起動すると、非rootユーザー（`lab`、HOMEは`/lab`）としてtmuxセッションの中でシェル（bash）が
+`/lab`直下で開きます。プロンプトは `lab@sakura-ai:home$` のように短く表示されます
+（`/lab`にいる時は`home`、`/lab/workspace`にいる時は`workspace`、というように`/lab`からの
+相対パスで表示されます）。
 
-個別スクリプトを直接叩きたい場合:
+`/lab`直下にはハンズオンスクリプトと`workspace/`だけが置かれています。`docker-entrypoint.sh`や
+`package.json`などの裏方ファイルは`/opt/lab-infra`に分離してあるので、`ls`しても紛れ込みません。
+
+画像/音声ファイルは `workspace/` に置いてから、`workspace/ファイル名` の形で指定してください
+（ホストの `./workspace` がコンテナ内 `/lab/workspace` にマウントされています）。
+
+スクリプトはカレントディレクトリにあるので、そのまま実行できます:
+
+```bash
+python3 01_chat_completion.py "こんにちは"
+```
+
+番号選択式のCLIメニューも用意していますが、自動起動はしません。使いたい場合はシェルから
+手動で起動してください:
+
+```bash
+bash /opt/lab-infra/lab-menu.sh
+```
+
+コマンド一発で個別スクリプトを叩きたい場合:
 
 ```bash
 docker run -it --rm --env-file .env sakura-ai-engine-lab \
-  bash -c "cd scripts && python3 01_chat_completion.py 'こんにちは'"
+  python3 01_chat_completion.py "こんにちは"
 ```
 
-MCPハンズオン（10番）は内部で `node scripts/time-server.js` を子プロセスとして起動し、
+### 接続が切れても画面がリセットされない仕組み（tmux）
+
+ブラウザ経由（ttyd/AppRun）でアクセスした場合、内部では `tmux new-session -A -s lab` を
+実行しています。WebSocket接続がタイムアウトや通信断で切れて再接続されても、ttydは
+同じtmuxセッションに再アタッチするだけなので、それまでの作業（カレントディレクトリ、
+`export`した環境変数、実行中のプロセスなど）はそのまま維持されます。
+
+もしAppRun側のタイムアウト自体を延ばしたい場合は、アプリケーション設定の
+`timeout_seconds`（既定60秒）を必要に応じて増やすことも検討してください（tmuxによる
+永続化があるので必須ではありませんが、切断・再接続の頻度自体を減らせます）。
+
+MCPハンズオン（10番）は内部で `node time-server.js` を子プロセスとして起動し、
 LLMが必要と判断した場合にのみ `get_current_time` を実行します（教材本来はClaude Desktop
 から利用する構成です。上記「MCPについての重要な注意」を参照）。
 
@@ -100,7 +132,7 @@ Open WebUI は `OPENAI_API_BASE_URL` / `OPENAI_API_KEY` を さくらのAI Engin
 ## 3. AppRunへのデプロイ
 
 AppRunはHTTPで待受するコンテナが前提のサービスのため、このイメージは `PORT` 環境変数が
-設定されている場合、CLIメニューを **ttyd** でブラウザ上のターミナルとして公開する構成に
+設定されている場合、**ttyd** でブラウザ上のターミナル（bashシェル）を公開する構成に
 自動的に切り替わります（`docker-entrypoint.sh` 参照）。
 
 手順の概要:
@@ -133,30 +165,99 @@ docker build --build-arg INSTALL_TTYD=false -t sakura-ai-engine-lab .
 
 ## 4. ディレクトリ構成
 
+### このリポジトリ（ビルドコンテキスト）
+
+`scripts/samples/` に実際に動くハンズオンスクリプト（このリポジトリ用に書き起こしたもの）を、
+`scripts/` 直下には教材そのままの生curl例・オリジナルPythonスクリプト・テスト用サンプル素材
+（画像/音声/PDF）を置いています。`Dockerfile`がビルド時にこれらを目的別に振り分けます。
+
 ```
 .
 ├── Dockerfile
 ├── docker-entrypoint.sh
 ├── docker-compose.yml
 ├── requirements.txt        # Python依存 (requests, python-dotenv, mcp, pydub)
-├── package.json            # Node依存 (@modelcontextprotocol/sdk、CommonJS)
+├── package.json            # Node依存 (@modelcontextprotocol/sdk、node_modulesのインストール専用)
 ├── claude_desktop_config.example.json  # Claude Desktopでtime-server.jsを使う場合の設定例
 ├── .env.example
+├── infra/
+│   └── bashrc-lab                     # シェルプロンプト設定 (lab@sakura-ai:home$)
 └── scripts/
-    ├── common.py                          # 認証情報読み込み等の共通処理
-    ├── lab-menu.sh                        # CLIメニュー本体
-    ├── 01_chat_completion.py
-    ├── 02_chat_from_json.py               # request.jsonをそのまま送信（汎用）
-    ├── 03_multimodal_image.py             # URL/base64両対応
-    ├── 04_audio_transcription.py          # 分割→文字起こし（教材準拠）
-    ├── 05_audio_transcription_summary.py  # 分割→文字起こし→チャット要約（教材準拠）
-    ├── 06_audio_speech.py
-    ├── 07_rag_upload.py
-    ├── 08_rag_status.py
-    ├── 09_rag_query.py
-    ├── 10_mcp_client.py                   # ヘッドレス代替クライアント（ラボ独自）
-    └── time-server.js                     # 教材3.1.5と同一実装（CommonJS）
+    ├── samples/                       # ← 実際に動くハンズオンスクリプト本体
+    │   ├── common.py                          # 認証情報読み込み等の共通処理
+    │   ├── lab-menu.sh                        # CLIメニュー本体（裏方扱い）
+    │   ├── start-shell.sh                     # tmuxフォールバック付き起動スクリプト（裏方扱い）
+    │   ├── 01_chat_completion.py
+    │   ├── 02_chat_from_json.py               # request.jsonをそのまま送信（汎用）
+    │   ├── 03_multimodal_image.py             # URL/base64両対応
+    │   ├── 04_audio_transcription.py          # 分割→文字起こし（教材準拠）
+    │   ├── 05_audio_transcription_summary.py  # 分割→文字起こし→チャット要約（教材準拠）
+    │   ├── 06_audio_speech.py
+    │   ├── 07_rag_upload.py
+    │   ├── 08_rag_status.py
+    │   ├── 09_rag_query.py
+    │   ├── 10_mcp_client.py                   # ヘッドレス代替クライアント（ラボ独自）
+    │   └── time-server.js                     # 教材3.1.5と同一実装（CommonJS）
+    │
+    ├── 3.1.3.4_curl1〜4.sh                    # 教材の生curl例（チャット補完・RAG）
+    ├── 3.1.4.3_curl.sh                        # 教材の生curl例（音声文字起こし）
+    ├── 3.1.6.3_create_JSON.sh, curl1〜4.sh    # 教材の生curl例（マルチモーダル）
+    ├── splitmp3.py, splitmp3_summary.py       # 教材オリジナルのPythonスクリプト
+    ├── time-server.js                         # 教材オリジナル（参考用。動作にはsamples側を使用）
+    ├── test.pdf                               # RAGアップロードのテスト用サンプル
+    ├── flower.jpg                             # マルチモーダルAPIのテスト用サンプル画像
+    ├── ai-engine_voice.mp3                    # 音声文字起こしのテスト用サンプル（短尺）
+    └── ai-engine_voice_long.mp3               # 音声文字起こしのテスト用サンプル（長尺・分割確認用）
 ```
+
+### ビルドされたコンテナ内部（実際にシェルを開いた時に見える構成）
+
+`/lab`にはハンズオンで使うファイルと教材サンプル一式が並び、裏方ファイルは`/opt/lab-infra`に
+隔離されています。
+
+```
+/lab                              # ← シェルはここで開く（lab@sakura-ai:home$）
+├── .bashrc                       # プロンプト設定（隠しファイルなのでlsでは見えない）
+├── common.py
+├── time-server.js                # 10_mcp_client.pyが実際に使うMCPサーバー本体
+├── 01_chat_completion.py
+├── ...（02〜10番）
+├── workspace/                    # 画像/音声/出力ファイル置き場（ホストとマウント共有可）
+└── samples/                      # 教材の生curl例・オリジナルスクリプト・テスト用サンプル素材
+    ├── 3.1.3.4_curl1〜4.sh
+    ├── 3.1.4.3_curl.sh
+    ├── 3.1.6.3_create_JSON.sh, curl1〜4.sh
+    ├── splitmp3.py, splitmp3_summary.py
+    ├── time-server.reference.js  # 教材オリジナル（参考用。名前を変えて実体と区別）
+    ├── test.pdf
+    ├── flower.jpg
+    ├── ai-engine_voice.mp3
+    └── ai-engine_voice_long.mp3
+
+/opt/lab-infra                    # ← 裏方ファイル（普段は見なくてOK）
+├── docker-entrypoint.sh
+├── start-shell.sh
+├── lab-menu.sh
+├── package.json
+├── node_modules/                 # NODE_PATH経由でtime-server.jsから参照される
+└── requirements.txt
+```
+
+`samples/`配下のcurl例は`AI_ENGINE_TOKEN`さえ`export`していればそのまま実行できます
+（`curl`と`jq`はイメージに同梱済みです）。例:
+
+```bash
+export AI_ENGINE_TOKEN="<発行したトークン>"
+cd samples
+bash 3.1.3.4_curl1.sh        # チャット補完
+bash 3.1.4.3_curl.sh         # 音声文字起こし（ai-engine_voice.mp3を使用）
+python3 splitmp3.py --input ai-engine_voice_long.mp3   # 長尺音声の分割文字起こし
+```
+
+`10_mcp_client.py`が`time-server.js`を子プロセスとして起動する際は同じ`/lab`内にあるため
+相対パスのままで問題なく動作します（`samples/time-server.reference.js`は参考用の別ファイルで、
+実際の動作には使われません）。Node.jsのモジュール解決は`NODE_PATH=/opt/lab-infra/node_modules`
+で通しているため、`time-server.js`が`/lab`にあっても`@modelcontextprotocol/sdk`を正しく読み込めます。
 
 ### 音声文字起こしについての重要な注意
 
