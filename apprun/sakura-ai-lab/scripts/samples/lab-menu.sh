@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "${LAB_HOME:-/lab}"
+cd "${LAB_HOME:-/lab}/samples"
 
 banner() {
   cat <<'EOF'
