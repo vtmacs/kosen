@@ -2,6 +2,8 @@
 # tmuxで永続セッションに入る。何らかの理由でtmuxが使えない/失敗した場合でも、
 # 必ず素のbashにフォールバックし、画面が真っ黒のまま固まらないようにする。
 
+cd "${LAB_HOME:-/lab}" || true
+
 echo "[start-shell] whoami: $(whoami)"
 echo "[start-shell] pwd: $(pwd)"
 echo "[start-shell] HOME: ${HOME:-未設定}"
