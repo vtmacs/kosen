@@ -2,9 +2,18 @@
 # /lab を "home" と短く表示し、それ以外は /lab からの相対パスを表示する。
 # 例:
 #   /lab                -> lab@sakura-ai:home$
-#   /lab/workspace       -> lab@sakura-ai:workspace$
-#   /lab/workspace/foo   -> lab@sakura-ai:workspace/foo$
+#   /lab/samples         -> lab@sakura-ai:samples$
+#   /lab/samples/foo     -> lab@sakura-ai:samples/foo$
 #   それ以外(/tmp等)     -> フルパスをそのまま表示
+#
+# 見やすさのため、プロンプトに色を付け、ls/grepの色分けも有効化している。
+# 文字サイズ自体（ブラウザ端末の見た目）は docker-entrypoint.sh 側の
+# ttyd起動オプション（-t fontSize=...）で調整している。
+
+# vim/nano等が色・キー入力を正しく扱えるよう、TERMが未設定/おかしい場合に補正
+case "${TERM:-}" in
+  ""|dumb) export TERM=xterm-256color ;;
+esac
 
 __lab_prompt_dir() {
   local home_dir="${LAB_HOME:-/lab}"
@@ -21,7 +30,16 @@ __lab_prompt_dir() {
   esac
 }
 
-PS1='lab@sakura-ai:$(__lab_prompt_dir)$ '
+# 色番号: 32=緑(ユーザー@ホスト) 36=シアン(パス) 0=リセット
+PS1='\[\e[32m\]lab@sakura-ai\[\e[0m\]:\[\e[36m\]$(__lab_prompt_dir)\[\e[0m\]$ '
+
+# ls / grep の色分けを有効化
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias ll='ls -la --color=auto'
+
+# lessで色付き出力（man等）をそのまま表示できるように
+export LESS='-R'
 
 # 補足: ここは非ログインシェル用の設定です（tmux/ttydが起動するのは
 # 通常このタイプのシェルのため）。エイリアス等を増やしたい場合もここに追記できます。
