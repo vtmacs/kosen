@@ -1,0 +1,27 @@
+# さくらのAI検定 ラボ環境 - シェルプロンプト設定
+# /lab を "home" と短く表示し、それ以外は /lab からの相対パスを表示する。
+# 例:
+#   /lab                -> lab@sakura-ai:home$
+#   /lab/workspace       -> lab@sakura-ai:workspace$
+#   /lab/workspace/foo   -> lab@sakura-ai:workspace/foo$
+#   それ以外(/tmp等)     -> フルパスをそのまま表示
+
+__lab_prompt_dir() {
+  local home_dir="${LAB_HOME:-/lab}"
+  case "$PWD" in
+    "$home_dir")
+      printf 'home'
+      ;;
+    "$home_dir"/*)
+      printf '%s' "${PWD#"$home_dir"/}"
+      ;;
+    *)
+      printf '%s' "$PWD"
+      ;;
+  esac
+}
+
+PS1='lab@sakura-ai:$(__lab_prompt_dir)$ '
+
+# 補足: ここは非ログインシェル用の設定です（tmux/ttydが起動するのは
+# 通常このタイプのシェルのため）。エイリアス等を増やしたい場合もここに追記できます。
