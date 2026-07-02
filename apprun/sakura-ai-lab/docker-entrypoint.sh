@@ -2,7 +2,8 @@
 set -euo pipefail
 
 LAB_HOME="${LAB_HOME:-/lab}"
-START_SHELL="${LAB_HOME}/scripts/start-shell.sh"
+INFRA_HOME="${INFRA_HOME:-/opt/lab-infra}"
+START_SHELL="${INFRA_HOME}/start-shell.sh"
 
 # 任意コマンドが渡された場合はそれを実行して終了（例: docker run image bash）
 if [ "$#" -gt 0 ]; then
@@ -10,7 +11,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 # CLIメニューを使いたい場合は、シェルの中から手動で起動してください:
-#   bash /lab/scripts/lab-menu.sh
+#   bash /opt/lab-infra/lab-menu.sh
 
 if [ -n "${PORT:-}" ]; then
   # --------------------------------------------------------------------
