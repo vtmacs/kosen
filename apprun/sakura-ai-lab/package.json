@@ -1,14 +1,8 @@
 {
-  "name": "time-mcp-server",
+  "name": "sakura-ai-lab-infra",
   "version": "1.0.0",
-  "description": "A simple MCP server that returns current time",
-  "main": "scripts/time-server.js",
-  "bin": {
-    "time-server": "./scripts/time-server.js"
-  },
-  "scripts": {
-    "start": "node scripts/time-server.js"
-  },
+  "description": "さくらのAI Engine 実践ラボ - MCPハンズオン用node_modulesのインストール専用。実体のtime-server.jsは/labにあります（NODE_PATHでこのnode_modulesを参照）。",
+  "private": true,
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4"
   }
