@@ -6,7 +6,12 @@
 # - Node.js (@modelcontextprotocol/sdk) : MCP外部ツール連携ハンズオン
 # - ttyd + tmux : AppRun（HTTP待受が必須）上でもブラウザ経由でシェルを操作可能にする。
 #   tmuxで永続セッションを維持するため、WebSocketが再接続されても画面がリセットされない。
-# - 実行ユーザーは非root（lab）
+# - 実行ユーザーは非root（lab）、HOMEは /lab
+#
+# ディレクトリ構成:
+#   /lab           = ユーザーのホーム。ハンズオンスクリプトとworkspaceのみ置く
+#   /opt/lab-infra = entrypoint / package.json / node_modules など裏方ファイル
+#                    （ユーザーが/labを見た時に紛れ込まないようにするため分離）
 #
 # AppRunの制約（2026年時点のマニュアルより）:
 #   - コンテナは linux/amd64 のみ
@@ -22,7 +27,8 @@ ARG TTYD_VERSION=1.7.7
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=utf-8 \
-    LAB_HOME=/lab
+    LAB_HOME=/lab \
+    INFRA_HOME=/opt/lab-infra
 
 # --- OSパッケージ (Python本体 + 音声分割用ffmpeg + tmux + 日本語ロケール + 最低限のライブラリ) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -54,31 +60,78 @@ RUN if [ "$INSTALL_TTYD" = "true" ]; then \
       echo "ttydのインストールをスキップしました（ローカルCLI利用のみ）" ; \
     fi
 
-WORKDIR ${LAB_HOME}
+# ==========================================================================
+# インフラ系ファイル一式（ /opt/lab-infra ）
+# ==========================================================================
+WORKDIR ${INFRA_HOME}
 
 # --- Node.js 依存関係 (MCPハンズオン用) ---
 COPY package.json ./
 RUN npm install --omit=dev
+# time-server.js（/lab側）から require() で見つけられるよう NODE_PATH を通す
+ENV NODE_PATH=${INFRA_HOME}/node_modules
 
 # --- Python 依存関係 ---
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
-# --- ラボ本体 ---
-# workspace（アップロード画像・音声・出力ファイル置き場）は scripts と同じ階層に置き、
-# 動作確認しやすいよう、実行時のカレントディレクトリを scripts 直下にする。
-COPY scripts ./scripts
+# --- entrypoint / 補助スクリプト ---
 COPY docker-entrypoint.sh ./
-COPY .env.example ./
-RUN mkdir -p ${LAB_HOME}/scripts/workspace \
-    && chmod +x ./docker-entrypoint.sh ./scripts/*.sh ./scripts/samples/*.sh ./scripts/time-server.js
+COPY scripts/samples/start-shell.sh ./
+COPY scripts/samples/lab-menu.sh ./
+COPY infra/bashrc-lab ./
+RUN chmod +x ./docker-entrypoint.sh ./start-shell.sh ./lab-menu.sh
 
-# --- 非rootユーザーを作成し、/lab配下の所有者を変更 ---
-RUN useradd --create-home --shell /bin/bash lab \
-    && chown -R lab:lab ${LAB_HOME}
+# ==========================================================================
+# ユーザー向けファイル一式（ /lab ＝ ハンズオンスクリプトとworkspaceのみ ）
+# ==========================================================================
+WORKDIR ${LAB_HOME}
+
+COPY scripts/samples/common.py ./
+COPY scripts/samples/time-server.js ./
+COPY scripts/samples/01_chat_completion.py ./
+COPY scripts/samples/02_chat_from_json.py ./
+COPY scripts/samples/03_multimodal_image.py ./
+COPY scripts/samples/04_audio_transcription.py ./
+COPY scripts/samples/05_audio_transcription_summary.py ./
+COPY scripts/samples/06_audio_speech.py ./
+COPY scripts/samples/07_rag_upload.py ./
+COPY scripts/samples/08_rag_status.py ./
+COPY scripts/samples/09_rag_query.py ./
+COPY scripts/samples/10_mcp_client.py ./
+
+# --- 教材の生curl例・オリジナルPythonスクリプト・テスト用サンプル素材 ---
+# ハンズオン中にすぐ試せるよう、/lab/samples に画像・音声・PDFの実物を同梱する。
+RUN mkdir -p ${LAB_HOME}/samples
+COPY scripts/3.1.3.4_curl1.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.3.4_curl2.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.3.4_curl3.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.3.4_curl4.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.4.3_curl.sh         ${LAB_HOME}/samples/
+COPY scripts/3.1.6.3_create_JSON.sh  ${LAB_HOME}/samples/
+COPY scripts/3.1.6.3_curl1.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.6.3_curl2.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.6.3_curl3.sh        ${LAB_HOME}/samples/
+COPY scripts/3.1.6.3_curl4.sh        ${LAB_HOME}/samples/
+COPY scripts/splitmp3.py             ${LAB_HOME}/samples/
+COPY scripts/splitmp3_summary.py     ${LAB_HOME}/samples/
+COPY scripts/time-server.js          ${LAB_HOME}/samples/time-server.reference.js
+COPY scripts/test.pdf                ${LAB_HOME}/samples/
+COPY scripts/flower.jpg              ${LAB_HOME}/samples/
+COPY scripts/ai-engine_voice.mp3     ${LAB_HOME}/samples/
+COPY scripts/ai-engine_voice_long.mp3 ${LAB_HOME}/samples/
+
+RUN mkdir -p ${LAB_HOME}/workspace \
+    && chmod +x ./time-server.js ${LAB_HOME}/samples/*.sh \
+    && cp ${INFRA_HOME}/bashrc-lab ${LAB_HOME}/.bashrc
+
+# --- 非rootユーザーを作成（HOMEを/labに設定）し、必要な場所の所有者・権限を調整 ---
+RUN useradd --no-create-home --home-dir ${LAB_HOME} --shell /bin/bash lab \
+    && chown -R lab:lab ${LAB_HOME} \
+    && chmod -R a+rX ${INFRA_HOME}
 USER lab
 
-WORKDIR ${LAB_HOME}/scripts
+WORKDIR ${LAB_HOME}
 
 EXPOSE 7681
-ENTRYPOINT ["/lab/docker-entrypoint.sh"]
+ENTRYPOINT ["/opt/lab-infra/docker-entrypoint.sh"]
