@@ -103,7 +103,7 @@ COPY scripts/3.1.6.3_curl2.sh        ./
 COPY scripts/3.1.6.3_curl3.sh        ./
 COPY scripts/3.1.6.3_curl4.sh        ./
 COPY scripts/splitmp3.py             ./
-COPY scripts/splitmp3+summary.py     ./splitmp3_summary.py
+COPY scripts/splitmp3+summary.py     ./
 COPY scripts/time-server.js          ./
 COPY scripts/test.pdf                ./
 COPY scripts/flower.jpg              ./
