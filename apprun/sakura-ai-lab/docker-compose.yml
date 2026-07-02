@@ -25,7 +25,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./workspace:/lab/workspace
+      - ./workspace:/lab/samples/workspace
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
