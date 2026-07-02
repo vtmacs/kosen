@@ -114,7 +114,7 @@ COPY scripts/3.1.6.3_curl2.sh        ${LAB_HOME}/samples/
 COPY scripts/3.1.6.3_curl3.sh        ${LAB_HOME}/samples/
 COPY scripts/3.1.6.3_curl4.sh        ${LAB_HOME}/samples/
 COPY scripts/splitmp3.py             ${LAB_HOME}/samples/
-COPY scripts/splitmp3_summary.py     ${LAB_HOME}/samples/
+COPY scripts/splitmp3+summary.py     ${LAB_HOME}/samples/splitmp3_summary.py
 COPY scripts/time-server.js          ${LAB_HOME}/samples/time-server.reference.js
 COPY scripts/test.pdf                ${LAB_HOME}/samples/
 COPY scripts/flower.jpg              ${LAB_HOME}/samples/
