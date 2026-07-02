@@ -9,7 +9,8 @@
 # - 実行ユーザーは非root（lab）、HOMEは /lab
 #
 # ディレクトリ構成:
-#   /lab           = ユーザーのホーム。ハンズオンスクリプトとworkspaceのみ置く
+#   /lab           = ユーザーのホーム。教材の生curl例・オリジナルスクリプト・テスト用サンプル素材を直置き
+#   /lab/samples   = 実際に動くハンズオンスクリプト一式（01〜10番 等）とworkspace
 #   /opt/lab-infra = entrypoint / package.json / node_modules など裏方ファイル
 #                    （ユーザーが/labを見た時に紛れ込まないようにするため分離）
 #
@@ -28,9 +29,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=utf-8 \
     LAB_HOME=/lab \
+    HOME=/lab \
     INFRA_HOME=/opt/lab-infra
 
-# --- OSパッケージ (Python本体 + 音声分割用ffmpeg + tmux + 日本語ロケール + 最低限のライブラリ) ---
+# --- OSパッケージ (Python本体 + 音声分割用ffmpeg + tmux + 日本語ロケール + エディタ + 最低限のライブラリ) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 \
       python3-pip \
@@ -42,6 +44,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ffmpeg \
       tmux \
       locales \
+      vim \
+      nano \
     && sed -i 's/^# *ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen ja_JP.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
@@ -83,46 +87,47 @@ COPY infra/bashrc-lab ./
 RUN chmod +x ./docker-entrypoint.sh ./start-shell.sh ./lab-menu.sh
 
 # ==========================================================================
-# ユーザー向けファイル一式（ /lab ＝ ハンズオンスクリプトとworkspaceのみ ）
+# ユーザー向けファイル一式（ /lab ＝ ホーム。教材の生curl例・サンプル素材を直置き ）
 # ==========================================================================
 WORKDIR ${LAB_HOME}
 
-COPY scripts/samples/common.py ./
-COPY scripts/samples/time-server.js ./
-COPY scripts/samples/01_chat_completion.py ./
-COPY scripts/samples/02_chat_from_json.py ./
-COPY scripts/samples/03_multimodal_image.py ./
-COPY scripts/samples/04_audio_transcription.py ./
-COPY scripts/samples/05_audio_transcription_summary.py ./
-COPY scripts/samples/06_audio_speech.py ./
-COPY scripts/samples/07_rag_upload.py ./
-COPY scripts/samples/08_rag_status.py ./
-COPY scripts/samples/09_rag_query.py ./
-COPY scripts/samples/10_mcp_client.py ./
+# --- 教材の生curl例・オリジナルPythonスクリプト・テスト用サンプル素材（起動直後に見える場所） ---
+COPY scripts/3.1.3.4_curl1.sh        ./
+COPY scripts/3.1.3.4_curl2.sh        ./
+COPY scripts/3.1.3.4_curl3.sh        ./
+COPY scripts/3.1.3.4_curl4.sh        ./
+COPY scripts/3.1.4.3_curl.sh         ./
+COPY scripts/3.1.6.3_create_JSON.sh  ./
+COPY scripts/3.1.6.3_curl1.sh        ./
+COPY scripts/3.1.6.3_curl2.sh        ./
+COPY scripts/3.1.6.3_curl3.sh        ./
+COPY scripts/3.1.6.3_curl4.sh        ./
+COPY scripts/splitmp3.py             ./
+COPY scripts/splitmp3+summary.py     ./splitmp3_summary.py
+COPY scripts/time-server.js          ./
+COPY scripts/test.pdf                ./
+COPY scripts/flower.jpg              ./
+COPY scripts/ai-engine_voice.mp3     ./
+COPY scripts/ai-engine_voice_long.mp3 ./
+COPY scripts/claude_desktop_config.example.json ./
 
-# --- 教材の生curl例・オリジナルPythonスクリプト・テスト用サンプル素材 ---
-# ハンズオン中にすぐ試せるよう、/lab/samples に画像・音声・PDFの実物を同梱する。
+# --- 実際に動くハンズオンスクリプト一式（ /lab/samples ） ---
 RUN mkdir -p ${LAB_HOME}/samples
-COPY scripts/3.1.3.4_curl1.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.3.4_curl2.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.3.4_curl3.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.3.4_curl4.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.4.3_curl.sh         ${LAB_HOME}/samples/
-COPY scripts/3.1.6.3_create_JSON.sh  ${LAB_HOME}/samples/
-COPY scripts/3.1.6.3_curl1.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.6.3_curl2.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.6.3_curl3.sh        ${LAB_HOME}/samples/
-COPY scripts/3.1.6.3_curl4.sh        ${LAB_HOME}/samples/
-COPY scripts/splitmp3.py             ${LAB_HOME}/samples/
-COPY scripts/splitmp3+summary.py     ${LAB_HOME}/samples/splitmp3_summary.py
-COPY scripts/time-server.js          ${LAB_HOME}/samples/time-server.reference.js
-COPY scripts/test.pdf                ${LAB_HOME}/samples/
-COPY scripts/flower.jpg              ${LAB_HOME}/samples/
-COPY scripts/ai-engine_voice.mp3     ${LAB_HOME}/samples/
-COPY scripts/ai-engine_voice_long.mp3 ${LAB_HOME}/samples/
+COPY scripts/samples/common.py                          ${LAB_HOME}/samples/
+COPY scripts/samples/time-server.js                     ${LAB_HOME}/samples/
+COPY scripts/samples/01_chat_completion.py               ${LAB_HOME}/samples/
+COPY scripts/samples/02_chat_from_json.py                ${LAB_HOME}/samples/
+COPY scripts/samples/03_multimodal_image.py               ${LAB_HOME}/samples/
+COPY scripts/samples/04_audio_transcription.py            ${LAB_HOME}/samples/
+COPY scripts/samples/05_audio_transcription_summary.py    ${LAB_HOME}/samples/
+COPY scripts/samples/06_audio_speech.py                   ${LAB_HOME}/samples/
+COPY scripts/samples/07_rag_upload.py                     ${LAB_HOME}/samples/
+COPY scripts/samples/08_rag_status.py                     ${LAB_HOME}/samples/
+COPY scripts/samples/09_rag_query.py                      ${LAB_HOME}/samples/
+COPY scripts/samples/10_mcp_client.py                     ${LAB_HOME}/samples/
 
-RUN mkdir -p ${LAB_HOME}/workspace \
-    && chmod +x ./time-server.js ${LAB_HOME}/samples/*.sh \
+RUN mkdir -p ${LAB_HOME}/samples/workspace \
+    && chmod +x ${LAB_HOME}/*.sh ${LAB_HOME}/time-server.js ${LAB_HOME}/samples/time-server.js \
     && cp ${INFRA_HOME}/bashrc-lab ${LAB_HOME}/.bashrc
 
 # --- 非rootユーザーを作成（HOMEを/labに設定）し、必要な場所の所有者・権限を調整 ---
