@@ -1,6 +1,6 @@
 cat > request.json <<EOF
 {
-  "model": "preview/Phi-4-multimodal-instruct",
+  "model": "preview/Qwen3-VL-30B-A3B-Instruct",
   "messages": [
     {
       "role": "user",
