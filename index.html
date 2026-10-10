@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クラウド学習教材 | KOSEN</title>
+<meta name="description" content="Linux・Apache・ファイアウォール・Docker・Git・システム運用など、クラウド基礎を学ぶハンズオン教材集。">
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --fg: #1f2433;
+    --muted: #5d6578;
+    --card: #ffffff;
+    --border: #e1e4ee;
+    --accent: #2f6fed;
+    --tag-bg: #e8efff;
+    --tag-fg: #2250b8;
+    --shadow: 0 2px 10px rgba(20, 30, 60, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1320;
+      --fg: #e8ebf5;
+      --muted: #9aa3ba;
+      --card: #181d2e;
+      --border: #2a3047;
+      --accent: #6b9bff;
+      --tag-bg: #232c4a;
+      --tag-fg: #a9c2ff;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+    line-height: 1.7;
+  }
+  header {
+    padding: 56px 16px 40px;
+    text-align: center;
+    background: linear-gradient(135deg, #2f6fed, #7a4df0);
+    color: #fff;
+  }
+  header h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 5vw, 2.4rem); }
+  header p { margin: 0 auto; max-width: 640px; opacity: .92; }
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 16px 48px; }
+  h2 { font-size: 1.3rem; margin: 36px 0 16px; padding-left: 10px; border-left: 4px solid var(--accent); }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .card {
+    display: flex; flex-direction: column; gap: 8px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; color: inherit; text-decoration: none; box-shadow: var(--shadow);
+    transition: transform .15s, border-color .15s;
+  }
+  a.card:hover, a.card:focus-visible { transform: translateY(-3px); border-color: var(--accent); outline: none; }
+  .card .icon { font-size: 1.8rem; }
+  .card h3 { margin: 0; font-size: 1.05rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .92rem; flex: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { background: var(--tag-bg); color: var(--tag-fg); font-size: .75rem; padding: 2px 8px; border-radius: 999px; }
+  .card.plain { cursor: default; }
+  code { background: var(--tag-bg); color: var(--tag-fg); padding: 1px 6px; border-radius: 4px; font-size: .85em; }
+  footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 24px 16px 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☁️ クラウド学習教材</h1>
+  <p>Linux・Webサーバ・セキュリティ・コンテナ・Git・システム運用まで、手を動かして学ぶクラウド基礎ハンズオン教材集です。</p>
+</header>
+
+<main>
+
+  <h2>🐧 Linux / Webサーバ ハンズオン</h2>
+  <div class="grid">
+    <a class="card" href="apache_setup.html">
+      <span class="icon">📘</span>
+      <h3>クラウド基礎② Linuxコマンド手順書</h3>
+      <p>SSHログイン、パーミッション変更、Apache2のインストール、オリジナルコンテンツの作成とブラウザ確認までを学びます。EX課題「怪盗shimaからの挑戦状」付き。</p>
+      <div class="tags"><span class="tag">SSH</span><span class="tag">Apache2</span><span class="tag">パーミッション</span></div>
+    </a>
+    <a class="card" href="apache_setup_christmas.html">
+      <span class="icon">🎄</span>
+      <h3>Linuxコマンド手順書 (Christmas Ver.)</h3>
+      <p>基本コマンドの解説を加えた、クリスマス仕様の手順書。ページ作成演習もクリスマステーマで楽しく進められます。</p>
+      <div class="tags"><span class="tag">基本コマンド</span><span class="tag">Apache2</span><span class="tag">Christmas</span></div>
+    </a>
+    <a class="card" href="cloud_basic_auth.html">
+      <span class="icon">🔑</span>
+      <h3>Basic認証設定</h3>
+      <p>HTMLファイルの作成、Apache設定の変更、再起動、認証ユーザーの決定、<code>.htaccess</code> の設置までの手順です。</p>
+      <div class="tags"><span class="tag">Basic認証</span><span class="tag">.htaccess</span></div>
+    </a>
+    <a class="card" href="firewall_setup.html">
+      <span class="icon">🛡️</span>
+      <h3>クラウドセキュリティ（ファイアウォール設定）</h3>
+      <p>サーバ設定とApacheのインストール、ファイアウォールの設定、HTTPS化、Basic認証によるレベルアップ演習。</p>
+      <div class="tags"><span class="tag">ファイアウォール</span><span class="tag">HTTPS</span><span class="tag">セキュリティ</span></div>
+    </a>
+  </div>
+
+  <h2>🐳 コンテナ / 開発ツール</h2>
+  <div class="grid">
+    <a class="card" href="docker_apprun.html">
+      <span class="icon">🐋</span>
+      <h3>Docker環境構築 &amp; さくらのクラウドAppRun</h3>
+      <p>踏み台サーバーへの接続、Docker環境の構築、コンテナ起動実験、Apacheの起動、AppRunへのデプロイまでのハンズオン。</p>
+      <div class="tags"><span class="tag">Docker</span><span class="tag">AppRun</span></div>
+    </a>
+    <a class="card" href="github_sim.html">
+      <span class="icon">🌿</span>
+      <h3>Git &amp; GitHub/GitLab 学習シミュレーター</h3>
+      <p>ブランチやコミットの流れを視覚的に確認しながら、クエスト形式でGitの操作を体験できます。</p>
+      <div class="tags"><span class="tag">Git</span><span class="tag">GitHub</span><span class="tag">シミュレーター</span></div>
+    </a>
+  </div>
+
+  <h2>📊 システム運用</h2>
+  <div class="grid">
+    <a class="card" href="system_operation.html">
+      <span class="icon">🧭</span>
+      <h3>クラウドシステム運用ナビ</h3>
+      <p>運用の全体像と6つの主要プロセス、オートスケーリング体験、監視ダッシュボード、バックアップ戦略、SRE、自動化ROIの計算まで。</p>
+      <div class="tags"><span class="tag">運用</span><span class="tag">監視</span><span class="tag">SRE</span><span class="tag">バックアップ</span></div>
+    </a>
+  </div>
+
+  <h2>🤖 AI実践ラボ環境（AppRun用）</h2>
+  <div class="grid">
+    <div class="card plain">
+      <span class="icon">🧪</span>
+      <h3>さくらのAI Engine 実践ラボ</h3>
+      <p>チャット補完、マルチモーダル、音声文字起こし・合成、RAG、MCP連携を試せるDockerラボ。<code>apprun/sakura-ai-lab</code></p>
+      <div class="tags"><span class="tag">AI Engine</span><span class="tag">Docker</span></div>
+    </div>
+    <div class="card plain">
+      <span class="icon">🎓</span>
+      <h3>学習者用 / 教員用アプリ</h3>
+      <p>受講者ごとの名前空間環境と教員ダッシュボード。<code>apprun/student-namespace</code> / <code>apprun/teacher-dashboard</code></p>
+      <div class="tags"><span class="tag">Flask</span><span class="tag">AppRun</span></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  &copy; KOSEN クラウド学習教材
+</footer>
+
+</body>
+</html>
