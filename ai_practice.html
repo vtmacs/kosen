@@ -48,6 +48,8 @@ details { margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; pa
 details[open] { padding-bottom: 4px; }
 summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: 10px 0; }
 details pre { max-height: 360px; overflow: auto; }
+.dl { display: inline-block; margin: 8px 0; padding: 12px 20px; border-radius: 10px; background: var(--pink); color: #fff; font-weight: 700; text-decoration: none; }
+.dl:hover { background: #B4234A; }
 .trbl { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
 .trbl > div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: var(--gray); }
 .trbl h4 { margin: 0 0 4px; color: var(--pink); font-size: 16px; }
@@ -113,7 +115,7 @@ payload = {
 res = requests.post(url, headers=headers, json=payload)
 print(res.json()[&quot;choices&quot;][0][&quot;message&quot;][&quot;content&quot;])
 EOF
-python3 chat.py"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 <code>ModuleNotFoundError: requests</code> と出たら <code>pip install requests</code> を実行してから、もう一度 <code>python3 chat.py</code>。</p></section></section><section class="sec" id="rag"><h2><span class="sh">3</span>ハンズオン②：RAG を動かす</h2><section class="step"><h3><span class="sn">3.1</span>RAGなしで質問する</h3><p>まずはハンズオン①と同じAPIで、資料の内容について聞きます。答えをメモしておきます。</p><label class="fld"><span>質問</span><input data-key="RQ" type="text" value="さくら高専の学生寮の門限は何時ですか？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+python3 chat.py"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 <code>ModuleNotFoundError: requests</code> と出たら <code>pip install requests</code> を実行してから、もう一度 <code>python3 chat.py</code>。</p></section></section><section class="sec" id="rag"><h2><span class="sh">3</span>ハンズオン②：RAG を動かす</h2><section class="step"><h3><span class="sn">3.0</span>使う資料「さくら高専 学生寮のしおり」</h3><p>ハンズオン②では、この資料をRAGに登録して使います（授業では講師が登録済みです）。どんなことが書いてあるか、先に見ておくと比べやすくなります。</p><a class="dl" href="dorm_shiori.pdf" download="さくら高専_学生寮のしおり.pdf">📄 学生寮のしおり（PDF・8ページ）をダウンロード</a><p class="tip">💡 授業用に作った架空の資料で、実在の学校・寮とは関係ありません。門限・点呼・13番の洗濯機など、AIが知りようのない「この寮だけのきまり」が書いてあります。</p></section><section class="step"><h3><span class="sn">3.1</span>RAGなしで質問する</h3><p>まずはハンズオン①と同じAPIで、資料の内容について聞きます。答えをメモしておきます。</p><label class="fld"><span>質問</span><input data-key="RQ" type="text" value="さくら高専の学生寮の門限は何時ですか？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
   --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
   --header &#x27;Content-Type: application/json&#x27; \
   --data &#x27;{ &quot;model&quot;: &quot;gpt-oss-120b&quot;,
