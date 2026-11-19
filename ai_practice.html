@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI実践 (1) コマンド手順書 | KOSEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --navy:#1E293B; --pink:#D6335C; --pink2:#FB5177; --blue:#3A63B0; --gray:#F8FAFC; --line:#E2E8F0; --text:#334155; --soft:#64748B; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Noto Sans JP", system-ui, sans-serif; color: var(--text); background: #fff; line-height: 1.75; }
+header { background: var(--navy); color: #fff; padding: 40px 20px 32px; border-top: 6px solid var(--pink2); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+header .wrap { padding: 0; }
+header .kicker { margin: 0 0 6px; font-size: 14px; letter-spacing: .08em; color: #FDA4B8; font-weight: 700; }
+header h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.3; }
+header p { margin: 0; color: #CBD5E1; }
+nav { position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+nav .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 10px; padding-bottom: 10px; }
+nav a { flex: none; font-size: 14px; font-weight: 700; color: var(--navy); text-decoration: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--gray); }
+nav a:hover { border-color: var(--pink); color: var(--pink); }
+main { padding: 8px 0 60px; }
+.sec { padding-top: 32px; scroll-margin-top: 56px; }
+h2 { font-size: 24px; color: var(--navy); margin: 0 0 8px; padding-bottom: 8px; border-bottom: 3px solid var(--navy); display: flex; align-items: center; gap: 12px; }
+.sh { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 20px; background: var(--pink); color: #fff; font-size: 18px; }
+.step { margin: 28px 0 0; }
+h3 { font-size: 19px; color: var(--navy); margin: 0 0 8px; display: flex; align-items: baseline; gap: 10px; }
+.sn { font-family: "JetBrains Mono", monospace; font-size: 15px; color: var(--pink); font-weight: 600; }
+p { margin: 6px 0; }
+code { font-family: "JetBrains Mono", monospace; font-size: .9em; background: #F1F5F9; padding: 1px 6px; border-radius: 4px; color: #0F172A; }
+kbd { font-family: "JetBrains Mono", monospace; font-size: .85em; border: 1px solid #CBD5E1; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; }
+.cmd { margin: 10px 0; }
+pre { margin: 0; background: var(--navy); color: #F1F5F9; font-family: "JetBrains Mono", monospace; font-size: 14px; line-height: 1.6; padding: 16px 18px; border-radius: 10px 10px 0 0; overflow-x: auto; white-space: pre; }
+pre .v { color: #FDA4B8; }
+.cp { display: block; width: 100%; border: 0; border-radius: 0 0 10px 10px; background: #334155; color: #fff; font: 700 14px "Noto Sans JP", sans-serif; padding: 9px; cursor: pointer; }
+.cp:hover { background: var(--pink); }
+.cp.done { background: #15803D; }
+.tip { background: #FFF7ED; border-left: 4px solid #F59E0B; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 15px; margin: 10px 0; }
+.fld { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.fld span { font-size: 14px; font-weight: 700; color: var(--navy); }
+.fld input { font: 16px "Noto Sans JP", sans-serif; padding: 9px 12px; border: 2px solid var(--line); border-radius: 8px; }
+.fld input:focus { outline: none; border-color: var(--pink); }
+.fld input[type=number] { max-width: 160px; }
+.show { font-size: 14px; display: flex; gap: 6px; align-items: center; color: var(--soft); }
+details { margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; background: var(--gray); }
+details[open] { padding-bottom: 4px; }
+summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: 10px 0; }
+details pre { max-height: 360px; overflow: auto; }
+.trbl { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
+.trbl > div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: var(--gray); }
+.trbl h4 { margin: 0 0 4px; color: var(--pink); font-size: 16px; }
+.trbl ul { margin: 0; padding-left: 20px; font-size: 15px; }
+footer { border-top: 1px solid var(--line); color: var(--soft); font-size: 13px; padding: 20px 0 32px; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: #15803D; color: #fff; font-weight: 700; padding: 10px 20px; border-radius: 999px; opacity: 0; transition: .2s; pointer-events: none; z-index: 10; }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+#selbox { position: fixed; left: -9999px; top: 0; }
+@media (max-width: 600px) { header h1 { font-size: 24px; } pre { font-size: 12.5px; } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<p class="kicker"><a href="index.html" style="color:#CBD5E1;text-decoration:none">← 教材一覧</a>　｜　AI実践 (1) ｜ 2026.11.24</p>
+<h1>🤖 さくらのAI Engine をコマンドで動かす</h1>
+<p>授業で使うコマンドを、コピー＆ペーストで試せる手順書です。上から順に、ターミナルに貼り付けて実行してください。</p>
+</div></header>
+<nav><div class="wrap"><a href="#prep">0 準備</a><a href="#token">1 トークンを環境変数に入れる</a><a href="#chat">2 ハンズオン①</a><a href="#rag">3 ハンズオン②</a><a href="#ex">EX. 発展</a><a href="#trouble">？ うまくいかないとき</a></div></nav>
+<main><div class="wrap"><section class="sec" id="prep"><h2><span class="sh">0</span>準備：ターミナルと道具を確認する</h2><section class="step"><h3><span class="sn">0.1</span>jq と curl が使えるか確認</h3><p>ターミナルを開いて、次のコマンドを実行します。どちらもバージョンが表示されればOKです。</p><div class="cmd"><pre data-tpl="jq --version
+curl --version | head -n 1"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 <code>command not found</code> と出たら、講師に声をかけてください。</p></section><section class="step"><h3><span class="sn">0.2</span>アカウントトークンを入力（このページだけで使います）</h3><p>配られたアカウントトークン（<code>UUID:シークレット</code> の形）を入力すると、下のコマンドに自動で入ります。</p><label class="fld"><span>アカウントトークン</span><input data-key="TOKEN" type="password" value="" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxx" autocomplete="off" spellcheck="false"></label><label class="show"><input type="checkbox" id="showtok"> 入力したトークンを表示する</label><p class="tip">💡 入力したトークンはこのページの中だけで使われ、保存も送信もされません。画面に表示されるコマンドでは一部を「•」で隠しています（コピーすると本物が入ります）。人に見せたり、SNSに貼ったりしないでください。</p></section></section><section class="sec" id="token"><h2><span class="sh">1</span>トークンを環境変数に入れる</h2><section class="step"><h3><span class="sn">1.1</span>環境変数 AI_ENGINE_TOKEN をつくる</h3><p>トークンを環境変数に入れます。以降のコマンドは、この変数を使います。</p><div class="cmd"><pre data-tpl="export AI_ENGINE_TOKEN=&quot;{{TOKEN}}&quot;"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 環境変数はターミナルごとに別です。新しいターミナルを開いたら、もう一度実行してください。</p></section><section class="step"><h3><span class="sn">1.2</span>入ったか確認する</h3><div class="cmd"><pre data-tpl="echo $AI_ENGINE_TOKEN"></pre><button class="cp" type="button">📋 コピー</button></div><p>トークンが表示されればOKです。何も表示されなければ、1.1 をやり直します。</p></section></section><section class="sec" id="chat"><h2><span class="sh">2</span>ハンズオン①：curl でAIに質問する</h2><section class="step"><h3><span class="sn">2.1</span>AIに質問して、返ってきたJSONを見る</h3><p><code>chat/completions</code> にJSONを送ります。最後の <code>| jq .</code> で、1行で返ってくるJSONを見やすく整形します。</p><label class="fld"><span>質問</span><input data-key="Q1" type="text" value="こんにちは！" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  --header &#x27;Accept: application/json&#x27; \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{
+      &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+      &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;{{Q1}}&quot; }],
+      &quot;temperature&quot;: 0.7, &quot;max_tokens&quot;: 200
+    }&#x27; \
+  | jq ."></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 <code>choices[0].message.content</code> に答えが、<code>usage</code> に使ったトークン数が入っています。</p></section><section class="step"><h3><span class="sn">2.2</span>答えの文だけを取り出す</h3><p>最後の jq を <code>-r '.choices[0].message.content'</code> にすると、答えの文だけが表示されます。</p><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{ &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+            &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;{{Q1}}&quot; }] }&#x27; \
+  | jq -r &#x27;.choices[0].message.content&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></section><section class="step"><h3><span class="sn">2.3</span>役割（system）と質問を書き換えて再実行する</h3><p><code>system</code> でAIの役割を決められます。入力欄を書き換えると、コマンドも変わります。</p><label class="fld"><span>役割（system）</span><input data-key="SYS" type="text" value="あなたは高専の先輩です。後輩にやさしく教えてください。" placeholder="" autocomplete="off" spellcheck="false"></label><label class="fld"><span>質問（user）</span><input data-key="USER" type="text" value="最初に学ぶとよいプログラミング言語を3つ教えてください。" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{
+      &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+      &quot;messages&quot;: [
+        { &quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;{{SYS}}&quot; },
+        { &quot;role&quot;: &quot;user&quot;,   &quot;content&quot;: &quot;{{USER}}&quot; }
+      ],
+      &quot;max_tokens&quot;: 300
+    }&#x27; \
+  | jq -r &#x27;.choices[0].message.content&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 質問のうしろに「箇条書きで」「100字以内で」「小学生にもわかるように」と書き足すと、答え方が変わります。</p></section><section class="step"><h3><span class="sn">2.4</span>（発展）結果をファイルに保存して jq で調べる</h3><p>リダイレクト（<code>&gt;</code>）で保存しておけば、jq で何度でも調べられます。</p><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{ &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+            &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;{{Q1}}&quot; }] }&#x27; \
+  &gt; answer.json"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><div class="cmd"><pre data-tpl="jq &#x27;.usage&#x27; answer.json
+jq -r &#x27;.choices[0].finish_reason&#x27; answer.json"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 <code>max_tokens</code> を小さくすると、<code>finish_reason</code> が <code>length</code>（途中で切れた）になります。</p></section><section class="step"><h3><span class="sn">2.5</span>（発展）Python から呼び出す</h3><p>次のコマンドで <code>chat.py</code> を作って実行します。URL・ヘッダ・データを渡すのは curl と同じです。</p><div class="cmd"><pre data-tpl="cat &gt; chat.py &lt;&lt;&#x27;EOF&#x27;
+import os, requests
+
+url = &quot;https://api.ai.sakura.ad.jp/v1/chat/completions&quot;
+headers = {
+    &quot;Authorization&quot;: f&quot;Bearer {os.environ[&#x27;AI_ENGINE_TOKEN&#x27;]}&quot;,
+    &quot;Content-Type&quot;: &quot;application/json&quot;,
+}
+payload = {
+    &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+    &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;こんにちは！&quot;}],
+}
+res = requests.post(url, headers=headers, json=payload)
+print(res.json()[&quot;choices&quot;][0][&quot;message&quot;][&quot;content&quot;])
+EOF
+python3 chat.py"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 <code>ModuleNotFoundError: requests</code> と出たら <code>pip install requests</code> を実行してから、もう一度 <code>python3 chat.py</code>。</p></section></section><section class="sec" id="rag"><h2><span class="sh">3</span>ハンズオン②：RAG を動かす</h2><section class="step"><h3><span class="sn">3.1</span>RAGなしで質問する</h3><p>まずはハンズオン①と同じAPIで、資料の内容について聞きます。答えをメモしておきます。</p><label class="fld"><span>質問</span><input data-key="RQ" type="text" value="さくら高専の学生寮の門限は何時ですか？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{ &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+            &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;{{RQ}}&quot; }] }&#x27; \
+  | jq -r &#x27;.choices[0].message.content&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 AIは「さくら高専 学生寮のしおり」を読んでいないので、知らないと答えるか、それっぽい作り話をします。</p></section><section class="step"><h3><span class="sn">3.2</span>RAGありで同じ質問をする</h3><p>エンドポイントが <code>documents/chat/</code> に変わり、質問は <code>query</code> に書きます。</p><label class="fld"><span>top_k（使う資料の数）</span><input data-key="TOPK" type="number" value="3" placeholder="" autocomplete="off" spellcheck="false"></label><label class="fld"><span>threshold（距離のしきい値）</span><input data-key="TH" type="number" value="0.6" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/documents/chat/ \
+  --header &#x27;Accept: application/json&#x27; \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{
+      &quot;model&quot;: &quot;multilingual-e5-large&quot;,
+      &quot;chat_model&quot;: &quot;gpt-oss-120b&quot;,
+      &quot;query&quot;: &quot;{{RQ}}&quot;,
+      &quot;top_k&quot;: {{TOPK}},
+      &quot;threshold&quot;: {{TH}}
+    }&#x27; | jq -r &#x27;.answer&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 3.1 の答えと見比べます。threshold を大きくすると遠い資料まで使い（ゆるい）、小さくすると近い資料だけ使います（厳しい）。</p></section><section class="step"><h3><span class="sn">3.3</span>参照した資料を見る</h3><p>最後の jq を <code>.sources</code> にすると、AIが根拠にした資料の部分が見えます。</p><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/documents/chat/ \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{ &quot;model&quot;: &quot;multilingual-e5-large&quot;, &quot;chat_model&quot;: &quot;gpt-oss-120b&quot;,
+            &quot;query&quot;: &quot;{{RQ}}&quot;, &quot;top_k&quot;: {{TOPK}}, &quot;threshold&quot;: {{TH}} }&#x27; \
+  | jq &#x27;.sources&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></section><section class="step"><h3><span class="sn">3.4</span>資料にないことを聞いて、比べる</h3><label class="fld"><span>資料にない質問</span><input data-key="OQ" type="text" value="来年のプロコンで優勝する高専はどこですか？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/documents/chat/ \
+  --header &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; \
+  --header &#x27;Content-Type: application/json&#x27; \
+  --data &#x27;{ &quot;model&quot;: &quot;multilingual-e5-large&quot;, &quot;chat_model&quot;: &quot;gpt-oss-120b&quot;,
+            &quot;query&quot;: &quot;{{OQ}}&quot;, &quot;top_k&quot;: {{TOPK}}, &quot;threshold&quot;: {{TH}} }&#x27; \
+  | jq -r &#x27;.answer&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 RAGは「登録した資料の範囲でしか根拠を持てない」ことを確かめます。3つの答え（RAGなし・RAGあり・資料にない質問）の違いを1文で書いてみましょう。</p></section></section><section class="sec" id="trouble"><h2><span class="sh">？</span>うまくいかないとき</h2><div class="trbl">
+<div><h4>401 Unauthorized ／ Invalid token</h4><ul><li><code>echo $AI_ENGINE_TOKEN</code> で中身を確認</li><li>そのターミナルで 1.1 を実行したか</li><li>前後によけいな空白がないか</li></ul></div>
+<div><h4>コマンドが終わらない（&gt; が出る）</h4><ul><li><kbd>Ctrl</kbd>+<kbd>C</kbd> で中断</li><li>引用符が全角（” ’）になっていないか</li><li>行末の <code>\</code> のうしろに空白がないか</li></ul></div>
+<div><h4>つながらない ／ 応答がない</h4><ul><li>ネットワークにつながっているか</li><li>学内ネットワークの制限がないか</li></ul></div>
+</div></section><section class="sec" id="ex"><h2><span class="sh">EX.</span>発展：MCP・A2A・Skills を自分のPCで動かす</h2><section class="step"><h3><span class="sn">EX.1</span>配布ファイルを作る（ターミナル②）</h3><p>作業用のフォルダを作り、3つのコマンドで配布ファイルを作ります。どれも Python 3 の標準機能だけで動きます（インストール不要）。</p><div class="cmd"><pre data-tpl="mkdir -p ~/ai-practice &amp;&amp; cd ~/ai-practice"></pre><button class="cp" type="button">📋 コピー</button></div><details><summary>mcp_dorm.py（ミニMCPサーバー）を作るコマンド</summary><div class="cmd"><pre data-tpl="cat &gt; mcp_dorm.py &lt;&lt;&#x27;EOF&#x27;
+#!/usr/bin/env python3
+&quot;&quot;&quot;桜花寮のミニMCPサーバー（授業「AI実践 (1)」付録②用）
+
+Python 3 の標準機能だけで動きます（インストール不要）。
+  起動:  python3 mcp_dorm.py
+  窓口:  http://localhost:3001/mcp   （止めるときは Ctrl+C）
+
+MCP（Model Context Protocol）の3つの機能に答えます。
+  道具（tools）     : tools/list, tools/call
+  資料（resources） : resources/list, resources/read
+  定型文（prompts） : prompts/list, prompts/get
+中身は JSON-RPC 2.0 です。curl で POST して試してください。
+※学習用の最小実装です。MCP仕様のすべてには対応していません。
+&quot;&quot;&quot;
+import datetime
+import json
+import random
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+PORT = 3001
+PROTOCOL_VERSION = &quot;2026-07-28&quot;
+
+# ---- 道具（tools）の一覧：名前・説明・引数の形（inputSchema） ----
+TOOLS = [
+    {
+        &quot;name&quot;: &quot;get_dorm_menu&quot;,
+        &quot;description&quot;: &quot;桜花寮の食堂の夕食メニューを調べる&quot;,
+        &quot;inputSchema&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {&quot;date&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;日付 YYYY-MM-DD&quot;}},
+            &quot;required&quot;: [&quot;date&quot;],
+        },
+    },
+    {
+        &quot;name&quot;: &quot;check_washer&quot;,
+        &quot;description&quot;: &quot;寮の洗濯機が今使えるかを調べる&quot;,
+        &quot;inputSchema&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {&quot;number&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;洗濯機の番号（1〜13）&quot;}},
+            &quot;required&quot;: [&quot;number&quot;],
+        },
+    },
+]
+
+# ---- 資料（resources）：AIに読ませるデータ。URIという名前で呼ぶ ----
+RESOURCES = {
+    &quot;dorm://shiori/rules&quot;: {
+        &quot;name&quot;: &quot;寮のきまり&quot;,
+        &quot;description&quot;: &quot;さくら高専 学生寮のしおり（きまりの抜粋）&quot;,
+        &quot;text&quot;: (&quot;門限は平日21時47分、休日の前の日は22時47分。\n&quot;
+                 &quot;点呼は毎晩22時。名前を呼ばれたら「ヨシ！」と答える。\n&quot;
+                 &quot;外泊届は3日前までに寮監室へ。\n&quot;
+                 &quot;13番の洗濯機は気分屋。止まったら、ふたを一度開け閉めする。&quot;),
+    },
+}
+
+# ---- 定型文（prompts）：決まった頼み方のひな形。ユーザーが選んで使う ----
+PROMPTS = [
+    {
+        &quot;name&quot;: &quot;senpai_soudan&quot;,
+        &quot;description&quot;: &quot;寮の先輩に相談するときの頼み方&quot;,
+        &quot;arguments&quot;: [{&quot;name&quot;: &quot;topic&quot;, &quot;description&quot;: &quot;相談したいこと&quot;, &quot;required&quot;: True}],
+    },
+]
+
+
+def get_prompt(name, args):
+    if name != &quot;senpai_soudan&quot;:
+        raise KeyError(name)
+    text = (f&quot;あなたは桜花寮の面倒見のいい先輩です。後輩から「{args[&#x27;topic&#x27;]}」について相談されました。&quot;
+            &quot;寮のきまりをふまえて、短く親しみやすくアドバイスしてください。&quot;)
+    return {&quot;description&quot;: &quot;寮の先輩に相談する&quot;, &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: text}}]}
+
+
+MENU = [&quot;鶏の唐揚げ&quot;, &quot;豚の生姜焼き&quot;, &quot;さくらカレー&quot;, &quot;さばの味噌煮&quot;, &quot;ハンバーグ&quot;, &quot;親子丼&quot;, &quot;焼きそば&quot;]
+
+
+# ---- 道具の中身（ここを書き換えると、自分の道具が作れます） ----
+def get_dorm_menu(date):
+    d = datetime.date.fromisoformat(date)
+    return f&quot;{d.month}月{d.day}日の夕食は「{MENU[d.weekday()]}」です（18時から）。&quot;
+
+
+def check_washer(number):
+    if not 1 &lt;= number &lt;= 13:
+        return f&quot;{number}番の洗濯機はありません（1〜13番です）。&quot;
+    if number == 13:
+        return random.choice([&quot;13番は今日は機嫌がいいようです。使えます。&quot;,
+                              &quot;13番は気分屋なので止まっています。ふたを一度開け閉めしてください。&quot;])
+    return f&quot;{number}番の洗濯機は使えます。&quot;
+
+
+def call_tool(name, args):
+    if name == &quot;get_dorm_menu&quot;:
+        return get_dorm_menu(args[&quot;date&quot;])
+    if name == &quot;check_washer&quot;:
+        return check_washer(int(args[&quot;number&quot;]))
+    raise KeyError(name)
+
+
+# ---- JSON-RPC の命令（method）ごとの処理 ----
+def handle(req):
+    method, params = req.get(&quot;method&quot;), req.get(&quot;params&quot;) or {}
+    if method == &quot;initialize&quot;:  # 古い仕様のクライアント向けのあいさつ
+        return {&quot;protocolVersion&quot;: PROTOCOL_VERSION, &quot;capabilities&quot;: {&quot;tools&quot;: {}, &quot;resources&quot;: {}, &quot;prompts&quot;: {}},
+                &quot;serverInfo&quot;: {&quot;name&quot;: &quot;oukaryo-dorm&quot;, &quot;version&quot;: &quot;1.0&quot;}}
+    if method == &quot;tools/list&quot;:
+        return {&quot;tools&quot;: TOOLS}
+    if method == &quot;tools/call&quot;:
+        try:
+            text = call_tool(params.get(&quot;name&quot;), params.get(&quot;arguments&quot;) or {})
+            return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: text}], &quot;isError&quot;: False}
+        except KeyError as e:
+            return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;使い方が違います: {e}&quot;}], &quot;isError&quot;: True}
+        except Exception as e:
+            return {&quot;content&quot;: [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: f&quot;エラー: {e}&quot;}], &quot;isError&quot;: True}
+    if method == &quot;resources/list&quot;:
+        return {&quot;resources&quot;: [{&quot;uri&quot;: u, &quot;name&quot;: r[&quot;name&quot;], &quot;description&quot;: r[&quot;description&quot;],
+                               &quot;mimeType&quot;: &quot;text/plain&quot;} for u, r in RESOURCES.items()]}
+    if method == &quot;resources/read&quot;:
+        uri = params.get(&quot;uri&quot;)
+        if uri not in RESOURCES:
+            raise ValueError(f&quot;そのURIの資料はありません: {uri}&quot;)
+        return {&quot;contents&quot;: [{&quot;uri&quot;: uri, &quot;mimeType&quot;: &quot;text/plain&quot;, &quot;text&quot;: RESOURCES[uri][&quot;text&quot;]}]}
+    if method == &quot;prompts/list&quot;:
+        return {&quot;prompts&quot;: PROMPTS}
+    if method == &quot;prompts/get&quot;:
+        try:
+            return get_prompt(params.get(&quot;name&quot;), params.get(&quot;arguments&quot;) or {})
+        except KeyError as e:
+            raise ValueError(f&quot;使い方が違います: {e}&quot;)
+    raise LookupError(method)
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path != &quot;/mcp&quot;:
+            return self.send_error(404)
+        try:
+            req = json.loads(self.rfile.read(int(self.headers.get(&quot;Content-Length&quot;, 0))))
+        except ValueError:
+            return self.reply({&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: None,
+                               &quot;error&quot;: {&quot;code&quot;: -32700, &quot;message&quot;: &quot;JSONとして読めません&quot;}})
+        if &quot;id&quot; not in req:  # 通知（返事のいらないメッセージ）
+            self.send_response(202)
+            self.end_headers()
+            return
+        try:
+            body = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: req[&quot;id&quot;], &quot;result&quot;: handle(req)}
+        except LookupError:
+            body = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: req[&quot;id&quot;],
+                    &quot;error&quot;: {&quot;code&quot;: -32601, &quot;message&quot;: f&quot;知らない命令です: {req.get(&#x27;method&#x27;)}&quot;}}
+        except ValueError as e:
+            body = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: req[&quot;id&quot;], &quot;error&quot;: {&quot;code&quot;: -32602, &quot;message&quot;: str(e)}}
+        self.reply(body)
+
+    def reply(self, body):
+        data = json.dumps(body, ensure_ascii=False).encode()
+        self.send_response(200)
+        self.send_header(&quot;Content-Type&quot;, &quot;application/json&quot;)
+        self.send_header(&quot;Content-Length&quot;, str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def log_message(self, fmt, *args):  # 受け取った命令を画面に表示する
+        print(&quot;[MCP]&quot;, self.address_string(), fmt % args)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(f&quot;桜花寮MCPサーバー起動: http://localhost:{PORT}/mcp  （Ctrl+Cで終了）&quot;)
+    ThreadingHTTPServer((&quot;127.0.0.1&quot;, PORT), Handler).serve_forever()
+EOF"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></details><details><summary>a2a_senpai.py（先輩エージェント）を作るコマンド</summary><div class="cmd"><pre data-tpl="cat &gt; a2a_senpai.py &lt;&lt;&#x27;EOF&#x27;
+#!/usr/bin/env python3
+&quot;&quot;&quot;桜花寮の「先輩エージェント」（授業「AI実践 (1)」付録②用）
+
+Python 3 の標準機能だけで動く、ミニA2Aエージェントです（インストール不要）。
+頭脳は さくらのAI Engine。mcp_dorm.py が動いていれば、その資料（寮のきまり）を読み、道具も使います。
+skills/ フォルダのスキル（SKILL.md）も、必要なときに読んで使います。
+  起動:  export AI_ENGINE_TOKEN=&quot;（配布されたトークン）&quot;
+         python3 a2a_senpai.py
+  名刺:  http://localhost:9999/.well-known/agent-card.json
+  窓口:  http://localhost:9999/a2a/v1   （止めるときは Ctrl+C）
+※学習用の最小実装です。A2A仕様のすべてには対応していません。
+&quot;&quot;&quot;
+import datetime
+import json
+import os
+import urllib.request
+import urllib.error
+import uuid
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+PORT = 9999
+AI_URL = os.environ.get(&quot;AI_ENGINE_URL&quot;, &quot;https://api.ai.sakura.ad.jp/v1/chat/completions&quot;)
+MODEL = os.environ.get(&quot;AI_ENGINE_MODEL&quot;, &quot;gpt-oss-120b&quot;)
+MCP_URL = os.environ.get(&quot;MCP_URL&quot;, &quot;http://localhost:3001/mcp&quot;)
+BASE = f&quot;http://localhost:{PORT}&quot;
+SKILLS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), &quot;skills&quot;)
+
+# ---- 名刺（Agent Card） ----
+AGENT_CARD = {
+    &quot;name&quot;: &quot;桜花寮 先輩エージェント&quot;,
+    &quot;description&quot;: &quot;寮生活の相談にのる先輩AI。食堂のメニューや洗濯機のことも調べてくれる&quot;,
+    &quot;version&quot;: &quot;1.0&quot;,
+    &quot;supportedInterfaces&quot;: [{&quot;url&quot;: f&quot;{BASE}/a2a/v1&quot;, &quot;protocolBinding&quot;: &quot;JSONRPC&quot;, &quot;protocolVersion&quot;: &quot;1.0&quot;}],
+    &quot;capabilities&quot;: {&quot;streaming&quot;: False},
+    &quot;defaultInputModes&quot;: [&quot;text/plain&quot;],
+    &quot;defaultOutputModes&quot;: [&quot;text/plain&quot;],
+    &quot;skills&quot;: [
+        {&quot;id&quot;: &quot;dorm-life&quot;, &quot;name&quot;: &quot;寮生活の相談&quot;, &quot;description&quot;: &quot;門限・点呼・洗濯など&quot;, &quot;tags&quot;: [&quot;寮&quot;]},
+        {&quot;id&quot;: &quot;dorm-menu&quot;, &quot;name&quot;: &quot;食堂のメニュー&quot;, &quot;description&quot;: &quot;MCPサーバーで調べる&quot;, &quot;tags&quot;: [&quot;食堂&quot;]},
+        {&quot;id&quot;: &quot;dorm-howto&quot;, &quot;name&quot;: &quot;手続きの手伝い&quot;, &quot;description&quot;: &quot;外泊届など。スキルの手順書を読んで進める&quot;, &quot;tags&quot;: [&quot;手続き&quot;]},
+    ],
+}
+
+SYSTEM = (&quot;あなたは さくら高専 桜花寮 の面倒見のいい先輩です。後輩の相談に、短く親しみやすく答えてください。&quot;
+          f&quot;今日は {datetime.date.today().isoformat()} です。分からないことは、分からないと言ってください。&quot;)
+
+
+# ---- スキル（Agent Skills）：skills/&lt;名前&gt;/SKILL.md ----
+def load_skills():
+    &quot;&quot;&quot;各 SKILL.md の先頭（--- で囲まれた部分）から name と description だけを読む&quot;&quot;&quot;
+    skills = {}
+    if not os.path.isdir(SKILLS_DIR):
+        return skills
+    for d in sorted(os.listdir(SKILLS_DIR)):
+        path = os.path.join(SKILLS_DIR, d, &quot;SKILL.md&quot;)
+        if not os.path.isfile(path):
+            continue
+        with open(path, encoding=&quot;utf-8&quot;) as f:
+            text = f.read()
+        meta = {}
+        if text.startswith(&quot;---&quot;):
+            for line in text.split(&quot;---&quot;, 2)[1].splitlines():
+                if &quot;:&quot; in line:
+                    k, v = line.split(&quot;:&quot;, 1)
+                    meta[k.strip()] = v.strip()
+        skills[meta.get(&quot;name&quot;, d)] = {&quot;description&quot;: meta.get(&quot;description&quot;, &quot;&quot;),
+                                       &quot;dir&quot;: os.path.join(SKILLS_DIR, d)}
+    return skills
+
+
+SKILLS = load_skills()
+
+SKILL_TOOL = {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+    &quot;name&quot;: &quot;read_skill&quot;,
+    &quot;description&quot;: &quot;スキルの手順書（SKILL.md）や、手順書で案内されている参考ファイルを読む&quot;,
+    &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+        &quot;name&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;スキルの名前&quot;},
+        &quot;file&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;読むファイル。省略すると SKILL.md。例: references/todoke-template.md&quot;}},
+        &quot;required&quot;: [&quot;name&quot;]}}}
+
+
+def read_skill(name, file=&quot;SKILL.md&quot;):
+    if name not in SKILLS:
+        return f&quot;そのスキルはありません: {name}&quot;
+    base = os.path.realpath(SKILLS[name][&quot;dir&quot;])
+    path = os.path.realpath(os.path.join(base, file or &quot;SKILL.md&quot;))
+    if not path.startswith(base + os.sep) or not os.path.isfile(path):  # スキルのフォルダの外は読ませない
+        return f&quot;そのファイルはありません: {file}&quot;
+    with open(path, encoding=&quot;utf-8&quot;) as f:
+        return f.read()
+
+
+def get_token():
+    # コピー＆貼り付けで紛れ込みやすい空白・改行・引用符を取り除く
+    return os.environ.get(&quot;AI_ENGINE_TOKEN&quot;, &quot;&quot;).strip().strip(&#x27;&quot;\&#x27;“”&#x27;).strip()
+
+
+# MCPサーバー（同じPCの中）へは、プロキシを通さずに直接つなぐ
+LOCAL = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+
+def post_json(url, body, headers=None, opener=None):
+    req = urllib.request.Request(url, json.dumps(body).encode(),
+                                 {&quot;Content-Type&quot;: &quot;application/json&quot;, &quot;User-Agent&quot;: &quot;a2a-senpai/1.0&quot;,
+                                  **(headers or {})})
+    with (opener or urllib.request.build_opener()).open(req, timeout=60) as r:
+        return json.loads(r.read())
+
+
+def mcp(method, params=None):  # MCPサーバーに JSON-RPC で頼む
+    body = {&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;method&quot;: method, &quot;params&quot;: params or {}}
+    return post_json(MCP_URL, body, {&quot;MCP-Protocol-Version&quot;: &quot;2026-07-28&quot;}, LOCAL)[&quot;result&quot;]
+
+
+def chat(messages, tools):  # さくらのAI Engine に聞く
+    body = {&quot;model&quot;: MODEL, &quot;messages&quot;: messages}
+    if tools:
+        body[&quot;tools&quot;] = tools
+    token = get_token()
+    if not token:
+        raise KeyError(&quot;AI_ENGINE_TOKEN&quot;)
+    return post_json(AI_URL, body, {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;})[&quot;choices&quot;][0][&quot;message&quot;]
+
+
+def think(question):
+    # 1. MCPサーバーから道具の一覧をもらい、AI Engine の tools の形に詰め替える
+    try:
+        tools = [{&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {&quot;name&quot;: t[&quot;name&quot;], &quot;description&quot;: t[&quot;description&quot;],
+                                                   &quot;parameters&quot;: t[&quot;inputSchema&quot;]}}
+                 for t in mcp(&quot;tools/list&quot;)[&quot;tools&quot;]]
+    except OSError as e:
+        tools = []  # MCPサーバーが動いていなければ、道具なしで答える
+        print(f&quot;[A2A] 注意: MCPサーバー（{MCP_URL}）につながりません。MCPの道具なしで答えます: {e}&quot;)
+    # 0. MCPサーバーの資料（resources）から寮のきまりを読み、AIへの指示に足す
+    system = SYSTEM
+    try:
+        rules = mcp(&quot;resources/read&quot;, {&quot;uri&quot;: &quot;dorm://shiori/rules&quot;})[&quot;contents&quot;][0][&quot;text&quot;]
+        system += &quot;\n\n【寮のきまり】\n&quot; + rules
+    except (OSError, KeyError) as e:
+        print(f&quot;[A2A] 注意: MCPサーバー（{MCP_URL}）から寮のきまりを読めません: {e}&quot;)
+    # 0&#x27;. スキルは名前と説明だけをAIに伝える（中身は必要になったら read_skill で読む）
+    if SKILLS:
+        system += &quot;\n\n【使えるスキル】役に立ちそうなら、答える前に read_skill で手順書を読み、そのとおりに進めてください。\n&quot;
+        system += &quot;\n&quot;.join(f&quot;- {n}: {v[&#x27;description&#x27;]}&quot; for n, v in SKILLS.items())
+        tools.append(SKILL_TOOL)
+    print(f&quot;[A2A] AIに渡す道具: {[t[&#x27;function&#x27;][&#x27;name&#x27;] for t in tools] or &#x27;なし&#x27;}&quot;)
+    messages = [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: system}, {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]
+    for _ in range(5):
+        # 2. AIに聞く。道具が必要なら tool_calls（使ってほしい道具と引数）が返ってくる
+        msg = chat(messages, tools)
+        calls = msg.get(&quot;tool_calls&quot;) or []
+        if not calls:
+            if tools and not any(m[&quot;role&quot;] == &quot;tool&quot; for m in messages):
+                print(&quot;[A2A] AIは道具を使わずに答えました&quot;)
+            return msg.get(&quot;content&quot;) or &quot;&quot;
+        messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: msg.get(&quot;content&quot;) or &quot;&quot;, &quot;tool_calls&quot;: calls})
+        for c in calls:
+            # 3. 道具を実行するのはAIではなく、このプログラム（MCPの tools/call）
+            args = json.loads(c[&quot;function&quot;][&quot;arguments&quot;] or &quot;{}&quot;)
+            if c[&quot;function&quot;][&quot;name&quot;] == &quot;read_skill&quot;:  # スキルはこのプログラムが自分で読む
+                print(&quot;[A2A] スキルを読みます:&quot;, args.get(&quot;name&quot;), args.get(&quot;file&quot;) or &quot;SKILL.md&quot;)
+                content = read_skill(args.get(&quot;name&quot;, &quot;&quot;), args.get(&quot;file&quot;) or &quot;SKILL.md&quot;)
+            else:  # それ以外はMCPサーバーの道具
+                print(&quot;[A2A] 道具を使います:&quot;, c[&quot;function&quot;][&quot;name&quot;], args)
+                res = mcp(&quot;tools/call&quot;, {&quot;name&quot;: c[&quot;function&quot;][&quot;name&quot;], &quot;arguments&quot;: args})
+                content = &quot;\n&quot;.join(p.get(&quot;text&quot;, &quot;&quot;) for p in res[&quot;content&quot;])
+            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: c[&quot;id&quot;], &quot;content&quot;: content})
+        # 4. 結果を渡して、もう一度AIに聞く（ループの先頭へ）
+    return &quot;ごめん、うまく調べられなかった。&quot;
+
+
+def send_message(params):  # A2A の SendMessage
+    message = params[&quot;message&quot;]
+    question = &quot;\n&quot;.join(p[&quot;text&quot;] for p in message.get(&quot;parts&quot;, []) if &quot;text&quot; in p)
+    try:
+        answer, state = think(question), &quot;TASK_STATE_COMPLETED&quot;
+    except KeyError:
+        answer, state = (&quot;環境変数 AI_ENGINE_TOKEN が設定されていません。&quot;
+                         &quot;a2a_senpai.py を起動したターミナルで export してから、起動し直してください。&quot;), &quot;TASK_STATE_FAILED&quot;
+    except urllib.error.HTTPError as e:
+        state = &quot;TASK_STATE_FAILED&quot;
+        detail = e.read().decode(&quot;utf-8&quot;, &quot;replace&quot;)[:300]
+        print(f&quot;[A2A] {e.url} から HTTP {e.code}: {detail}&quot;)
+        if e.code == 401:
+            answer = (&quot;AI Engine にトークンを受け付けてもらえませんでした（401）。a2a_senpai.py を起動したターミナルで &quot;
+                      &quot;echo $AI_ENGINE_TOKEN を実行し、配布されたトークンと同じか確かめてから、起動し直してください。&quot;
+                      f&quot;（送り先: {e.url} ／ 返ってきた内容: {detail}）&quot;)
+        else:
+            answer = f&quot;AI Engine に聞けませんでした: HTTP {e.code} {e.reason}（送り先: {e.url} ／ 返ってきた内容: {detail}）&quot;
+    except Exception as e:
+        answer, state = f&quot;エラーで答えられませんでした: {e}&quot;, &quot;TASK_STATE_FAILED&quot;
+    return {&quot;task&quot;: {
+        &quot;id&quot;: str(uuid.uuid4()),
+        &quot;contextId&quot;: message.get(&quot;contextId&quot;) or str(uuid.uuid4()),
+        &quot;status&quot;: {&quot;state&quot;: state, &quot;timestamp&quot;: datetime.datetime.now(datetime.timezone.utc).isoformat()},
+        &quot;artifacts&quot;: [{&quot;artifactId&quot;: str(uuid.uuid4()), &quot;name&quot;: &quot;answer&quot;, &quot;parts&quot;: [{&quot;text&quot;: answer}]}],
+    }}
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == &quot;/.well-known/agent-card.json&quot;:
+            return self.reply(AGENT_CARD)
+        self.send_error(404)
+
+    def do_POST(self):
+        if self.path != &quot;/a2a/v1&quot;:
+            return self.send_error(404)
+        try:
+            req = json.loads(self.rfile.read(int(self.headers.get(&quot;Content-Length&quot;, 0))))
+        except ValueError:
+            return self.reply({&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: None,
+                               &quot;error&quot;: {&quot;code&quot;: -32700, &quot;message&quot;: &quot;JSONとして読めません&quot;}})
+        if req.get(&quot;method&quot;) != &quot;SendMessage&quot;:
+            return self.reply({&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: req.get(&quot;id&quot;),
+                               &quot;error&quot;: {&quot;code&quot;: -32601, &quot;message&quot;: f&quot;知らない命令です: {req.get(&#x27;method&#x27;)}&quot;}})
+        self.reply({&quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: req.get(&quot;id&quot;), &quot;result&quot;: send_message(req.get(&quot;params&quot;) or {})})
+
+    def reply(self, body):
+        data = json.dumps(body, ensure_ascii=False).encode()
+        self.send_response(200)
+        self.send_header(&quot;Content-Type&quot;, &quot;application/json&quot;)
+        self.send_header(&quot;Content-Length&quot;, str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def log_message(self, fmt, *args):
+        print(&quot;[A2A]&quot;, self.address_string(), fmt % args)
+
+
+if __name__ == &quot;__main__&quot;:
+    t = get_token()
+    if not t:
+        print(&quot;注意: AI_ENGINE_TOKEN が設定されていません。export してから起動し直してください。&quot;)
+    elif t.startswith(&quot;（&quot;) or &quot;トークン&quot; in t:
+        print(&quot;注意: AI_ENGINE_TOKEN が「（配布されたトークン）」のままです。本物のトークンに書き換えてください。&quot;)
+    else:
+        print(f&quot;トークン: {t[:4]}…（{len(t)}文字）を使います&quot;)
+    print(f&quot;AI Engine: {AI_URL}（モデル {MODEL}）&quot;)
+    proxies = {k: v for k, v in urllib.request.getproxies().items() if k in (&quot;http&quot;, &quot;https&quot;, &quot;no&quot;)}
+    if proxies:
+        print(&quot;プロキシ設定があります:&quot;, proxies)
+    try:
+        n = len(mcp(&quot;tools/list&quot;)[&quot;tools&quot;])
+        print(f&quot;MCPサーバー: {MCP_URL} につながりました（道具 {n} 個）&quot;)
+    except Exception as e:
+        print(f&quot;注意: MCPサーバー（{MCP_URL}）につながりません: {e}&quot;)
+        print(&quot;      別のターミナルで python3 mcp_dorm.py を起動してください（あとから起動してもOK）&quot;)
+    print(f&quot;スキル: {len(SKILLS)} 個 {list(SKILLS)}（{SKILLS_DIR}）&quot;)
+    print(f&quot;先輩エージェント起動: {BASE}/.well-known/agent-card.json  （Ctrl+Cで終了）&quot;)
+    ThreadingHTTPServer((&quot;127.0.0.1&quot;, PORT), Handler).serve_forever()
+EOF"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></details><details><summary>skills/ フォルダ（スキル2つ）を作るコマンド</summary><div class="cmd"><pre data-tpl="mkdir -p skills/gaihaku-todoke/references skills/sentakuki-trouble
+cat &gt; skills/gaihaku-todoke/SKILL.md &lt;&lt;&#x27;EOF&#x27;
+---
+name: gaihaku-todoke
+description: 外泊届の書き方と出し方。寮生が外泊・帰省・合宿で寮を空けたいと相談してきたときに使う。
+---
+
+# 外泊届の書き方
+
+## 手順
+1. 外泊届は、外泊する日の3日前までに出すきまりです。まず日付を聞いて、間に合うか確かめてください。
+2. references/todoke-template.md のひな形を読み、相談者と一緒に下書きを作ってください。
+   分からない項目（日付・行き先・目的・連絡先）は、相談者に質問して埋めます。
+3. 書けたら「寮監室の前の青いポストに入れてね」と伝えてください。
+4. 3日前を過ぎているときは、届を書かせずに「寮監の先生に直接相談しよう」と伝えてください。
+
+## 注意
+- 緊急連絡先には、保護者の電話番号を書きます。
+- 戻る予定時刻は門限（平日21時47分、休日の前の日は22時47分）より前にします。
+EOF
+cat &gt; skills/gaihaku-todoke/references/todoke-template.md &lt;&lt;&#x27;EOF&#x27;
+# 外泊届（桜花寮）
+
+- 氏名：
+- 部屋番号：
+- 外泊する日：　　年　　月　　日 〜 　　月　　日
+- 行き先：
+- 目的：（帰省／プロコンの合宿／その他）
+- 緊急連絡先（保護者の電話番号）：
+- 寮に戻る予定時刻：
+EOF
+cat &gt; skills/sentakuki-trouble/SKILL.md &lt;&lt;&#x27;EOF&#x27;
+---
+name: sentakuki-trouble
+description: 寮の洗濯機が動かない・止まった・水が出ないなど、洗濯機のトラブルを相談されたときの対応手順。
+---
+
+# 洗濯機トラブルの対応
+
+## 手順
+1. 何番の洗濯機かを聞き、道具 check_washer でその洗濯機の状態を調べてください。
+2. 13番のときは、ふたを一度開けて閉めるよう伝えてください（13番は気分屋です）。
+3. 水が出ないときは、洗濯機の後ろの蛇口が開いているか確かめるよう伝えてください。
+4. それでも動かないときは、別の番号の洗濯機を check_washer で調べて、使えるものを案内してください。
+5. 最後に、寮監室の「故障ノート」に番号と症状を書くよう伝えてください。
+EOF"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></details><div class="cmd"><pre data-tpl="ls -R"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 <code>ls -R</code> で <code>mcp_dorm.py</code>、<code>a2a_senpai.py</code>、<code>skills/</code> が見えればOKです。</p></section><section class="step"><h3><span class="sn">EX.2</span>ターミナル①：MCPサーバーを起動する</h3><p>新しいターミナルを開いて起動します。止めるときは <kbd>Ctrl</kbd>+<kbd>C</kbd>。</p><div class="cmd"><pre data-tpl="cd ~/ai-practice
+python3 mcp_dorm.py"></pre><button class="cp" type="button">📋 コピー</button></div></section><section class="step"><h3><span class="sn">EX.3</span>ターミナル②：MCPで道具の一覧を聞く（tools/list）</h3><div class="cmd"><pre data-tpl="export MCP_URL=&quot;http://localhost:3001/mcp&quot;
+curl -s &quot;$MCP_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;MCP-Protocol-Version: 2026-07-28&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;method&quot;: &quot;tools/list&quot; }&#x27; \
+| jq &#x27;.result.tools[] | {name, description}&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 get_dorm_menu（夕食メニュー）と check_washer（洗濯機）の2つが返ればOKです。</p></section><section class="step"><h3><span class="sn">EX.4</span>どの道具を使うか、AIに選んでもらう</h3><p>道具の一覧を <code>tools</code> に入れてAIに渡すと、AIは「この道具をこの引数で呼んで」（tool_calls）と返します。</p><div class="cmd"><pre data-tpl="curl -s https://api.ai.sakura.ad.jp/v1/chat/completions \
+  -H &quot;Authorization: Bearer ${AI_ENGINE_TOKEN}&quot; -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{ &quot;model&quot;: &quot;gpt-oss-120b&quot;,
+        &quot;messages&quot;: [{ &quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;2026年11月25日の寮の夕食は？&quot; }],
+        &quot;tools&quot;: [{ &quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+          &quot;name&quot;: &quot;get_dorm_menu&quot;,
+          &quot;description&quot;: &quot;桜花寮の食堂のメニューを調べる&quot;,
+          &quot;parameters&quot;: { &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: { &quot;date&quot;: { &quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;日付 YYYY-MM-DD&quot; } },
+            &quot;required&quot;: [&quot;date&quot;] } } }] }&#x27; \
+| jq &#x27;.choices[0].message.tool_calls&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></section><section class="step"><h3><span class="sn">EX.5</span>AIが選んだ道具を実行する（tools/call）</h3><div class="cmd"><pre data-tpl="curl -s &quot;$MCP_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;MCP-Protocol-Version: 2026-07-28&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 2, &quot;method&quot;: &quot;tools/call&quot;,
+        &quot;params&quot;: { &quot;name&quot;: &quot;get_dorm_menu&quot;, &quot;arguments&quot;: { &quot;date&quot;: &quot;2026-11-25&quot; } } }&#x27; \
+| jq -r &#x27;.result.content[0].text&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 洗濯機なら name を <code>check_washer</code>、arguments を <code>{ "number": 13 }</code> に。13番は気分屋なので、答えが毎回変わります。</p></section><section class="step"><h3><span class="sn">EX.6</span>資料（resources）と定型文（prompts）</h3><div class="cmd"><pre data-tpl="curl -s &quot;$MCP_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;MCP-Protocol-Version: 2026-07-28&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 3, &quot;method&quot;: &quot;resources/read&quot;,
+        &quot;params&quot;: { &quot;uri&quot;: &quot;dorm://shiori/rules&quot; } }&#x27; \
+| jq -r &#x27;.result.contents[0].text&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><div class="cmd"><pre data-tpl="curl -s &quot;$MCP_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 4, &quot;method&quot;: &quot;prompts/get&quot;,
+        &quot;params&quot;: { &quot;name&quot;: &quot;senpai_soudan&quot;, &quot;arguments&quot;: { &quot;topic&quot;: &quot;門限に遅れそう&quot; } } }&#x27; \
+| jq -r &#x27;.result.messages[0].content.text&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></section><section class="step"><h3><span class="sn">EX.7</span>ターミナル③：先輩エージェント（A2A）を起動する</h3><p>もう1つターミナルを開きます。環境変数はターミナルごとに別なので、ここでもトークンを入れます。</p><div class="cmd"><pre data-tpl="cd ~/ai-practice
+export AI_ENGINE_TOKEN=&quot;{{TOKEN}}&quot;
+python3 a2a_senpai.py"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 「MCPサーバー: … につながりました」「スキル: 2 個」と表示されればOKです。</p></section><section class="step"><h3><span class="sn">EX.8</span>ターミナル②：名刺（Agent Card）を見る</h3><div class="cmd"><pre data-tpl="export A2A_BASE=&quot;http://localhost:9999&quot;
+curl -s &quot;$A2A_BASE/.well-known/agent-card.json&quot; \
+| jq &#x27;{ name, skills: [.skills[].name], url: .supportedInterfaces[0].url }&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div></section><section class="step"><h3><span class="sn">EX.9</span>先輩に仕事を頼む（SendMessage）</h3><label class="fld"><span>先輩への質問</span><input data-key="AQ" type="text" value="今日の夕食は何？ 13番の洗濯機は使える？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="export A2A_URL=&quot;http://localhost:9999/a2a/v1&quot;
+curl -s &quot;$A2A_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;A2A-Version: 1.0&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 1, &quot;method&quot;: &quot;SendMessage&quot;,
+        &quot;params&quot;: { &quot;message&quot;: {
+          &quot;role&quot;: &quot;ROLE_USER&quot;,
+          &quot;parts&quot;: [{ &quot;text&quot;: &quot;{{AQ}}&quot; }],
+          &quot;messageId&quot;: &quot;msg-001&quot; } } }&#x27; \
+| jq &#x27;.result.task.status.state, .result.task.artifacts[0].parts[0].text&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 ターミナル③に「道具を使います」と出れば、先輩がMCPの道具で調べてから答えています。</p></section><section class="step"><h3><span class="sn">EX.10</span>先輩にスキルを使ってもらう（Skills）</h3><label class="fld"><span>相談</span><input data-key="SQ" type="text" value="来週の土曜に帰省したい。外泊届はどう書けばいい？" placeholder="" autocomplete="off" spellcheck="false"></label><div class="cmd"><pre data-tpl="curl -s &quot;$A2A_URL&quot; \
+  -H &#x27;Content-Type: application/json&#x27; -H &#x27;A2A-Version: 1.0&#x27; \
+  -d &#x27;{ &quot;jsonrpc&quot;: &quot;2.0&quot;, &quot;id&quot;: 2, &quot;method&quot;: &quot;SendMessage&quot;,
+        &quot;params&quot;: { &quot;message&quot;: { &quot;role&quot;: &quot;ROLE_USER&quot;, &quot;messageId&quot;: &quot;msg-002&quot;,
+          &quot;parts&quot;: [{ &quot;text&quot;: &quot;{{SQ}}&quot; }] } } }&#x27; \
+| jq -r &#x27;.result.task.artifacts[0].parts[0].text&#x27;"></pre><button class="cp" type="button">📋 コマンドをコピー</button></div><p class="tip">💡 ターミナル③に「スキルを読みます: gaihaku-todoke SKILL.md」と出れば、手順書を読んでから答えています。skills/ にフォルダを足せば、先輩のできることが増えます（先輩を起動し直す）。</p></section></section></div></main>
+<footer><div class="wrap">© KOSEN クラウド学習教材 ｜ 「さくら高専 学生寮のしおり」は授業用に作った資料で、実在の学校・寮とは関係ありません。</div></footer>
+<div id="toast">✅ コピーしました！</div>
+<textarea id="selbox" aria-hidden="true" tabindex="-1"></textarea>
+<script>
+(function () {
+  var vals = {};
+  var defaults = {};
+  var inputs = document.querySelectorAll('input[data-key]');
+  var showTok = document.getElementById('showtok');
+  // JSON の文字列として正しく、さらにシェルの '…' の中でも壊れないようにする
+  function esc(s) { return JSON.stringify(s).slice(1, -1).replace(/'/g, "'\\''"); }
+  function tokenCopy() { return vals.TOKEN || '<配られたアカウントトークン>'; }
+  function tokenShow() {
+    var t = vals.TOKEN || '';
+    if (!t) return '<配られたアカウントトークン>';
+    if (showTok && showTok.checked) return t;
+    return t.slice(0, 4) + '••••••••' + (t.length > 12 ? t.slice(-2) : '');
+  }
+  function value(key) {
+    var v = (vals[key] !== undefined && vals[key] !== '') ? vals[key] : defaults[key];
+    var el = document.querySelector('input[data-key="' + key + '"]');
+    if (el && el.type === 'number') { return (v !== '' && isFinite(Number(v))) ? String(Number(v)) : defaults[key]; }
+    return esc(v);
+  }
+  function build(tpl, forCopy) {
+    return tpl.replace(/\{\{(\w+)\}\}/g, function (_, k) {
+      if (k === 'TOKEN') return forCopy ? tokenCopy() : tokenShow();
+      return value(k);
+    });
+  }
+  function htmlEsc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function render() {
+    document.querySelectorAll('pre[data-tpl]').forEach(function (pre) {
+      var tpl = pre.getAttribute('data-tpl');
+      var parts = tpl.split(/(\{\{\w+\}\})/);
+      pre.innerHTML = parts.map(function (part) {
+        var m = part.match(/^\{\{(\w+)\}\}$/);
+        if (!m) return htmlEsc(part);
+        return '<span class="v">' + htmlEsc(build(part, false)) + '</span>';
+      }).join('');
+    });
+  }
+  inputs.forEach(function (el) {
+    var k = el.getAttribute('data-key');
+    defaults[k] = el.defaultValue;
+    vals[k] = el.value;
+    el.addEventListener('input', function () { vals[k] = el.value.trim(); render(); });
+  });
+  if (showTok) showTok.addEventListener('change', function () {
+    var t = document.querySelector('input[data-key="TOKEN"]');
+    if (t) t.type = showTok.checked ? 'text' : 'password';
+    render();
+  });
+  var toast = document.getElementById('toast'), timer;
+  function done(btn) {
+    var old = btn.getAttribute('data-label') || btn.textContent;
+    btn.setAttribute('data-label', old);
+    btn.textContent = '✅ コピーしました！'; btn.classList.add('done');
+    toast.classList.add('on');
+    clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove('on'); btn.textContent = old; btn.classList.remove('done'); }, 1500);
+  }
+  function fallback(text, btn) {
+    var box = document.getElementById('selbox');
+    box.value = text; box.select();
+    try { if (document.execCommand('copy')) { done(btn); return; } } catch (e) {}
+    btn.textContent = 'コピーできませんでした。コマンドを選んでコピーしてください';
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.cp');
+    if (!btn) return;
+    var pre = btn.parentNode.querySelector('pre[data-tpl]');
+    var text = build(pre.getAttribute('data-tpl'), true);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(btn); }, function () { fallback(text, btn); });
+    } else { fallback(text, btn); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
