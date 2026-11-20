@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231E293B'/><rect x='9' y='13' width='46' height='38' rx='6' fill='%23fff'/><path d='M9 19a6 6 0 0 1 6-6h34a6 6 0 0 1 6 6v3H9z' fill='%23FB5177'/><path d='M16 31l6 5-6 5' fill='none' stroke='%231E293B' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><path d='M27 42h12' stroke='%231E293B' stroke-width='4' stroke-linecap='round'/></svg>">
+<title>Linux基礎 コマンド手順書 | KOSEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --navy:#1E293B; --pink:#D6335C; --pink2:#FB5177; --blue:#3A63B0; --gray:#F8FAFC; --line:#E2E8F0; --text:#334155; --soft:#64748B; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Noto Sans JP", system-ui, sans-serif; color: var(--text); background: #fff; line-height: 1.75; }
+header { background: var(--navy); color: #fff; padding: 40px 20px 32px; border-top: 6px solid var(--pink2); }
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+header .wrap { padding: 0; }
+header .kicker { margin: 0 0 6px; font-size: 14px; letter-spacing: .08em; color: #FDA4B8; font-weight: 700; }
+header h1 { margin: 0 0 10px; font-size: 32px; line-height: 1.3; }
+header p { margin: 0; color: #CBD5E1; }
+nav { position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+nav .wrap { display: flex; gap: 8px; overflow-x: auto; padding-top: 10px; padding-bottom: 10px; }
+nav a { flex: none; font-size: 14px; font-weight: 700; color: var(--navy); text-decoration: none; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--gray); }
+nav a:hover { border-color: var(--pink); color: var(--pink); }
+main { padding: 8px 0 60px; }
+.sec { padding-top: 32px; scroll-margin-top: 56px; }
+h2 { font-size: 24px; color: var(--navy); margin: 0 0 8px; padding-bottom: 8px; border-bottom: 3px solid var(--navy); display: flex; align-items: center; gap: 12px; }
+.sh { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 8px; border-radius: 20px; background: var(--pink); color: #fff; font-size: 18px; }
+.step { margin: 28px 0 0; }
+h3 { font-size: 19px; color: var(--navy); margin: 0 0 8px; display: flex; align-items: baseline; gap: 10px; }
+.sn { font-family: "JetBrains Mono", monospace; font-size: 15px; color: var(--pink); font-weight: 600; }
+p { margin: 6px 0; }
+code { font-family: "JetBrains Mono", monospace; font-size: .9em; background: #F1F5F9; padding: 1px 6px; border-radius: 4px; color: #0F172A; }
+kbd { font-family: "JetBrains Mono", monospace; font-size: .85em; border: 1px solid #CBD5E1; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: #fff; }
+.cmd { margin: 10px 0; }
+pre { margin: 0; background: var(--navy); color: #F1F5F9; font-family: "JetBrains Mono", monospace; font-size: 14px; line-height: 1.6; padding: 16px 18px; border-radius: 10px 10px 0 0; overflow-x: auto; white-space: pre; }
+pre .v { color: #FDA4B8; }
+.cp { display: block; width: 100%; border: 0; border-radius: 0 0 10px 10px; background: #334155; color: #fff; font: 700 14px "Noto Sans JP", sans-serif; padding: 9px; cursor: pointer; }
+.cp:hover { background: var(--pink); }
+.cp.done { background: #15803D; }
+.tip { background: #FFF7ED; border-left: 4px solid #F59E0B; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 15px; margin: 10px 0; }
+.fld { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.fld span { font-size: 14px; font-weight: 700; color: var(--navy); }
+.fld input { font: 16px "Noto Sans JP", sans-serif; padding: 9px 12px; border: 2px solid var(--line); border-radius: 8px; }
+.fld input:focus { outline: none; border-color: var(--pink); }
+.fld input[type=number] { max-width: 160px; }
+.show { font-size: 14px; display: flex; gap: 6px; align-items: center; color: var(--soft); }
+details { margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; background: var(--gray); }
+details[open] { padding-bottom: 4px; }
+summary { cursor: pointer; font-weight: 700; color: var(--navy); padding: 10px 0; }
+details pre { max-height: 360px; overflow: auto; }
+.dl { display: inline-block; margin: 8px 0; padding: 12px 20px; border-radius: 10px; background: var(--pink); color: #fff; font-weight: 700; text-decoration: none; }
+.dl:hover { background: #B4234A; }
+.warn { background: #FEF2F2; border-left-color: #D6335C; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 12px; }
+.two > div, .modes .m { border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; background: var(--gray); }
+.two h4 { margin: 0 0 4px; color: var(--navy); } .two ol { margin: 0; padding-left: 20px; }
+.tbl { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 15px; }
+.tbl th, .tbl td { border: 1px solid var(--line); padding: 7px 12px; text-align: left; vertical-align: top; }
+.tbl th { background: var(--navy); color: #fff; }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 10px; margin: 10px 0; }
+.modes .m { display: flex; flex-direction: column; gap: 2px; } .modes .m b { color: var(--navy); } .modes .m span { font-size: 14px; }
+.modes .m-n { border: 2px solid var(--pink); background: #FFF1F4; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.trbl { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
+.trbl > div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: var(--gray); }
+.trbl h4 { margin: 0 0 4px; color: var(--pink); font-size: 16px; }
+.trbl ul { margin: 0; padding-left: 20px; font-size: 15px; }
+footer { border-top: 1px solid var(--line); color: var(--soft); font-size: 13px; padding: 20px 0 32px; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: #15803D; color: #fff; font-weight: 700; padding: 10px 20px; border-radius: 999px; opacity: 0; transition: .2s; pointer-events: none; z-index: 10; }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+#selbox { position: fixed; left: -9999px; top: 0; }
+@media (max-width: 600px) { header h1 { font-size: 24px; } pre { font-size: 12.5px; } }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<p class="kicker"><a href="index.html" style="color:#CBD5E1;text-decoration:none">← 教材一覧</a>　｜　Linux基礎</p>
+<h1>🐧 サーバに入って、Vim と SFTP を使ってみよう</h1>
+<p>サーバにSSHで入り、Vim でファイルを作って、SFTP でアップロードするまでの手順書です。最初にIPアドレスと学籍番号を入れれば、あとはコピー＆ペーストで進められます。</p>
+</div></header>
+<nav><div class="wrap"><a href="#prep">0 準備</a><a href="#ssh">1 SSH接続</a><a href="#look">2 中身を確認</a><a href="#dir">3 ディレクトリ</a><a href="#vim">4 Vim</a><a href="#game">5 連想ゲーム</a><a href="#sftp">6 SFTP</a><a href="#more">7 まとめ</a><a href="#trouble">？ うまくいかないとき</a></div></nav>
+<main><div class="wrap"><section class="sec" id="prep"><h2><span class="sh">0</span>準備：ターミナルを開いて、自分の情報を入れる</h2><section class="step"><h3><span class="sn">0.1</span>ターミナルを開く</h3><div class="two"><div><h4>Windows</h4><ol><li>画面下の検索窓に「PowerShell」と入力</li><li>「Windows PowerShell」をクリック</li></ol></div><div><h4>Mac</h4><ol><li>Finder →「アプリケーション」→「ユーティリティ」</li><li>「ターミナル」をクリック（Spotlight で「terminal」と検索してもOK）</li></ol></div></div></section><section class="step"><h3><span class="sn">0.2</span>サーバのIPアドレスと学籍番号を入力する</h3><p>入力すると、下のコマンドに自動で入ります。あとはコピーして貼り付けるだけです。</p><label class="fld"><span>サーバのIPアドレス</span><input data-key="IP" data-label="サーバのIPアドレス" type="text" value="" placeholder="例：203.0.113.10" autocomplete="off" spellcheck="false"></label><label class="fld"><span>学籍番号</span><input data-key="SID" data-label="学籍番号" type="text" value="" placeholder="例：s2401234" autocomplete="off" spellcheck="false"></label><p class="tip">💡 IPアドレスは、事前に割り振られたものを使います。入力した内容はこのページの中だけで使われ、保存も送信もされません。</p></section><section class="step"><h3><span class="sn">0.3</span>コピーと貼り付けのしかた</h3><p>このページでは、黒い枠の下の「📋 コピー」ボタンを押すとコマンドがコピーされます。ターミナルには次の方法で貼り付けます。</p><table class="tbl"><tr><th>ターミナル</th><th>貼り付け方</th></tr><tr><td>Windows（PowerShell）</td><td><kbd>Ctrl</kbd> <kbd>V</kbd> または 右クリック</td></tr><tr><td>Mac（ターミナル）</td><td><kbd>⌘</kbd> <kbd>V</kbd></td></tr></table><p class="tip">💡 貼り付けたら、<kbd>Enter</kbd> を押して実行します。</p></section></section><section class="sec" id="ssh"><h2><span class="sh">1</span>サーバにSSH接続する</h2><section class="step"><h3><span class="sn">1.1</span>SSHでサーバに接続する</h3><p><code>ssh</code> はリモート接続のコマンド、<code>ubuntu</code> はユーザ名（全員共通）、@ のうしろが接続先のサーバです。</p><div class="cmd"><pre data-tpl="ssh ubuntu@{{IP}}"></pre><button class="cp" type="button">📋 コピー</button></div></section><section class="step"><h3><span class="sn">1.2</span>初めての接続のときは「yes」と答える</h3><p>「Are you sure you want to continue connecting (yes/no/[fingerprint])?」と聞かれたら、<code>yes</code> と入力して <kbd>Enter</kbd>。</p><div class="cmd"><pre data-tpl="yes"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 finger print（フィンガープリント）は、PCが接続先のサーバを見分けるための「指紋」のようなものです。初めて接続するときだけ表示されます。</p></section><section class="step"><h3><span class="sn">1.3</span>パスワードを入力する（全員共通）</h3><div class="cmd"><pre data-tpl="handson-sakura"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip warn">⚠️ パスワードは、入力しても画面に何も表示されません。そのまま貼り付けて（または入力して）<kbd>Enter</kbd> を押してください。</p></section><section class="step"><h3><span class="sn">1.4</span>ログインできたか確認する</h3><p><code>ubuntu@srv01</code> のような表示が出ればログイン成功です。ここから先のコマンドは、このサーバの中で実行されます。</p><p class="tip">💡 何も入力せずに <kbd>Enter</kbd> を押すと、改行されるだけです。</p></section></section><section class="sec" id="look"><h2><span class="sh">2</span>サーバの中身を確認する</h2><section class="step"><h3><span class="sn">2.1</span>サーバ名を表示する（hostname）</h3><div class="cmd"><pre data-tpl="hostname"></pre><button class="cp" type="button">📋 コピー</button></div><p>今ログインしているサーバの名前が表示されます。</p></section><section class="step"><h3><span class="sn">2.2</span>ユーザ名を表示する（whoami）</h3><div class="cmd"><pre data-tpl="whoami"></pre><button class="cp" type="button">📋 コピー</button></div><p>今ログインしているユーザの名前（<code>ubuntu</code>）が表示されます。</p></section><section class="step"><h3><span class="sn">2.3</span>今いる場所を表示する（pwd）</h3><div class="cmd"><pre data-tpl="pwd"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>/home/ubuntu</code> と表示されます。「/（ルート）」の中の「home」の中の「ubuntu」というディレクトリにいる、という意味です。</p><p class="tip">💡 ディレクトリは、ファイルを入れて整理するための入れ物です。ディレクトリの中にディレクトリを作ることもできます。</p></section></section><section class="sec" id="dir"><h2><span class="sh">3</span>ディレクトリを作る</h2><section class="step"><h3><span class="sn">3.1</span>test ディレクトリを作る（mkdir）</h3><div class="cmd"><pre data-tpl="mkdir test"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>mkdir</code> はディレクトリを作るコマンドです。実行しても何も表示されませんが、作られています。</p></section><section class="step"><h3><span class="sn">3.2</span>できたか確認する（ls）</h3><div class="cmd"><pre data-tpl="ls"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>test</code> が表示されれば成功です。</p></section><section class="step"><h3><span class="sn">3.3</span>test ディレクトリへ移動する（cd）</h3><div class="cmd"><pre data-tpl="cd test"></pre><button class="cp" type="button">📋 コピー</button></div><p>表示が <code>ubuntu@srv01:~/test</code> に変われば移動成功です。</p><div class="cmd"><pre data-tpl="pwd"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>/home/ubuntu/test</code> と表示されればOKです。</p></section></section><section class="sec" id="vim"><h2><span class="sh">4</span>Vim でテキストファイルを作る</h2><section class="step"><h3><span class="sn">4.1</span>profile.txt を開く</h3><div class="cmd"><pre data-tpl="vi profile.txt"></pre><button class="cp" type="button">📋 コピー</button></div><p>ファイルがなければ新しく作られ、あれば開かれます。この時点ではまだ文字を入力できません（ノーマルモード）。</p></section><section class="step"><h3><span class="sn">4.2</span>挿入モードにして、名前を入力する</h3><p><kbd>i</kbd> を押すと挿入モードになり、画面の下に <code>-- INSERT --</code> と出ます。自分の名前を入力しましょう（ローマ字でも日本語でもOK）。</p></section><section class="step"><h3><span class="sn">4.3</span>ノーマルモードに戻して、保存して終了する</h3><p><kbd>Esc</kbd> を押してノーマルモードに戻します（<code>-- INSERT --</code> が消えます）。続けて次を入力して <kbd>Enter</kbd>。</p><div class="cmd"><pre data-tpl=":wq"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip">💡 <code>:w</code> は保存（write）、<code>:q</code> は終了（quit）です。</p></section><section class="step"><h3><span class="sn">4.4</span>保存できたか確認する</h3><div class="cmd"><pre data-tpl="vi profile.txt"></pre><button class="cp" type="button">📋 コピー</button></div><p>入力した名前が表示されれば成功です。確認できたら、次で閉じます。</p><div class="cmd"><pre data-tpl=":q"></pre><button class="cp" type="button">📋 コピー</button></div></section><section class="step"><h3><span class="sn">4.5</span>Vim のモードとコマンド（早見表）</h3><div class="modes"><div class="m m-n"><b>ノーマルモード</b><span>起動したときのモード。移動・削除・コピペ</span></div><div class="m"><b>挿入モード</b><span><kbd>i</kbd> で入る。文字の入力</span></div><div class="m"><b>コマンドラインモード</b><span><kbd>:</kbd> で入る。保存・終了</span></div><div class="m"><b>ビジュアルモード</b><span><kbd>v</kbd> で入る。範囲の選択</span></div></div><p>どのモードからでも、<kbd>Esc</kbd> でノーマルモードに戻れます。</p><details><summary>ノーマルモードのコマンド</summary><table class="tbl"><tr><th>キー</th><th>動き</th></tr><tr><td><code>u</code></td><td>元に戻す（アンドゥ）</td></tr><tr><td><code>x</code></td><td>カーソルの1文字を削除</td></tr><tr><td><code>dd</code></td><td>カーソルの1行を削除（<code>3dd</code> で3行）</td></tr><tr><td><code>yy</code></td><td>カーソルの1行をコピー（<code>3yy</code> で3行）</td></tr><tr><td><code>p</code> ／ <kbd>Shift</kbd> <kbd>p</kbd></td><td>カーソルの後ろ／前に貼り付け</td></tr><tr><td><code>gg</code> ／ <kbd>Shift</kbd> <kbd>G</kbd></td><td>ファイルの最初／最後の行へ移動</td></tr><tr><td><code>^</code> ／ <code>$</code></td><td>行の先頭／末尾へ移動</td></tr><tr><td><kbd>Ctrl</kbd> <kbd>F</kbd> ／ <kbd>Ctrl</kbd> <kbd>B</kbd></td><td>1ページ下／上へ</td></tr><tr><td><code>h</code> <code>j</code> <code>k</code> <code>l</code></td><td>左・下・上・右へ移動（矢印キーと同じ）</td></tr></table></details><details><summary>コマンドラインモードのコマンド</summary><table class="tbl"><tr><th>入力</th><th>動き</th></tr><tr><td><code>:w</code></td><td>上書き保存</td></tr><tr><td><code>:q</code></td><td>終了</td></tr><tr><td><code>:wq</code></td><td>保存して終了</td></tr><tr><td><code>:q!</code></td><td>保存せずに強制終了</td></tr><tr><td><code>:50</code></td><td>50行目へ移動</td></tr><tr><td><code>:set number</code> ／ <code>:set nonumber</code></td><td>行番号を表示する／しない</td></tr><tr><td><code>:set nowrap</code></td><td>折り返して表示しない</td></tr><tr><td><code>:!コマンド</code></td><td>Vim を出ずにシェルのコマンドを実行（<kbd>Enter</kbd> で戻る）</td></tr></table></details><p class="tip">💡 困ったら <kbd>Esc</kbd> を押してから <code>:q!</code> で、保存せずに抜けられます。</p></section></section><section class="sec" id="game"><h2><span class="sh">5</span>連想ゲームのファイルを作る</h2><section class="step"><h3><span class="sn">5.1</span>学籍番号.txt を開く</h3><div class="cmd"><pre data-tpl="vi {{SID}}.txt"></pre><button class="cp" type="button">📋 コピー</button></div></section><section class="step"><h3><span class="sn">5.2</span>ヒント・正解・キャラクター名を書く</h3><p><kbd>i</kbd> で挿入モードにして、次の形で書きます。下のひな形をコピーして貼り付け、〇〇を書き換えてもOKです。</p><div class="cmd"><pre data-tpl="ヒント１：〇〇
+ヒント２：〇〇
+ヒント３：〇〇
+正解：〇〇
+キャラクター名"></pre><button class="cp" type="button">📋 ひな形をコピー</button></div><p>最後の行には、下の一覧から好きなキャラクター名を1つ書きます（「キャラクター名」という文字を書き換えます）。</p><div class="chips"><code>apt</code><code>bud-frogs</code><code>bunny</code><code>calvin</code><code>cheese</code><code>cock</code><code>cower</code><code>daemon</code><code>default</code><code>dragon</code><code>dragon-and-cow</code><code>duck</code><code>elephant</code><code>elephant-in-snake</code><code>eyes</code><code>flaming-sheep</code><code>fox</code><code>ghostbusters</code><code>gnu</code><code>hellokitty</code><code>kangaroo</code><code>kiss</code><code>koala</code><code>kosh</code><code>luke-koala</code><code>mech-and-cow</code><code>milk</code><code>moofasa</code><code>moose</code><code>pony</code><code>pony-smaller</code><code>ren</code><code>sheep</code><code>skeleton</code><code>snowman</code><code>stegosaurus</code><code>stimpy</code><code>suse</code><code>three-eyes</code><code>turkey</code><code>turtle</code><code>tux</code><code>unipony</code><code>unipony-smaller</code><code>vader</code><code>vader-koala</code><code>www</code></div><p class="tip">💡 書けたら <kbd>Esc</kbd> → <code>:wq</code> で保存して終了します。日本語入力がONのままだと <code>:wq</code> が打てないので、半角に戻してから入力しましょう。</p></section><section class="step"><h3><span class="sn">5.3</span>できたか確認する</h3><div class="cmd"><pre data-tpl="cat {{SID}}.txt"></pre><button class="cp" type="button">📋 コピー</button></div><p>書いた内容が表示されればOKです。</p></section></section><section class="sec" id="sftp"><h2><span class="sh">6</span>SFTP でファイルをアップロードする</h2><section class="step"><h3><span class="sn">6.1</span>SFTPサーバに接続する</h3><p>サーバにログインしたまま、次を実行します。<kbd>?</kbd>接続先は全員同じです。</p><div class="cmd"><pre data-tpl="sftp submit-user@163.43.113.174"></pre><button class="cp" type="button">📋 コピー</button></div><p>初めてのときは「yes/no」と聞かれるので <code>yes</code> と答えます。パスワードは全員共通です。</p><div class="cmd"><pre data-tpl="handson-sakura"></pre><button class="cp" type="button">📋 コピー</button></div><p class="tip warn">⚠️ パスワードは画面に表示されません。そのまま <kbd>Enter</kbd>。<code>sftp&gt;</code> と出れば接続成功です。</p></section><section class="step"><h3><span class="sn">6.2</span>アップロード先のフォルダへ移動する</h3><div class="cmd"><pre data-tpl="cd uploads"></pre><button class="cp" type="button">📋 コピー</button></div></section><section class="step"><h3><span class="sn">6.3</span>ファイルをアップロードする</h3><div class="cmd"><pre data-tpl="put {{SID}}.txt"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>Uploading …</code> と表示されれば成功です。</p><div class="cmd"><pre data-tpl="ls"></pre><button class="cp" type="button">📋 コピー</button></div><p>自分のファイルが一覧にあれば、アップロードできています。</p></section><section class="step"><h3><span class="sn">6.4</span>SFTPを終了する</h3><div class="cmd"><pre data-tpl="bye"></pre><button class="cp" type="button">📋 コピー</button></div><p><code>sftp&gt;</code> から元の <code>ubuntu@srv01</code> の表示に戻ります。</p></section></section><section class="sec" id="more"><h2><span class="sh">7</span>まとめ：今日のポイント</h2><section class="step"><h3><span class="sn">7.1</span>root（管理者）でログインしないのはなぜ？</h3><p>root は何でもできるユーザです。操作を間違えるとシステム全体が壊れたり、SSHでの root ログインを許していると、総当たり攻撃でパスワードを当てられてサーバを乗っ取られたりする危険があります。ふだんは一般ユーザ（今日の <code>ubuntu</code>）で作業します。</p></section><section class="step"><h3><span class="sn">7.2</span>FTP と SFTP のちがい</h3><table class="tbl"><tr><th></th><th>FTP</th><th>SFTP</th></tr><tr><td>ポート</td><td>21（命令）・20（データ）</td><td>22</td></tr><tr><td>暗号化</td><td>基本的になし（盗み見られる危険）</td><td>あり（SSHで暗号化）</td></tr><tr><td>認証</td><td>ユーザ名とパスワード</td><td>パスワード、または公開鍵と秘密鍵</td></tr></table><p class="tip">💡 ファイルをやり取りするときは、暗号化される SFTP を使いましょう。</p></section></section><section class="sec" id="trouble"><h2><span class="sh">？</span>うまくいかないとき</h2><div class="trbl">
+<div><h4>Permission denied</h4><ul><li>パスワードの打ち間違い。もう一度入力（画面には出ません）</li><li>ユーザ名が <code>ubuntu</code>（SFTPは <code>submit-user</code>）か確認</li></ul></div>
+<div><h4>Connection timed out ／ 反応がない</h4><ul><li>IPアドレスが正しいか確認</li><li>ネットワークにつながっているか確認</li></ul></div>
+<div><h4>Vim から抜けられない</h4><ul><li><kbd>Esc</kbd> を押してから <code>:q!</code></li><li>日本語入力をOFF（半角）にしてから入力</li></ul></div>
+<div><h4>No such file or directory</h4><ul><li><code>ls</code> でファイル名を確認</li><li>学籍番号の入力ミスがないか確認</li><li>ファイルを作ったディレクトリ（<code>test</code>）で sftp を実行したか</li></ul></div>
+</div></section></div></main>
+<footer><div class="wrap">© KOSEN クラウド学習教材</div></footer>
+<div id="toast">✅ コピーしました！</div>
+<textarea id="selbox" aria-hidden="true" tabindex="-1"></textarea>
+<script>
+(function () {
+  var vals = {};
+  var defaults = {};
+  var inputs = document.querySelectorAll('input[data-key]');
+  var showTok = document.getElementById('showtok');
+  // JSON の文字列として正しく、さらにシェルの '…' の中でも壊れないようにする
+  function esc(s) { return JSON.stringify(s).slice(1, -1).replace(/'/g, "'\\''"); }
+  function tokenCopy() { return vals.TOKEN || '<配られたアカウントトークン>'; }
+  function tokenShow() {
+    var t = vals.TOKEN || '';
+    if (!t) return '<配られたアカウントトークン>';
+    if (showTok && showTok.checked) return t;
+    return t.slice(0, 4) + '••••••••' + (t.length > 12 ? t.slice(-2) : '');
+  }
+  var RAW = {"IP": "[^0-9.]", "SID": "[^0-9A-Za-z_-]"};
+  function value(key) {
+    var v = (vals[key] !== undefined && vals[key] !== '') ? vals[key] : defaults[key];
+    if (RAW[key]) {
+      var clean = (vals[key] || '').replace(new RegExp(RAW[key], 'g'), '');
+      return clean || defaults[key];
+    }
+    var el = document.querySelector('input[data-key="' + key + '"]');
+    if (el && el.type === 'number') { return (v !== '' && isFinite(Number(v))) ? String(Number(v)) : defaults[key]; }
+    return esc(v);
+  }
+  function build(tpl, forCopy) {
+    return tpl.replace(/\{\{(\w+)\}\}/g, function (_, k) {
+      if (k === 'TOKEN') return forCopy ? tokenCopy() : tokenShow();
+      return value(k);
+    });
+  }
+  function htmlEsc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function render() {
+    document.querySelectorAll('pre[data-tpl]').forEach(function (pre) {
+      var tpl = pre.getAttribute('data-tpl');
+      var parts = tpl.split(/(\{\{\w+\}\})/);
+      pre.innerHTML = parts.map(function (part) {
+        var m = part.match(/^\{\{(\w+)\}\}$/);
+        if (!m) return htmlEsc(part);
+        return '<span class="v">' + htmlEsc(build(part, false)) + '</span>';
+      }).join('');
+    });
+  }
+  inputs.forEach(function (el) {
+    var k = el.getAttribute('data-key');
+    defaults[k] = el.defaultValue || ('<' + el.getAttribute('data-label') + '>');
+    vals[k] = el.value;
+    el.addEventListener('input', function () { vals[k] = el.value.trim(); render(); });
+  });
+  if (showTok) showTok.addEventListener('change', function () {
+    var t = document.querySelector('input[data-key="TOKEN"]');
+    if (t) t.type = showTok.checked ? 'text' : 'password';
+    render();
+  });
+  var toast = document.getElementById('toast'), timer;
+  function done(btn) {
+    var old = btn.getAttribute('data-label') || btn.textContent;
+    btn.setAttribute('data-label', old);
+    btn.textContent = '✅ コピーしました！'; btn.classList.add('done');
+    toast.classList.add('on');
+    clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove('on'); btn.textContent = old; btn.classList.remove('done'); }, 1500);
+  }
+  function fallback(text, btn) {
+    var box = document.getElementById('selbox');
+    box.value = text; box.select();
+    try { if (document.execCommand('copy')) { done(btn); return; } } catch (e) {}
+    btn.textContent = 'コピーできませんでした。コマンドを選んでコピーしてください';
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.cp');
+    if (!btn) return;
+    var pre = btn.parentNode.querySelector('pre[data-tpl]');
+    var text = build(pre.getAttribute('data-tpl'), true);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(btn); }, function () { fallback(text, btn); });
+    } else { fallback(text, btn); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
